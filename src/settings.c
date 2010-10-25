@@ -12,7 +12,7 @@ unsigned char pre_authcode[]    = "5TWs3Obv7";
 
 unsigned char sv_name[]         = "Alpha Custom CS2D Server";
 unsigned char sv_map[]          = "de_cs2d";
-unsigned int sv_hostport        = 1994;
+unsigned int sv_hostport        = 36963;
 unsigned short sv_maxplayers    = 32 +1;
 unsigned short sv_fow           = 0;
 unsigned short sv_gamemode      = 2;

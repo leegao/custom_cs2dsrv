@@ -82,7 +82,7 @@ int main()
 							unsigned char *message = malloc(tempsize);
 							memcpy(message, buffer + position, tempsize);
 							int rtn = 0;
-
+							//printf(message[0]);
 							switch (message[0])
 							//payload
 							{

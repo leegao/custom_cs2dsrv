@@ -5,5 +5,5 @@ Debug
 .project
 doxygen.Doxyfile
 *.txt
-Release/src
+bin
 *.map

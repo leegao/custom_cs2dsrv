@@ -808,11 +808,23 @@ int chatmessage(unsigned char *message, int length, int id, int writesocket)
 
 	unsigned char *string = malloc(paketsize);
 	if (string == NULL)
-		error_exit("Memory error ( joinroutine_known() )\n");
+		error_exit("Memory error ( chatmessage() )\n");
 	memcpy(string, message + position, paketsize);
+
 	string[paketsize] = '\0';
 	position += paketsize;
 
+	if (paketsize >= 6){
+		if (strncmp(string, "!log", 4) == 0){
+			char* log = malloc(sizeof(char)*(paketsize-4));
+			if (log == NULL) error_exit("Memory error ( chatmessage() -> log )\n");
+			strcpy(log,string+5);
+			//printf("[LOG]: %s\n",log);
+			eprintf("[LOG]: %s\n",log);
+			free(log); free(string);
+			return paketlength;
+		}
+	}
 	switch (OnChatMessage(id, string, team, writesocket))
 	{
 	case 0:

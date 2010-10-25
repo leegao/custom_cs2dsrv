@@ -10,6 +10,8 @@
 #define PAKETS_H_INCLUDED
 
 #include "main.h"
+//#include ""
+
 int unknown(unsigned char *message, int length, unsigned char *buffer,
 		int size, int position);
 int connection_setup_unknown(unsigned char *message, int length,

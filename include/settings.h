@@ -12,7 +12,7 @@
 #define MAX_BUF 1024
 
 /* --- Server Settings --- */
-#define LOCAL_PORT 1994
+#define LOCAL_PORT sv_hostport
 #define MAX_CLIENTS 64
 #define TIMEOUT 10
 
