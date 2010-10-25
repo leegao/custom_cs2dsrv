@@ -561,6 +561,30 @@ void SendReloadMessage(int id, int status, int writesocket)
 	SendToAll(buffer, stringsize, 1, writesocket);
 	free(buffer);
 }
+
+// 28 - id - xx - yy - c
+void SendSprayMessage(char id, unsigned short xx, unsigned short yy, char c, int writesocket)
+{
+	int stringsize = 7;
+	unsigned char *buffer = malloc(stringsize*sizeof(char));
+	if (buffer == NULL)
+		error_exit("Memory error ( SendReloadMessage() )\n");
+
+	int position = 0;
+
+	buffer[position++] = 28;
+	buffer[position++] = id;
+	//(char*)xx;
+	buffer[position++] = (xx)%256;
+	buffer[position++] = xx/256;
+	buffer[position++] = (xx)%256;
+	buffer[position++] = xx/256;
+	buffer[position++] = c;
+
+	SendToAll(buffer, stringsize, 1, writesocket);
+	free(buffer);
+}
+
 //FIXME complete SendKillMessage
 void SendKillMessage(int id, int writesocket)
 {

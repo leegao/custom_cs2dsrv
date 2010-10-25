@@ -1717,3 +1717,34 @@ int reload(unsigned char *message, int length, int id, int writesocket)
 	}
 	return paketlength;
 }
+
+int spray(unsigned char *message, int length, int id, int writesocket)
+{
+	// 28 id xx yy c
+	//  0  1 23 45 6
+	struct{
+		unsigned char hi; unsigned char lo;
+	} x, y;
+
+	if (length < 7)
+	{
+		printf("Invalid packet (spray)!\n");
+		return length;
+	}
+
+	x.lo = message[2];
+	x.hi = message[3];
+
+	y.lo = message[4];
+	y.hi = message[5];
+
+	unsigned short xx = x.hi*256+x.lo, yy = y.hi*256+y.lo;
+	unsigned char c = message[6];
+	unsigned char i = message[1];
+
+	// Postprocessing if needed, then send back exact same data
+	// xx and yy are positions, not tiles.
+
+	SendSprayMessage(i, xx, yy, c, writesocket);
+	return 2;
+}
