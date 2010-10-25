@@ -1746,5 +1746,5 @@ int spray(unsigned char *message, int length, int id, int writesocket)
 	// xx and yy are positions, not tiles.
 
 	SendSprayMessage(i, xx, yy, c, writesocket);
-	return 2;
+	return 7;
 }
