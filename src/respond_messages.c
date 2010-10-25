@@ -565,7 +565,7 @@ void SendReloadMessage(int id, int status, int writesocket)
 // 28 - id - xx - yy - c
 void SendSprayMessage(char id, unsigned short xx, unsigned short yy, char c, int writesocket)
 {
-	int stringsize = 7;
+	int stringsize = 8;
 	unsigned char *buffer = malloc(stringsize*sizeof(char));
 	if (buffer == NULL)
 		error_exit("Memory error ( SendReloadMessage() )\n");
@@ -573,6 +573,7 @@ void SendSprayMessage(char id, unsigned short xx, unsigned short yy, char c, int
 	int position = 0;
 
 	buffer[position++] = 28;
+	buffer[position++] = 0;
 	buffer[position++] = id;
 	//(char*)xx;
 	buffer[position++] = (xx)%256;
@@ -581,7 +582,7 @@ void SendSprayMessage(char id, unsigned short xx, unsigned short yy, char c, int
 	buffer[position++] = xx/256;
 	buffer[position++] = c;
 
-	SendToAll(buffer, stringsize, 1, writesocket);
+	// SendToAll(buffer, stringsize, 1, writesocket); -- Make sure that the spray-image send packet is crafted first.
 	free(buffer);
 }
 

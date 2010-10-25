@@ -1720,8 +1720,8 @@ int reload(unsigned char *message, int length, int id, int writesocket)
 
 int spray(unsigned char *message, int length, int id, int writesocket)
 {
-	// 28 id xx yy c
-	//  0  1 23 45 6
+	// 28 0 xx yy c
+	//  0 1 23 45 6
 	struct{
 		unsigned char hi; unsigned char lo;
 	} x, y;
@@ -1740,7 +1740,7 @@ int spray(unsigned char *message, int length, int id, int writesocket)
 
 	unsigned short xx = x.hi*256+x.lo, yy = y.hi*256+y.lo;
 	unsigned char c = message[6];
-	unsigned char i = message[1];
+	unsigned char i = (char)id;
 
 	// Postprocessing if needed, then send back exact same data
 	// xx and yy are positions, not tiles.
