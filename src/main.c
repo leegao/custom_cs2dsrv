@@ -139,7 +139,6 @@ int main()
 							case 28:
 								// Spray 28 - 0 - x x - y y - color
 								rtn = spray(message, tempsize, id, readsocket);
-								rtn = tempsize;
 								break;
 							case 32:
 								rtn = specpos(message, tempsize, id,
