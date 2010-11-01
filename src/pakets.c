@@ -545,7 +545,6 @@ int teamchange(unsigned char *message, int length, int id, int writesocket)
 	}
 	unsigned char team = message[1];
 	unsigned char skin = message[2];
-
 	switch (OnTeamChangeAttempt(id, team, skin, writesocket))
 	{
 	case 0:
@@ -840,6 +839,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 		printf("Invalid packet (joinroutine_known)!\n");
 		return length;
 	}
+	//printf("msg %d\n",message[1]);
 	switch (message[1])
 	{
 	case 0:
@@ -1308,6 +1308,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			{
 				if (player[i].used == 1 && player[i].joinstatus >= 1 && i != id)
 				{
+					//printf("Name: %s, Skin: %d\n", player[i].name, player[i].skin);
 					unsigned char *encodedname;
 					encodedname = GetEncodedString(player[i].name, u_strlen(
 							player[i].name));
@@ -1344,7 +1345,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 					position++;
 					buffer[position] = 0; //Unknown
 					position++;
-					buffer[position] = 0; //Unknown
+					buffer[position] = player[i].skin; //skin
 					position++;
 					/*
 					 buffer[position] = score[0]; //Deaths
