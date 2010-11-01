@@ -3,7 +3,7 @@
  * For more information take a look at the Readme
  * Copyright (c) by the authors of this file
  *
- * Author/s of this file: Jermuk
+ * Author/s of this file: Jermuk, FloooD
  */
 
 #include "../include/main.h"
@@ -26,34 +26,57 @@ int main()
 
 	ClearAllPlayer();
 	WeaponInit();
+	ReadCfg();
 
 	readsocket = create_socket();
-	bind_socket(&readsocket, INADDR_ANY, LOCAL_PORT);
+	bind_socket(&readsocket, INADDR_ANY, sv_hostport);
 	atexit(cleanup);
 
-	FD_ZERO(&descriptor);
-	FD_SET(readsocket, &descriptor);
-
+	//struct in_addr usgnip = GetIp("usgn.de");
+	/*
+	 FD_ZERO(&descriptor);
+	 FD_SET(readsocket, &descriptor);
+	 */
 	OnServerStart();
 	ReadMap();
+	UsgnRegister(readsocket);
 
 	/**
-	 * \var needed for PingAllPlayer() to execute it every 5 sec
+	 * \var needed for ExecuteFunctionsWithTime()
 	 */
-	time_t firsttime;
-	time(&firsttime);
+	time_t checktime;
+	time(&checktime);
+
+	int mstime = mtime();
+	int timecounter = mtime();
+	int tickcounter = 0;
+	const int fps = 1000 / sv_fps;
+
+	struct timeval timeout;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0; //1ms = 1000
 	while (1)
 	{
+		if ((timecounter + 1000 - (int) mtime()) <= 0)
+		{
+			fpsnow = (int) tickcounter;
+			tickcounter = 0;
+			timecounter = mtime();
+		}
+		tickcounter++;
+
+		UpdateBuffer();
 		CheckForTimeout(readsocket);
-		PingAllPlayer(readsocket, &firsttime); /// also execute PingList()
+		ExecuteFunctionsWithTime(&checktime, readsocket);
 		CheckAllPlayerForReload(readsocket);
 
-		select(readsocket + 1, &descriptor, NULL, NULL, NULL);
+		FD_ZERO(&descriptor);
+		FD_SET(readsocket, &descriptor);
+		select(readsocket + 1, &descriptor, NULL, NULL, &timeout);
 
 		if (FD_ISSET(readsocket, &descriptor))
 		{
 			size = udp_recieve(readsocket, buffer, MAX_BUF, &newclient);
-			//printf("(Debug) Recieved data from %s:%d\n", inet_ntoa(newclient.sin_addr), newclient.sin_port);
 
 			if (size < 3)
 			{
@@ -67,7 +90,7 @@ int main()
 					if (ValidatePaket(buffer, id)) ///Checks and raise the packet numbering if necessary
 					{
 						PaketConfirmation(buffer, id, readsocket); ///If the numbering is even, send a confirmation
-						time(&player[id].lastpaket);
+						player[id].lastpaket = mtime();
 						int control = 1;
 						int position = 2;
 						/**
@@ -82,7 +105,7 @@ int main()
 							unsigned char *message = malloc(tempsize);
 							memcpy(message, buffer + position, tempsize);
 							int rtn = 0;
-							//printf(message[0]);
+
 							switch (message[0])
 							//payload
 							{
@@ -141,7 +164,8 @@ int main()
 								rtn = spray(message, tempsize, id, readsocket);
 								break;
 							case 32:
-								rtn = specpos(message, tempsize, id,
+								rtn
+										= specpos(message, tempsize, id,
 												readsocket);
 								break;
 							case 39:
@@ -213,6 +237,12 @@ int main()
 							rtn = connection_setup_unknown(message, tempsize,
 									newclient.sin_addr, newclient.sin_port);
 							break;
+						case 27:
+							rtn = UsgnPacket(27, message, tempsize, readsocket);
+							break;
+						case 28:
+							rtn = UsgnPacket(28, message, tempsize, readsocket);
+							break;
 						case 250:
 							rtn = ping_serverlist(message, tempsize,
 									&newclient, readsocket);
@@ -251,6 +281,15 @@ int main()
 			}
 
 		}
+		else
+		{
+#ifdef _WIN32
+			Sleep(fps + mstime - mtime());
+#else
+			sleep(fps + mstime - mtime());
+#endif
+		}
+		mstime = mtime();
 	}
 	return EXIT_SUCCESS;
 }

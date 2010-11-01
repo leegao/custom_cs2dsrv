@@ -3,7 +3,7 @@
  * For more information take a look at the Readme
  * Copyright (c) by the authors of this file
  *
- * Author/s of this file: Jermuk
+ * Author/s of this file: Jermuk, FloooD
  */
 
 #include "../include/script-functions.h"
@@ -56,6 +56,7 @@ int OnServerStart()
 	time_t rawtime;
 	time(&rawtime);
 	printf("********** Server started **********\n");
+	printf("Listening at port %d and using name '%s'\n", sv_hostport, sv_name);
 	printf("%s", ctime(&rawtime));
 	return 0;
 }
@@ -80,7 +81,11 @@ int OnExit()
 int OnRespawnRequest(int id, int writesocket)
 {
 	if (player[id].dead == 1)
+	{
+		if(player[id].money + mp_dmspawnmoney > 65000) player[id].money = 65000;
+		else player[id].money += mp_dmspawnmoney;
 		return 0;
+	}
 	else
 		return 1;
 }
@@ -114,7 +119,7 @@ int OnWeaponChangeAttempt(int id, int wpnid, int writesocket)
 			}
 			player[id].reloading = 0;
 
-			printf("%s switched to %s\n", player[id].name, weapons[player[id].slot[player[id].actualweapon].id].name);
+			//printf("%s switched to %s\n", player[id].name, weapons[player[id].slot[player[id].actualweapon].id].name);
 			return 0;
 		}
 	}
@@ -236,6 +241,11 @@ int OnFire(int id, int writesocket)
 
 	int startx = player[id].x;
 	int starty = player[id].y;
+	int frames = fpsnow * player[id].latency / 1000;
+	if (frames > sv_lcbuffer)
+	{
+		frames = sv_lcbuffer;
+	}
 	float rotx;
 	float roty;
 	float temprot = player[id].rotation;
@@ -281,9 +291,12 @@ int OnFire(int id, int writesocket)
 					&& player[b].dead == 0 && playershit[b] == 0
 					&& player[id].team != player[b].team)
 			{
-				if (sqrt((player[b].x - startx) * (player[b].x - startx)
-						+ (player[b].y - starty) * (player[b].y - starty))
+				if (sqrt((player[b].buffer_x[frames] - startx)*(player[b].buffer_x[frames] - startx)
+						+ (player[b].buffer_y[frames] - starty)*(player[b].buffer_y[frames] - starty))
 						<= 16)
+				/*if (sqrt((player[b].x - startx) * (player[b].x - startx)
+						+ (player[b].y - starty) * (player[b].y - starty))
+						<= 16)*/
 				{
 					OnHit(id, b, writesocket);
 					playershit[b] = 1;
@@ -321,7 +334,7 @@ int OnHit(int hitter, int victim, int writesocket)
 	{
 		player[victim].health -= damage;
 		SendHitMessage(victim, hitter, player[victim].health, writesocket);
-		printf("%s hitted %s with %s\n", player[hitter].name, player[victim].name, weapons[wpnid].name);
+		//printf("%s hitted %s with %s\n", player[hitter].name, player[victim].name, weapons[wpnid].name);
 	}
 	else
 	{
@@ -333,12 +346,12 @@ int OnHit(int hitter, int victim, int writesocket)
 
 int OnBuyAttempt(int id, int wpnid, int writesocket)
 {
-	if (player[id].money - weapons[wpnid].price >= 0)
+	int i;
+	for (i = 0; i <= 99; i++)
 	{
-		int i;
-		for (i = 0; i <= 99; i++)
+		if (weapons[wpnid].name != NULL) //test if weapon available
 		{
-			if (weapons[wpnid].name != NULL) //test if weapon available
+			if (player[id].money - weapons[wpnid].price >= 0)
 			{
 				if (weapons[wpnid].team == 0 || weapons[wpnid].team
 						== player[id].team) //Check if he is in the right team to buy this weapon
@@ -358,9 +371,20 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 									&& playery >= tempy - 64 && playery
 									<= tempy + 64)
 							{
-								return 0;
+								int g;
+								for (g = 0; g <= 99; g++)
+								{
+									if (player[id].slot[g].id != wpnid)
+									{
+										return 0;
+									}
+								}
+								SendBuyFailedMessage(id, 251, writesocket); //You have it already
+								return 1;
 							}
 						}
+						SendBuyFailedMessage(id, 255, writesocket);
+						return 1;
 					}
 					else if (player[id].team == 2)
 					{
@@ -376,14 +400,53 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 									&& playery >= tempy - 64 && playery
 									<= tempy + 64)
 							{
-								return 0;
+								int g;
+								for (g = 0; g <= 99; g++)
+								{
+									if (player[id].slot[g].id != wpnid)
+									{
+										return 0;
+									}
+								}
+								SendBuyFailedMessage(id, 251, writesocket); //You have it already
+								return 1;
 							}
 						}
+						SendBuyFailedMessage(id, 255, writesocket); //Not in a buyzone
+						return 1;
 					}
 				}
+				else
+				{
+					SendBuyFailedMessage(id, 252, writesocket); //you cant buy this item
+					return 1;
+				}
+			}
+			else
+			{
+				SendBuyFailedMessage(id, 253, writesocket); //not enough money
+				return 1;
 			}
 		}
 	}
+	//if nothing found
+	SendBuyFailedMessage(id, 244, writesocket);
+	/*
+	 * 242 nothing
+	 * 243 Grenade rebuying is not allowed at this server
+	 * 244 it's not allowed to buy that weapon at this server
+	 * 245 you can't carry more of this
+	 * 246 you can't carry more of this
+	 * 247 you can't carry an additional weapon
+	 * 248 you can't buy more ammo
+	 * 249 you are not allowed to buy anything
+	 * 250 buying is not allowed
+	 * 251 you have already this or something better
+	 * 252 you can't buy this item;
+	 * 253 insufficient fund;
+	 * 254 buytime passed;
+	 * 255 you are not in a buyzone
+	 */
 	return 1;
 }
 
@@ -402,8 +465,13 @@ int OnKill(int hitter, int victim, int wpnid, int writesocket)
 	player[hitter].score++;
 	player[hitter].kills++;
 	player[victim].deaths++;
+	if (player[hitter].money + 300 > 65000)
+		player[hitter].money = 65000;
+	else
+		player[hitter].money += 300;
 	RemoveAllPlayerWeapon(victim);
 	SendHitMessage(victim, hitter, player[victim].health, writesocket);
+	SendKillMessage(hitter, victim, writesocket);
 	printf("%s killed %s with %s\n", player[hitter].name, player[victim].name, weapons[wpnid].name);
 	return 0;
 }
@@ -411,9 +479,31 @@ int OnKill(int hitter, int victim, int wpnid, int writesocket)
  int OnChatMessage(int id, unsigned char *message, int team, int writesocket)
  Return Values:
  0 - OK
+ 1 - don't send it
  */
 int OnChatMessage(int id, unsigned char *message, int team, int writesocket)
 {
+	if (u_strlen(message) >= 4 && strncmp((char *) message, "!log", 4) == 0)
+	{
+		char* log = malloc(u_strlen(message) - 5 + 1); //+1 for '\0'
+		if (log == NULL)
+			error_exit("Memory error ( OnChatMessage() -> log )\n");
+		strncpy(log, (char *) message + 5, u_strlen(message) - 5);
+		log[u_strlen(message) - 5] = '\0';
+		eprintf("[LOG]: %s\n",log);
+		free(log);
+
+		return 1;
+	}
+	else if (u_strlen(message) >= 4 && strncmp((char *) message, "!fps", 4)
+			== 0)
+	{
+		char buffer[30]; //Resulting stringlength unknown: Text = 24 chars
+		sprintf(buffer, "Actually server FPS: %d", fpsnow);
+		SendMessageToPlayer(id, buffer, 1, writesocket);
+		return 1;
+	}
+
 	if (team == 1)
 	{
 		printf("%s: %s\n", player[id].name, message);
@@ -422,7 +512,6 @@ int OnChatMessage(int id, unsigned char *message, int team, int writesocket)
 	{
 		printf("%s (Team): %s\n", player[id].name, message);
 	}
-	SendChatMessage(id, message, team, writesocket);
 	return 0;
 }
 

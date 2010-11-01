@@ -3,14 +3,15 @@
  * For more information take a look at the Readme
  * Copyright (c) by the authors of this file
  *
- * Author/s of this file: Jermuk
+ * Author/s of this file: Jermuk, FloooD
  */
 
 #ifndef STRUCTS_H_INCLUDED
 #define STRUCTS_H_INCLUDED
 
 #include "main.h"
-
+#define MAX_CLIENTS 64
+#define BUFFER_SIZE 100
 struct WEAPON
 {
 	short weapondamage, weapondamage_z1, weapondamage_z2;
@@ -56,7 +57,7 @@ struct PLAYER
 	int used;
 	unsigned short client_nummer;
 	unsigned short server_nummer;
-	time_t lastpaket;
+	int lastpaket;
 	unsigned short joinstatus;
 
 	unsigned char *name;
@@ -69,6 +70,7 @@ struct PLAYER
 	unsigned short deaths;
 	short score;
 	unsigned short x, y;
+	unsigned short buffer_x[BUFFER_SIZE + 1], buffer_y[BUFFER_SIZE +1];
 	unsigned char health, armor;
 	unsigned char actualweapon;
 	struct PLAYER_WEAPON slot[10];

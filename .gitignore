@@ -8,3 +8,4 @@ doxygen.Doxyfile
 *.exe
 *.pyd
 *.map
+*.cfg

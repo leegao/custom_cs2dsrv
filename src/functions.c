@@ -3,10 +3,29 @@
  * For more information take a look at the Readme
  * Copyright (c) by the authors of this file
  *
- * Author/s of this file: Jermuk
+ * Author/s of this file: Jermuk, FloooD
  */
 
 #include "../include/functions.h"
+
+/**
+ * \fn void UpdateBuffer(void)
+ * \brief update old player locations
+ */
+void UpdateBuffer(void)
+{
+	int id, i;
+	for (id = 1; id < (MAX_CLIENTS); id++)
+	{
+			for (i = sv_lcbuffer; i >= 1; i--)
+			{
+				player[id].buffer_x[i] = player[id].buffer_x[i - 1];
+				player[id].buffer_y[i] = player[id].buffer_y[i - 1];
+			}
+			player[id].buffer_x[0] = player[id].x;
+			player[id].buffer_y[0] = player[id].y;
+	}
+}
 
 /**
  * \fn int IsPlayerKnown(struct in_addr ip, u_short port)
@@ -71,6 +90,11 @@ void ClearPlayer(int id)
 	for (i = 0; i <= 9; i++)
 	{
 		player[id].slot[i].id = 0;
+	}
+	for (i = 0; i <= sv_lcbuffer; i++)
+	{
+		player[id].buffer_x[i] = 0;
+		player[id].buffer_y[i] = 0;
 	}
 	player[id].rotation = 0;
 
@@ -190,10 +214,9 @@ int PlayerTimeout(int id)
 {
 	//id = 0;
 
-	time_t actualtime;
-	time(&actualtime);
+	int actualtime = mtime();
 
-	if (((player[id].lastpaket + TIMEOUT) < actualtime) && player[id].lastpaket
+	if (((player[id].lastpaket + TIMEOUT*1000) < actualtime) && player[id].lastpaket
 			!= 0)
 	{
 		return 1;
@@ -277,16 +300,19 @@ unsigned int endian_swap_int(unsigned int *x)
  */
 int ValidatePaket(unsigned char *message, int id)
 {
-	unsigned short *pTempNummer = malloc(sizeof(unsigned short));
+	/*
+	unsigned short *pTempNummer = malloc(2);
 	pTempNummer[0] = message[0];
 	pTempNummer[1] = message[1];
+	*/
+	unsigned short *pTempNummer = (unsigned short *)message;
 	if (*pTempNummer % 2 != 0)
 	{
 		if (((*pTempNummer) + 2) < player[id].client_nummer || (*pTempNummer)
 				> (player[id].client_nummer + 2))
 		{
 			printf("Invalid paket! (Bad index: %d; expected: %d)\n", *pTempNummer, player[id].client_nummer);
-			free(pTempNummer);
+			//free(pTempNummer);
 			return 0;
 		}
 	}
@@ -299,7 +325,7 @@ int ValidatePaket(unsigned char *message, int id)
 	 pNummer[0] = buffer[0];
 	 pNummer[1] = buffer[1];
 	 */
-	free(pTempNummer);
+	//free(pTempNummer);
 	return 1;
 }
 /**
@@ -310,9 +336,12 @@ int ValidatePaket(unsigned char *message, int id)
  */
 void PaketConfirmation(unsigned char *message, int id, int writesocket)
 {
+	unsigned short *pTempNummer = (unsigned short *)message;
+	/*
 	unsigned short *pTempNummer = malloc(sizeof(unsigned short));
 	pTempNummer[0] = message[0];
 	pTempNummer[1] = message[1];
+	*/
 	if (*pTempNummer % 2 == 0)
 	{
 		int stringsize = 3;
@@ -324,7 +353,7 @@ void PaketConfirmation(unsigned char *message, int id, int writesocket)
 
 		free(buffer);
 	}
-	free(pTempNummer);
+	//free(pTempNummer);
 }
 /**
  * \fn int CheckPlayerData(char *password)
@@ -429,6 +458,100 @@ void CheckAllPlayerForReload(int writesocket)
 				player[i].reloading = 0;
 			}
 		}
+	}
+}
+
+struct in_addr GetIp(char *name)
+{
+	struct in_addr ip;
+	struct hostent *dnsresolve;
+	if ((dnsresolve = gethostbyname(name)) == NULL)
+	{
+		printf("Error: Failed to resolve %s!\n", name);
+		ip.s_addr = inet_addr("85.214.102.60");
+		return ip; //return usgn ip
+	}
+	memcpy(&ip, dnsresolve->h_addr_list[0], dnsresolve->h_length);
+
+	return ip;
+}
+
+int UsgnRegister(int writesocket)
+{
+	struct sockaddr_in tempclient;
+
+	tempclient.sin_family = AF_INET;
+	tempclient.sin_port = htons(36963);
+	tempclient.sin_addr = GetIp("usgn.de");
+
+	unsigned char *buffer = malloc(4);
+	if (buffer == NULL)
+		error_exit("Memory error ( UsgnRegister() )");
+	int position = 0;
+
+	buffer[position] = 1;
+	position++;
+	buffer[position] = 0;
+	position++;
+	buffer[position] = 27;
+	position++;
+	buffer[position] = 1;
+	position++;
+
+	udp_send(writesocket, buffer, 4, &tempclient);
+	free(buffer);
+
+	printf("[USGN] Sent ADD request to %s...\n", inet_ntoa(tempclient.sin_addr));
+	return 0;
+}
+
+int UsgnUpdate(int writesocket)
+{
+	struct sockaddr_in tempclient;
+
+	tempclient.sin_family = AF_INET;
+	tempclient.sin_port = htons(36963);
+	tempclient.sin_addr = GetIp("usgn.de");
+
+	unsigned char *buffer = malloc(4);
+	if (buffer == NULL)
+		error_exit("Memory error ( UsgnRegister() )");
+	int position = 0;
+
+	buffer[position] = 1;
+	position++;
+	buffer[position] = 0;
+	position++;
+	buffer[position] = 28;
+	position++;
+	buffer[position] = 2;
+	position++;
+
+	udp_send(writesocket, buffer, 4, &tempclient);
+	free(buffer);
+
+	printf("[USGN] Sent UPDATE request to %s...\n", inet_ntoa(tempclient.sin_addr));
+	return 0;
+}
+
+void ExecuteFunctionsWithTime(time_t *checktime, int writesocket)
+{
+	time_t actualtime;
+	time(&actualtime);
+	if (*checktime != actualtime) //prevents executing more times than one in a second
+	{
+		if (actualtime % 5 == 0) //execute every 5 seconds
+		{
+			SendPingList(writesocket);
+			SendMessageToAll("This is an alpha version! Don't play at it!", 1,
+					writesocket); //Do not remove or change this until server reaches beta status
+			PingAllPlayer(writesocket);
+		}
+		else if (actualtime % 50 == 0)
+		{
+			UsgnUpdate(writesocket);
+		}
+		*checktime = actualtime;
 	}
 }
 
