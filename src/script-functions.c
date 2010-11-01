@@ -81,7 +81,10 @@ int OnExit()
 int OnRespawnRequest(int id, int writesocket)
 {
 	if (player[id].dead == 1)
+	{
+		player[id].money = mp_dmspawnmoney;
 		return 0;
+	}
 	else
 		return 1;
 }

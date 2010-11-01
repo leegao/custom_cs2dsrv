@@ -29,7 +29,7 @@ int main()
 	ReadCfg();
 
 	readsocket = create_socket();
-	bind_socket(&readsocket, INADDR_ANY, LOCAL_PORT);
+	bind_socket(&readsocket, INADDR_ANY, sv_hostport);
 	atexit(cleanup);
 
 	//struct in_addr usgnip = GetIp("usgn.de");
@@ -50,23 +50,20 @@ int main()
 	int mstime = mtime();
 	int timecounter = mtime();
 	int tickcounter = 0;
-	const int fps = 1000 / FPS;
+	const int fps = 1000 / sv_fps;
 
 	struct timeval timeout;
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 0; //1ms = 1000
 	while (1)
 	{
-		if (mtime() - mstime >= fps) //Hope it does an constant fps
-		{
-			if ((timecounter + 10000 - (int) mtime()) <= 0)
+			if ((timecounter + 1000 - (int) mtime()) <= 0)
 			{
-				fpsnow = (int) ceil(tickcounter / 10);
+				fpsnow = (int) tickcounter;
 				tickcounter = 0;
 				timecounter = mtime();
 			}
 			tickcounter++;
-			mstime = mtime();
 
 			CheckForTimeout(readsocket);
 			ExecuteFunctionsWithTime(&checktime, readsocket);
@@ -291,15 +288,8 @@ int main()
 				}
 
 			}
-		}
-		else
-		{
-#ifdef _WIN32
-			Sleep(fps - (mtime() - mstime));
-#else
-			sleep(fps - (mtime() - mstime));
-#endif
-		}
+			usleep(1000*(fps + mstime - mtime()));
+			mstime = mtime();
 	}
 	return EXIT_SUCCESS;
 }
