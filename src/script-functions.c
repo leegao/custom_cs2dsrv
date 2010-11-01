@@ -290,8 +290,8 @@ int OnFire(int id, int writesocket)
 					&& player[b].dead == 0 && playershit[b] == 0
 					&& player[id].team != player[b].team)
 			{
-				if (sqrt((player[b].buffer_x[frames] - startx)^2
-						+ (player[b].buffer_y[frames] - starty)^2)
+				if (sqrt((player[b].buffer_x[frames] - startx)*(player[b].buffer_x[frames] - startx)
+						+ (player[b].buffer_y[frames] - starty)*(player[b].buffer_y[frames] - starty))
 						<= 16)
 				/*if (sqrt((player[b].x - startx) * (player[b].x - startx)
 						+ (player[b].y - starty) * (player[b].y - starty))
