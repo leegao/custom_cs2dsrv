@@ -15,7 +15,7 @@
 void UpdateBuffer(void)
 {
 	int id, i;
-	for (id = 1; id <= MAX_CLIENTS; id++)
+	for (id = 1; id <= (MAX_CLIENTS - 1); id++)
 	{
 			for (i = sv_lcbuffer; i >= 1; i--)
 			{
