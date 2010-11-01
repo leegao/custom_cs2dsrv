@@ -1677,6 +1677,7 @@ int leave(int id, int writesocket)
 	player[id].usgn = NULL;
 	player[id].spraylogo = NULL;
 	player[id].win = NULL;
+	player[id].rcon = 0;
 
 	onlineplayer--;
 
@@ -1742,6 +1743,42 @@ int spray(unsigned char *message, int length, int id, int writesocket)
 
 	SendSprayMessage(i, xx, yy, c, writesocket);
 	return 7;
+}
+
+int rcon_pw(unsigned char *message, int length, int id, int writesocket)
+{
+	// 236 ln pw
+	//   0  1 ln
+
+	unsigned char* key = "mysecretremotecontrolpmysecret";
+
+	int expected = (int)(message[1]);
+	if (length < expected+2)
+	{
+		printf("Invalid packet (rcon_pw)!\n");
+		return length;
+	}
+
+	char* pw = malloc(expected+1);
+
+	int i;
+	for (i = 0; i < expected; i++){
+		//eprintf("%c", message[i+2]- key[i]);
+		pw[i] = (unsigned char)(message[i+2] - key[i]);
+	}
+	pw[expected] = '\0';
+
+	// Check against actual rcon
+	if (strcmp(pw, sv_rcon) == 0){
+		printf("[Rcon_pw] Success\n");
+		player[id].rcon = 1;
+		//SendRconPwMessage(id, message, length, 1, writesocket);
+	}else{
+		printf("[Rcon_pw] Bad attempt by %s.\n", player[id].name);
+		SendRconPwMessage(id, message, length, 0, writesocket);
+	}
+
+	return length;
 }
 
 int UsgnPacket(int packetid, unsigned char *message, int length,

@@ -22,6 +22,7 @@ extern unsigned char pre_authcode[];
 
 extern unsigned char *sv_name;
 extern unsigned char *sv_map;
+extern unsigned char *sv_rcon;
 extern unsigned int sv_hostport;
 extern unsigned short sv_fps;
 extern unsigned short sv_lcbuffer;

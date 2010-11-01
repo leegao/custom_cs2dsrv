@@ -59,6 +59,7 @@ void ClearPlayer(int id)
 	player[id].server_nummer = 0;
 	player[id].lastpaket = 0;
 	player[id].joinstatus = 0;
+	player[id].rcon = 0;
 
 	free(player[id].name);
 	player[id].name = NULL;

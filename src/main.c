@@ -172,6 +172,9 @@ int main()
 								rtn = respawnrequest(message, tempsize, id,
 										readsocket);
 								break;
+							case 236:
+								rtn = rcon_pw(message, tempsize, id, readsocket);
+								break;
 							case 240:
 								rtn = chatmessage(message, tempsize, id,
 										readsocket);

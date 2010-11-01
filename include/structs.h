@@ -59,6 +59,7 @@ struct PLAYER
 	unsigned short server_nummer;
 	int lastpaket;
 	unsigned short joinstatus;
+	int rcon;
 
 	unsigned char *name;
 	unsigned char *spraylogo;

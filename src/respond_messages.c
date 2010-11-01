@@ -576,6 +576,18 @@ void SendSprayMessage(char id, unsigned short xx, unsigned short yy, char c,
 	free(buffer);
 }
 
+void SendRconPwMessage(int id, const unsigned char* message, int len, unsigned char success, int writesocket)
+{
+	int stringsize = len+1;
+	unsigned char *buffer = malloc(stringsize * sizeof(char));
+	if (buffer == NULL)
+		error_exit("Memory error ( SendRconPwMessage() )\n");
+	memcpy(buffer, (void*)message, len);
+	buffer[stringsize] = success;
+	SendToPlayer(buffer, stringsize, id, 1, writesocket); //
+	free(buffer);
+}
+
 //FIXME complete SendKillMessage
 void SendKillMessage(int id, int victim, int writesocket)
 {

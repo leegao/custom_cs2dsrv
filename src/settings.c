@@ -14,6 +14,7 @@ int fpsnow = 0;
 
 unsigned char *sv_name 			= NULL;
 unsigned char *sv_map 			= NULL;
+unsigned char *sv_rcon			= NULL;
 unsigned int sv_hostport        = 0;
 unsigned short sv_maxplayers    = 0;
 unsigned short sv_fps		    = 0;
@@ -143,6 +144,7 @@ void ReadCfg()
 
     sv_name 			= (unsigned char *)GetValue("sv_name", "Alpha Custom CS2D Server");
     sv_map 				= (unsigned char *)GetValue("sv_map", "de_cs2d");
+    sv_rcon 			= (unsigned char *)GetValue("sv_rcon", "testing");
     sv_hostport 		= tointeger(GetValue("sv_hostport", "36963"));
     sv_maxplayers 		= tointeger(GetValue("sv_maxplayers", "32")) +1;
 	sv_fps 				= tointeger(GetValue("sv_fps", "250"));
