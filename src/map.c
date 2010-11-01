@@ -19,7 +19,8 @@ void ReadMap()
 	int i;
 	tspawncount = 0;
 	ctspawncount = 0;
-
+	char* header = "Unreal Software's Counter-Strike 2D Map File";
+	char* maxheader = "Unreal Software's Counter-Strike 2D Map File (max)";
 	char *mappath = malloc(u_strlen(sv_map) + 5);
 	memcpy(mappath, sv_map, u_strlen(sv_map));
 	memcpy(mappath + u_strlen(sv_map), ".map\0", 5);
@@ -33,12 +34,18 @@ void ReadMap()
 
 	//------------------------------
 	unsigned char *mapheader = ReadLine(file);
-	for (i = 1; i <= 9; i++)
-		ReadByte(file);
-	for (i = 1; i <= 10; i++)
-		ReadInt(file);
-	for (i = 1; i <= 10; i++)
-		ReadLine(file);
+	// Legacy maps have a different paddding - This causes a bug in de_cs2d where parts of the player cannot be shot at.
+	if (strcmp (mapheader, header) == 0){ // Legacy maps uses this padding scheme (pre 0104, still usable by 0118)
+		for (i = 1; i <= 9; i++)
+			ReadByte(file);
+		for (i = 1; i <= 10; i++)
+			ReadInt(file);
+		for (i = 1; i <= 10; i++)
+			ReadLine(file);
+	}else if (strcmp (mapheader, maxheader) == 0){ // Max maps uses this scheme
+		for (i = 1; i <= 10; i++)
+			ReadLine(file);
+	}
 	unsigned char *code = ReadLine(file);
 	unsigned char *tileset = ReadLine(file);
 	unsigned char loaded = ReadByte(file);
