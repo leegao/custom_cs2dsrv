@@ -11,9 +11,8 @@
 
 #include "../include/main.h"
 
-#define MAX_BUF 1024
-
 /* --- Server Settings --- */
+#define MAX_BUF 1024
 #define MAX_CLIENTS 64
 #define TIMEOUT 10
 #define SETTINGS_PATH "server.cfg"

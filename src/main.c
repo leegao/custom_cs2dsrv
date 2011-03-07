@@ -13,7 +13,7 @@
  * \brief initialize sockets and if a message was recieved, give it to the right function.
  * \return EXIT_SUCCESS or EXIT_FAILURE
  */
-int main()
+int main(int argc, char *argv[])
 {
 	/**
 	 * Initalize variables, weapons, players and sockets
@@ -39,6 +39,7 @@ int main()
 	 */
 	OnServerStart();
 	ReadMap();
+	//if (argc == 1) //modify into optional offline mode
 	UsgnRegister(readsocket);
 
 	/**
@@ -47,23 +48,30 @@ int main()
 	time_t checktime;
 	time(&checktime);
 
-	int mstime = mtime();
-	int timecounter = mtime();
-	int tickcounter = 0;
-	const int fps = 1000 / sv_fps;
+	const int inc = NS_PER_S / sv_fps;
+	int fpsnow = 0;
+	int frame = 0;
+	int previous = 0;
+
+	struct timespec current, next;
+	clock_gettime(CLOCK_MONOTONIC, &next);
 
 	struct timeval timeout;
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 0; //1ms = 1000
 	while (1)
 	{
-		if ((timecounter + 1000 - (int) mtime()) <= 0)
+		frame++;
+		next.tv_nsec += inc;
+		while (next.tv_nsec > NS_PER_S)
 		{
-			fpsnow = (int) tickcounter;
-			tickcounter = 0;
-			timecounter = mtime();
+			next.tv_nsec -= NS_PER_S;
+			next.tv_sec++;
+
+			fpsnow = frame - previous;
+			previous = frame;
+			//printf("current fps: %d\n", fpsnow); //debugging
 		}
-		tickcounter++;
 
 		UpdateBuffer();
 		CheckForTimeout(readsocket);
@@ -290,11 +298,22 @@ int main()
 
 		}
 #ifdef _WIN32
-		Sleep(fps + mstime - mtime());
+		Sleep(1000 / sv_fps); //who cares about windows :D
 #else
-		sleep(fps + mstime - mtime());
+		clock_gettime(CLOCK_MONOTONIC, &current);
+		if (((current.tv_sec == next.tv_sec)
+				&& (current.tv_nsec < next.tv_nsec))
+				|| (current.tv_sec < next.tv_sec))
+		{
+			clock_nanosleep(CLOCK_MONOTONIC,
+				TIMER_ABSTIME, &next, NULL);
+		}
+		else //THIS IS LAGGGGGGGGGGGGGGGGGGGGG
+		{
+			next.tv_nsec = current.tv_nsec +
+				(current.tv_sec - next.tv_sec) * NS_PER_S;
+		}
 #endif
-		mstime = mtime();
 	}
 	return EXIT_SUCCESS;
 }

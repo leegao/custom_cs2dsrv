@@ -151,7 +151,7 @@ void ReadCfg()
 	sv_map = (unsigned char *) GetValue("sv_map", "de_cs2d");
 	sv_hostport = tointeger(GetValue("sv_hostport", "36963"));
 	sv_maxplayers = tointeger(GetValue("sv_maxplayers", "32")) + 1;
-	sv_fps = tointeger(GetValue("sv_fps", "250"));
+	sv_fps = tointeger(GetValue("sv_fps", "500"));
 	sv_lcbuffer = tointeger(GetValue("sv_lcbuffer", "100"));
 	sv_fow = tointeger(GetValue("sv_fow", "0"));
 	sv_gamemode = tointeger(GetValue("sv_gamemode", "2"));

@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#define NS_PER_S 1000000000
 #include <stdarg.h> //log.h
 #include <math.h> //aim
 #define PI 3.14159265
