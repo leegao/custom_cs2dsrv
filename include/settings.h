@@ -3,7 +3,7 @@
  * For more information take a look at the Readme
  * Copyright (c) by the authors of this file
  *
- * Author/s of this file: Jermuk, GuccaGucca, FloooD
+ * Author/s of this file: Jermuk, GuccaGucca
  */
 
 #ifndef SETTINGS_H_INCLUDED
@@ -31,6 +31,7 @@ extern unsigned short sv_gamemode;
 extern unsigned short sv_friendlyfire;
 extern unsigned short sv_usgnonly;
 extern unsigned char *sv_password;
+extern unsigned char *sv_rcon;
 extern unsigned short bot_count;
 
 extern unsigned short mp_roundtime;
@@ -47,6 +48,7 @@ extern int fpsnow;
 
 #define STARTWEAPONS_COUNT 1
 extern char startweapons[];
+
 
 void ReadCfg();
 

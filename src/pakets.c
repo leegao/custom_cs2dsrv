@@ -586,7 +586,7 @@ int ping_serverlist(unsigned char *message, int length,
 
 	tempbuffer[0] = 0x01;
 	tempbuffer[1] = 0x00;
-	memcpy(tempbuffer + 2, message, paketlength-2);
+	memcpy(tempbuffer + 2, message, paketlength - 2);
 
 	udp_send(writesocket, tempbuffer, 5, client);
 	free(tempbuffer);
@@ -874,7 +874,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			paketlength += stringsize;
 			position++;
 
-			player[id].name = malloc(stringsize+1);
+			player[id].name = malloc(stringsize + 1);
 			if (player[id].name == NULL)
 				error_exit("Memory error ( joinroutine_known() )\n");
 			memcpy(player[id].name, message + position, stringsize);
@@ -892,7 +892,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			paketlength += stringsize;
 			position++;
 
-			unsigned char *password = malloc(stringsize+1);
+			unsigned char *password = malloc(stringsize + 1);
 			if (password == NULL)
 				error_exit("Memory error ( joinroutine_known() )\n");
 			memcpy(password, message + position, stringsize);
@@ -919,7 +919,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			paketlength += stringsize;
 			position++;
 
-			unsigned char *encryption1 = malloc(stringsize+1);
+			unsigned char *encryption1 = malloc(stringsize + 1);
 			if (encryption1 == NULL)
 				error_exit("Memory error ( joinroutine_known() )\n");
 			memcpy(encryption1, message + position, stringsize);
@@ -959,7 +959,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			paketlength += stringsize;
 			position++;
 
-			player[id].spraylogo = malloc(stringsize+1);
+			player[id].spraylogo = malloc(stringsize + 1);
 			if (player[id].spraylogo == NULL)
 				error_exit("Memory error ( joinroutine_known() )\n");
 			memcpy(player[id].spraylogo, message + position, stringsize);
@@ -979,7 +979,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			paketlength += stringsize;
 			position++;
 
-			unsigned char *maphash = malloc(stringsize+1);
+			unsigned char *maphash = malloc(stringsize + 1);
 			if (maphash == NULL)
 				error_exit("Memory error ( joinroutine_known() )\n");
 			memcpy(maphash, message + position, stringsize);
@@ -1000,7 +1000,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			paketlength += stringsize;
 			position++;
 
-			player[id].win = malloc(stringsize+1);
+			player[id].win = malloc(stringsize + 1);
 			if (player[id].win == NULL)
 				error_exit("Memory error ( joinroutine_known() )\n");
 			memcpy(player[id].win, message + position, stringsize);
@@ -1117,7 +1117,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			}
 			position++;
 
-			unsigned char *maphash = malloc(stringsize+1);
+			unsigned char *maphash = malloc(stringsize + 1);
 			if (maphash == NULL)
 				error_exit("Memory error ( joinroutine_known() )\n");
 			memcpy(maphash, message + position, stringsize);
@@ -1136,7 +1136,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			}
 			position++;
 
-			unsigned char *pre_authcode_respond = malloc(stringsize+1);
+			unsigned char *pre_authcode_respond = malloc(stringsize + 1);
 			if (pre_authcode_respond == NULL)
 				error_exit("Memory error ( joinroutine_known() )\n");
 			memcpy(pre_authcode_respond, message + position, stringsize);
@@ -1199,7 +1199,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			}
 			position++;
 
-			unsigned char *mapname = malloc(stringsize+1);
+			unsigned char *mapname = malloc(stringsize + 1);
 			if (mapname == NULL)
 				error_exit("Memory error ( joinroutine_known() )\n");
 			memcpy(mapname, message + position, stringsize);
@@ -1344,7 +1344,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 					position++;
 					buffer[position] = 0; //Unknown
 					position++;
-					buffer[position] = 0; //Unknown
+					buffer[position] = player[i].skin; //Unknown
 					position++;
 					/*
 					 buffer[position] = score[0]; //Deaths
@@ -1783,4 +1783,85 @@ int UsgnPacket(int packetid, unsigned char *message, int length,
 		break;
 	}
 	return paketlength;
+}
+
+int drop(unsigned char *message, int length, int id, int writesocket)
+{
+	int paketlength = 7;
+	if (length < paketlength)
+	{
+		printf("Invalid packet (drop)!\n");
+		return length;
+	}
+
+	int position = 1;
+	unsigned char wpnid, unknown1, unknown2, unknown3;
+	unsigned short ammo1, ammo2;
+
+	wpnid = message[position];
+	position++;
+	ammo1 = message[position];
+	position++;
+	unknown1 = message[position];
+	position++;
+	ammo2 = message[position];
+	position++;
+	unknown2 = message[position];
+	position++;
+	unknown3 = message[position];
+	position++;
+
+	switch (OnDrop(id, wpnid, ammo1, ammo2, unknown1, unknown2, unknown3,
+			writesocket))
+	{
+	case 0:
+		RemovePlayerWeapon(id, wpnid);
+		SendDropMessage(id, wpnid, ammo1, ammo2, unknown1, unknown2, unknown3,
+				writesocket);
+		break;
+	default:
+		break;
+	}
+
+	return paketlength;
+}
+
+int rcon_pw(unsigned char *message, int length, int id, int writesocket)
+{
+	// 236 ln pw
+	// 0 1 ln
+
+	unsigned char key[] = "mysecretremotecontrolpmysecret";
+
+	int expected = (int) (message[1]);
+	if (length < expected + 2)
+	{
+		printf("Invalid packet (rcon_pw)!\n");
+		return length;
+	}
+
+	char* pw = malloc(expected + 1);
+
+	int i;
+	for (i = 0; i < expected; i++)
+	{
+		//eprintf("%c", message[i+2]- key[i]);
+		pw[i] = (unsigned char) (message[i + 2] - key[i]);
+	}
+	pw[expected] = '\0';
+
+	// Check against actual rcon
+	if (strcmp(pw, (char *)sv_rcon) == 0)
+	{
+		printf("[Rcon_pw] Success\n");
+		player[id].rcon = 1;
+		//SendRconPwMessage(id, message, length, 1, writesocket);
+	}
+	else
+	{
+		printf("[Rcon_pw] Bad attempt by %s.\n", player[id].name);
+		SendRconPwMessage(id, message, length, 0, writesocket);
+	}
+
+	return length;
 }
