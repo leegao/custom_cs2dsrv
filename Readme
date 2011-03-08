@@ -19,8 +19,9 @@ Notice to windows:
 If you get linker errors, try to include the library libwsock32 or ws2_32.lib.
 
 Credits:
-- Main coder: Jermuk aka DÖNARMASTER from <www.Kebab-Clan.de>
+- Main coder: Jermuk aka DÃ–NARMASTER from <www.Kebab-Clan.de>
 
 Thanks to:
 - Rynti and PopUp for helping me to write the OnFire routine
 - Rynti for helping me to encrypt cs2d's packet structure
+
