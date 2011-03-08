@@ -49,7 +49,6 @@ int main(int argc, char *argv[])
 	time(&checktime);
 
 	const int inc = NS_PER_S / sv_fps;
-	int fpsnow = 0;
 	int frame = 0;
 	int previous = 0;
 

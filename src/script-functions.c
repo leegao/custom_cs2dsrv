@@ -502,7 +502,7 @@ int OnChatMessage(int id, unsigned char *message, int team, int writesocket)
 			== 0)
 	{
 		char buffer[30]; //Resulting stringlength unknown: Text = 24 chars
-		sprintf(buffer, "Actually server FPS: %d", fpsnow);
+		sprintf(buffer, "Current server FPS: %d", fpsnow);
 		SendMessageToPlayer(id, buffer, 1, writesocket);
 		return 1;
 	}
