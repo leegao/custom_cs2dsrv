@@ -138,8 +138,7 @@ int OnAdvancedFire(int id, int status, int writesocket)
 {
 	int wpnid = player[id].slot[player[id].actualweapon].id;
 
-	int temptime = mtime();
-	if (temptime < player[id].zoomtimer)
+	if (mtime() < player[id].zoomtimer)
 	{
 		printf("Zoomtimer error!\n");
 		return 1;
@@ -226,8 +225,7 @@ int OnFire(int id, int writesocket)
 			*ammo1 = *ammo1 - 1;
 		}
 	}
-	int temptime = mtime();
-	if (temptime < player[id].firetimer)
+	if (mtime() < player[id].firetimer)
 	{
 		printf("Firetimer error!\n");
 		return 1;

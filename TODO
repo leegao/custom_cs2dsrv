@@ -1,16 +1,15 @@
-stuff i know how to do:
--wayyyy better fps control
---already got the code down... just need to copy and paste some stuff into src/main.c
--fill out weapons table in src/weapons.c
---i'm using the itemtype function in cs2d lua to generate the table :D
---maybe add weapons.cfg?
--port everything from Lua Lag Compensation (which is really an entire hit detection system)
+current bugs:
 
-stuff i will know how to do:
--replace stuff in settings.c with sys/server.cfg
+currently working on:
+-port everything from Lua Lag Compensation (which is really an entire hit detection system)
+-arguments that override server.cfg and default settings (such as -off for offline-mode)
+
+will be working on in near future:
+-replace default settings in settings.c with sys/server.cfg (iirc the last time i tried server.cfg it was very buggy)
+-add many server commands from standard cs2d (like sv_name).
 -new server options
---sv_maxmoney (default: 16000)
---sv_automoney
+--sv_maxmoney (let be default: 16000)
+--sv_automoney (toggle automoney)
 -HE grenades
 --will need to do many measurements in cs2d to figure out how the explosion damages are calculated.
 -standard gamemode
@@ -18,14 +17,28 @@ stuff i will know how to do:
 --bomb plant/defuse
 -various map entities
 -rcon
+--auto rcon login for certain usgn's or ip's
 -10 million "not implemented" packets the client may send
+--/kill
+--sprays
+-fix logging stuff for non-windows
 
-stuff i don't want to figure out:
--hostages
+not going to be implemented:
+-hostages, unless many many people request it.
 --cs gamemode isn't very popular anyway...
--stupid stuff
+-stupid fun stuff that has polluted cs2d
 --zombies
 --npcs
 --all weapons you can't buy. and superarmor and that junk.
 -construction
 --i honestly don't see how construction servers will benefit from using a custom server.
+-anything having to do with windows.
+--first, running from windows = home server. home server = laggy connection + bad for competitive gameplay.
+--secondly, i'm pretty sure you can just use cygwin to compile
+-bots
+
+done:
+-wayyyy better fps control
+--already got the code down... just need to copy and paste some stuff into src/main.c
+-fill out weapons table in src/weapons.c
+--i'm using the itemtype function in cs2d lua to generate the table :D
