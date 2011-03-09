@@ -38,19 +38,23 @@ unsigned short onlineplayer = 0;
 unsigned short mp_startmoney = 0;
 unsigned short mp_dmspawnmoney = 0;
 
-struct setting
-{
+struct setting{
 	char *name;
 	char *value;
 };
 
+// Internal structure to represent read configurations
+typedef struct setting_closure{
+	int entries;
+	struct setting** settings;
+} setting_closure;
+
 int tointeger(char * c);
 double todouble(char *c);
 struct setting * settings[256];
-int entries;
+//int entries; // Usage is not global, might as well make it local
 
-int readConfig()
-{
+setting_closure readConfig(const char* cfg_file, struct setting** settings){ // We should make readconfig ubiquitous for other config files too.
 	FILE * pFile;
 	char s[256];
 	int setting_num = 0;
@@ -69,8 +73,7 @@ int readConfig()
 			int i;
 			for (i = 0; i < strlen(s); i++)
 			{
-				if (s[i] == ' ')
-				{
+				if (s[i] == ' '){
 					i++; //skip ' ' char
 					struct setting * var;
 					var = (struct setting*) malloc(sizeof(struct setting));
@@ -80,12 +83,14 @@ int readConfig()
 						error_exit("Memory error in readConfig()\n");
 					strncpy(var->name, s, i);
 					var->name[i] = '\0';
+					// TODO: Bug -> on posix \n\r
+					eprintf("%c ", s[i]);
 					if (s[strlen(s) - i - 1] == '\n') //if  \n found then remove it
 					{
 						var->value = malloc(strlen(s) - i - 1 + 1);
 						if (var->value == NULL)
 							error_exit("Memory error in readConfig()\n");
-						strncpy(var->value, &s[i], strlen(s) - i - 1); //also ommit the \n
+						strncpy(var->value, &s[i], strlen(s) - i - 1); //also omit the \n
 						var->value[strlen(s) - i - 1] = '\0';
 					}
 					else
@@ -93,7 +98,7 @@ int readConfig()
 						var->value = malloc(strlen(s) - i + 1);
 						if (var->value == NULL)
 							error_exit("Memory error in readConfig()\n");
-						strncpy(var->value, &s[i], strlen(s) - i); //also ommit the \n
+						strncpy(var->value, &s[i], strlen(s) - i); //also omit the \n
 						var->value[strlen(s) - i] = '\0';
 					}
 
@@ -105,21 +110,21 @@ int readConfig()
 		}
 		fclose(pFile);
 	}
-	return setting_num;
+	setting_closure strct = {setting_num, settings};
+	return strct;
 }
 
-char *GetValue(char *sname, char *alternate)////struct setting ** arr , int length)
-{
+char *GetValue(setting_closure clsr, char *sname, char *alternate){
 	int i;
-	for (i = 0; i < entries; i++)
+	for (i = 0; i < clsr.entries; i++)
 	{
-		if (settings[i] != NULL)
+		if (clsr.settings[i] != NULL)
 		{
-			struct setting *var = settings[i];
+			struct setting *var = clsr.settings[i];
 			if (strcmp(var->name, sname) == 0)
 			{
 				char *string = malloc(strlen(var->value) + 1);
-				if (string == NULL)
+				if (!string)
 					error_exit("Memory error in GetValue()\n");
 				strncpy(string, var->value, strlen(var->value));
 				string[strlen(var->value)] = '\0';
@@ -127,7 +132,7 @@ char *GetValue(char *sname, char *alternate)////struct setting ** arr , int leng
 				free(var->name);
 				free(var->value);
 				free(var); //also frees settings[i]
-				settings[i] = NULL;
+				clsr.settings[i] = NULL;
 				return string;
 			}
 		}
@@ -143,32 +148,32 @@ char *GetValue(char *sname, char *alternate)////struct setting ** arr , int leng
 	return string; // doesn't exist
 }
 
-void ReadCfg()
+void ReadServerCfg(const char* cfg)
 {
-	entries = readConfig();
+	setting_closure clsr = readConfig(cfg, settings);
 
-	sv_name = (unsigned char *) GetValue("sv_name", "Alpha Custom CS2D Server");
-	sv_map = (unsigned char *) GetValue("sv_map", "de_cs2d");
-	sv_hostport = tointeger(GetValue("sv_hostport", "36963"));
-	sv_maxplayers = tointeger(GetValue("sv_maxplayers", "32")) + 1;
-	sv_fps = tointeger(GetValue("sv_fps", "500"));
-	sv_lcbuffer = tointeger(GetValue("sv_lcbuffer", "100"));
-	sv_fow = tointeger(GetValue("sv_fow", "0"));
-	sv_gamemode = tointeger(GetValue("sv_gamemode", "2"));
-	sv_friendlyfire = tointeger(GetValue("sv_friendlyfire", "0"));
-	sv_usgnonly = tointeger(GetValue("sv_usgnonly", "0"));
-	sv_password = (unsigned char *) GetValue("sv_password", "");
-	sv_rcon = (unsigned char *) GetValue("sv_rcon", "testing");
-	bot_count = tointeger(GetValue("bot_count", "0"));
+	sv_name = (unsigned char *) GetValue(clsr, "sv_name", "Alpha Custom CS2D Server");
+	sv_map = (unsigned char *) GetValue(clsr, "sv_map", "de_cs2d");
+	sv_hostport = tointeger(GetValue(clsr, "sv_hostport", "36963"));
+	sv_maxplayers = tointeger(GetValue(clsr, "sv_maxplayers", "32")) + 1;
+	sv_fps = tointeger(GetValue(clsr, "sv_fps", "500"));
+	sv_lcbuffer = tointeger(GetValue(clsr, "sv_lcbuffer", "100"));
+	sv_fow = tointeger(GetValue(clsr, "sv_fow", "0"));
+	sv_gamemode = tointeger(GetValue(clsr, "sv_gamemode", "2"));
+	sv_friendlyfire = tointeger(GetValue(clsr, "sv_friendlyfire", "0"));
+	sv_usgnonly = tointeger(GetValue(clsr, "sv_usgnonly", "0"));
+	sv_password = (unsigned char *) GetValue(clsr, "sv_password", "");
+	sv_rcon = (unsigned char *) GetValue(clsr, "sv_rcon", "testing");
+	bot_count = tointeger(GetValue(clsr, "bot_count", "0"));
 
-	mp_roundtime = tointeger(GetValue("mp_roundtime", "5"));
-	mp_freezetime = tointeger(GetValue("mp_freezetime", "0"));
-	mp_c4timer = tointeger(GetValue("mp_c4timer", "35"));
-	mp_infammo = tointeger(GetValue("mp_infammo", "0"));
-	mp_respawndelay = tointeger(GetValue("mp_respawndelay", "0"));
-	mp_specmode = tointeger(GetValue("mp_specmode", "0"));
-	mp_startmoney = tointeger(GetValue("mp_startmoney", "1000"));
-	mp_dmspawnmoney = tointeger(GetValue("mp_dmspawnmoney", "32000"));
+	mp_roundtime = tointeger(GetValue(clsr, "mp_roundtime", "5"));
+	mp_freezetime = tointeger(GetValue(clsr, "mp_freezetime", "0"));
+	mp_c4timer = tointeger(GetValue(clsr, "mp_c4timer", "35"));
+	mp_infammo = tointeger(GetValue(clsr, "mp_infammo", "0"));
+	mp_respawndelay = tointeger(GetValue(clsr, "mp_respawndelay", "0"));
+	mp_specmode = tointeger(GetValue(clsr, "mp_specmode", "0"));
+	mp_startmoney = tointeger(GetValue(clsr, "mp_startmoney", "1000"));
+	mp_dmspawnmoney = tointeger(GetValue(clsr, "mp_dmspawnmoney", "32000"));
 }
 
 int tointeger(char *c)

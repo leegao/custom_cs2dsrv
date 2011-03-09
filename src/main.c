@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 
 	ClearAllPlayer();
 	WeaponInit();
-	ReadCfg();
+	ReadServerCfg("server.cfg"); // Reads the server.cfg file (We can also check argv for servercfg --cfg flag
 
 	readsocket = create_socket();
 	bind_socket(&readsocket, INADDR_ANY, sv_hostport);
