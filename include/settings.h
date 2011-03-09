@@ -49,6 +49,6 @@ extern int fpsnow;
 extern char startweapons[];
 
 
-void ReadCfg();
+void ReadServerCfg(const char*);
 
 #endif // SETTINGS_H_INCLUDED

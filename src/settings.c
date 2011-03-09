@@ -54,6 +54,10 @@ double todouble(char *c);
 struct setting * settings[256];
 //int entries; // Usage is not global, might as well make it local
 
+//setting_closure readConfig(const char* cfg_file, struct setting** settings){ // rewrite
+//
+//}
+
 setting_closure readConfig(const char* cfg_file, struct setting** settings){ // We should make readconfig ubiquitous for other config files too.
 	FILE * pFile;
 	char s[256];
@@ -84,7 +88,7 @@ setting_closure readConfig(const char* cfg_file, struct setting** settings){ // 
 					strncpy(var->name, s, i);
 					var->name[i] = '\0';
 					// TODO: Bug -> on posix \n\r
-					eprintf("%c ", s[i]);
+					//eprintf("%c ", s[i]);
 					if (s[strlen(s) - i - 1] == '\n') //if  \n found then remove it
 					{
 						var->value = malloc(strlen(s) - i - 1 + 1);
