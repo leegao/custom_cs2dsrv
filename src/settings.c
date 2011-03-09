@@ -6,7 +6,7 @@
  * Author/s of this file: Jermuk, GuccaGucca, FloooD
  */
 
-#include "../include/settings.h"
+#include "settings.h"
 
 unsigned char pre_authcode[] = "5TWs3Obv7";
 char startweapons[] =

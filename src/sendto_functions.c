@@ -6,7 +6,7 @@
  * Author/s of this file: Jermuk
  */
 
-#include "../include/sendto_functions.h"
+#include "sendto_functions.h"
 
 void SendToPlayer(unsigned char *message, int length, int id, int reliable,
 		int writesocket)
