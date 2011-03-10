@@ -31,7 +31,7 @@ typedef struct {
 } pq;
 
 // Macro for queue initialization
-#define INIT_QUEUE(pq) (pq->n = 0)
+#define INIT_QUEUE(q) ((q)->n = 0)
 void init_queue(pq* q); // checks for null pointers and etc
 void push(pq* q, void* data, long cost); // enqueue, lowest cost comes out first
 void* pop(pq* q); // dequeue
