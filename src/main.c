@@ -82,6 +82,8 @@ int main(int argc, char *argv[]){
 	//if (argc == 1) //modify into optional offline mode
 	UsgnRegister(readsocket);
 
+	init_queue(&send_q);
+
 	/**
 	 * \var needed for ExecuteFunctionsWithTime()
 	 */
@@ -121,7 +123,7 @@ int main(int argc, char *argv[]){
 
 		UpdateBuffer();
 		CheckForTimeout(readsocket);
-		ExecuteFunctionsWithTime(&checktime, readsocket);
+		ExecuteFunctionsWithTime(&checktime, readsocket); // refactor into scheduler
 		CheckAllPlayerForReload(readsocket);
 
 		FD_ZERO(&descriptor);

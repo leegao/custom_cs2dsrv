@@ -33,6 +33,10 @@ void SendToPlayer(unsigned char *message, int length, int id, int reliable,
 		player[id].server_nummer++;
 	}
 	memcpy(buffer + 2, message, length);
+
+//	struct {unsigned char* msg; int length; struct sockaddr_in addr;} payload = {buffer, length+2, tempclient};
+//	push(&send_q, (void*)&payload, mtime());
+
 	udp_send(writesocket, buffer, length + 2, &tempclient);
 
 	free(buffer);
@@ -77,6 +81,18 @@ void SendToAllOther(int id, unsigned char *message, int length, int reliable,
 		}
 	}
 }
+
+// send_queue
+int check_sendqueue(int sock){ // returns the number of elements sent
+	int threshold = 0x80, i = 0, cur = mtime(); // 128 sends per iteration
+	while (!empty(&send_q) && i++ < threshold){
+		if (peek(&send_q)->cost > cur) return --i; // next element in the send queue isn't ready yet.
+		struct {unsigned char* msg; int length; struct sockaddr_in addr;}* packet = pop(&send_q);
+		udp_send(sock, packet->msg, packet->length, &(packet->addr));
+	}
+	return i; // started off at 0, so extra ++ is correct
+}
+
 
 // Priority Queue implementation
 
@@ -203,3 +219,5 @@ pqnode* peek(pq* q){
 int empty(pq *q){
 	return !q->n;
 }
+
+

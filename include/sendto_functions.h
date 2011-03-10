@@ -42,4 +42,6 @@ void* find_cost(pq*, long cost);
 int remove_data_cost(pq*, void*, long);
 pqnode* peek(pq*);
 
+pq send_q; // used for throttling (detection of flooding can be implemented via this as well)
+
 #endif /* SENDTO_FUNCTIONS_H_ */
