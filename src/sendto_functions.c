@@ -79,3 +79,13 @@ void SendToAllOther(int id, unsigned char *message, int length, int reliable,
 }
 
 // Priority Queue implementation
+
+void init_queue(pq *q){
+	if (!q) return perror("Cannot initialize null queues.");
+	if (q->n) perror("The current queue is already linked.");
+	q->n = 0;
+}
+
+int empty(pq *q){
+	return !q->n;
+}
