@@ -161,9 +161,19 @@ int contains(pq *q, void *data){
 	return 0;
 }
 
-//int find_cost(pq* q, long cost){
-//
-//}
+void* find_cost(pq* q, long cost){
+	int root = 0;
+	while (root <= 1000){
+		pqnode n = q->q[root];
+		if (n.cost == cost) return n.data;
+		else if (n.cost > cost) return 0;
+		// Branch below
+		if (q->q[2*root+1].cost <= cost) root = 2*root + 1; // branch left
+		else if (q->q[2*(root+1)].cost <= cost) root = 2*(root+1); // branch right
+		else return 0;
+	}
+	return 0;
+}
 
 int empty(pq *q){
 	return !q->n;
