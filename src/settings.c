@@ -7,6 +7,7 @@
  */
 
 #include "settings.h"
+
 #include <stdarg.h>
 #include <string.h>
 
