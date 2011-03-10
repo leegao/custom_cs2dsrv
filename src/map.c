@@ -20,11 +20,13 @@ void ReadMap()
 	tspawncount = 0;
 	ctspawncount = 0;
 
-	char* header = "Unreal Software's Counter-Strike 2D Map File";
-	char* maxheader = "Unreal Software's Counter-Strike 2D Map File (max)";
+	const char* header = "Unreal Software's Counter-Strike 2D Map File";
+	const char* maxheader = "Unreal Software's Counter-Strike 2D Map File (max)";
+	//const char* check = "ed.erawtfoslaernu";
+
 	char *mappath = malloc(u_strlen(sv_map) + 5);
 	memcpy(mappath, sv_map, u_strlen(sv_map));
-	memcpy(mappath + u_strlen(sv_map), ".map\0", 5);
+	memcpy(mappath + u_strlen(sv_map), ".map", 5);
 
 	file = fopen(mappath, "rb");
 	if (file == NULL)
@@ -35,19 +37,16 @@ void ReadMap()
 	free(mappath);
 
 	//------------------------------
-	unsigned char *mapheader = ReadLine(file);
+	char *mapheader = (char*)ReadLine(file);
 	// Legacy maps have a different paddding - This causes a bug in de_cs2d where parts of the player cannot be shot at.
-	if (strcmp(mapheader, header) == 0)
-	{ // Legacy maps uses this padding scheme (pre 0104, still usable by 0118)
+	if (strcmp(mapheader, header) == 0){ // Legacy maps uses this padding scheme (pre 0104, still usable by 0118)
 		for (i = 1; i <= 9; i++)
 			ReadByte(file);
 		for (i = 1; i <= 10; i++)
 			ReadInt(file);
 		for (i = 1; i <= 10; i++)
 			ReadLine(file);
-	}
-	else if (strcmp(mapheader, maxheader) == 0)
-	{ // Max maps uses this scheme
+	} else if (strcmp(mapheader, maxheader) == 0){ // Max maps uses this scheme
 		for (i = 1; i <= 10; i++)
 			ReadLine(file);
 	}
@@ -56,6 +55,8 @@ void ReadMap()
 	unsigned char loaded = ReadByte(file);
 	int maxx = ReadInt(file);
 	int maxy = ReadInt(file);
+	int max2[] = {maxx, maxy};
+	map.tc = max2;
 	unsigned char *background = ReadLine(file);
 	/*int backgroundx =*/
 	ReadInt(file); //avoid warnings: unused variable
@@ -77,13 +78,13 @@ void ReadMap()
 		tilemode[i] = ReadByte(file);
 	}
 
-	map = malloc(maxx * sizeof(struct TILE *));
-	if (map == NULL)
+	map.tiles = malloc(maxx * sizeof(struct TILE *));
+	if (map.tiles == NULL)
 		error_exit("Memory error in ReadMap()\n");
 	for (i = 0; i <= maxx; i++)
 	{
-		map[i] = malloc(maxy * sizeof(struct TILE *));
-		if (map[i] == NULL)
+		map.tiles[i] = malloc(maxy * sizeof(struct TILE *));
+		if (map.tiles[i] == NULL)
 			error_exit("Memory error in ReadMap()\n");
 		int b;
 		for (b = 0; b <= maxy; b++)
@@ -93,54 +94,42 @@ void ReadMap()
 			{
 				bytecache = 0;
 			}
-			map[i][b].tileid = bytecache;
-			map[i][b].mode = tilemode[bytecache];
+			map.tiles[i][b].tileid = bytecache;
+			map.tiles[i][b].mode = tilemode[bytecache];
 			//eprintf("%d|%d: %d|%d\n", i, b, map[i][b].tileid, map[i][b].mode);
 		}
 	}
 	//---------------------------------------
-	unsigned char enities_count = ReadByte(file);
-	for (i = 0; i <= enities_count - 1; i++)
-	{
-		unsigned char *name = ReadLine(file);
-		unsigned char typ = ReadByte(file);
-		int x = ReadInt(file);
-		int y = ReadInt(file);
-		unsigned char *trigger = ReadLine(file);
+	unsigned char entities_count = ReadByte(file);
+	map.entities = (struct ENTITY*)malloc(sizeof(struct ENTITY)*entities_count);
+	map.ec = entities_count;
+	for (i = 0; i <= entities_count - 1; i++){
+		map.entities[i].name = (char*)ReadLine(file);
+		map.entities[i].type = ReadByte(file);
+		int x = map.entities[i].x = ReadInt(file);
+		int y = map.entities[i].y = ReadInt(file);
+		map.entities[i].trigger = (char*)ReadLine(file);
 
-		//eprintf("%s (%d): %d|%d by %s\n", name, typ, x, y, trigger);
 		int b;
-		for (b = 0; b <= 9; b++)
-		{
-			/*int unknownint =*/ReadInt(file);
-			unsigned char *unknown = ReadLine(file);
-			//eprintf("(%d) %s || ", unknownint, unknown);
-			free(unknown);
+		for (b = 0; b <= 9; b++){
+			map.entities[i].args[b].type = ReadInt(file);
+			map.entities[i].args[b].value = (char*)ReadLine(file);
 		}
 
-		switch (typ)
-		{
+		switch (map.entities[i].type){
 		case 0:
-		{
 			tspawnx[tspawncount] = x;
 			tspawny[tspawncount] = y;
 			tspawncount++;
 			break;
-		}
 		case 1:
-		{
 			ctspawnx[ctspawncount] = x;
 			ctspawny[ctspawncount] = y;
 			ctspawncount++;
 			break;
-		}
 		default:
-		{
 			break;
 		}
-		}
-		free(name);
-		free(trigger);
 	}
 
 	fclose(file);
@@ -229,3 +218,49 @@ int ReadInt(FILE *file)
 	return (byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1;
 }
 
+long long hashxy(int x, int y){
+	return x + ((long long)(y)<<32); // lol flood, I hardcoded the test case into hashxy so I was lyk, wtf, why am I getting the same thing over and over again? <_<
+}
+
+/*
+ * struct ENTITY* find_entity(ent_s s){
+	int i; struct ENTITY e;
+	switch (s.type){
+	case FIND_BY_XY:
+		for (i = 0; i < map.ec; i++){
+			e = map.entities[i];
+			if (hashxy(e.x,e.y)==(*s.v).hashxy) return &map.entities[i];
+		}
+		break;
+	case FIND_BY_NAME:
+		for (i = 0; i < map.ec; i++){
+			e = map.entities[i];
+			if (!strcmp((*s.v).name,e.name)) return &map.entities[i];
+		}
+	}
+	return 0;
+}
+ * */
+
+struct ENTITY* find_entity(int n, ...){
+	int i; struct ENTITY e;
+	va_list ap;
+	va_start(ap, n);
+	int x = va_arg(ap, int);
+	int y = va_arg(ap, int);
+	switch (n){
+	case FIND_BY_XY:
+		for (i = 0; i < map.ec; i++){
+			e = map.entities[i];
+			if (hashxy(e.x,e.y)==hashxy(x,y)) va_end(ap);return &map.entities[i];
+		}
+		break;
+	case FIND_BY_NAME:
+		for (i = 0; i < map.ec; i++){
+			e = map.entities[i];
+			if (!strcmp((char*)x,e.name)) va_end(ap);return &map.entities[i];
+		}
+	}
+	va_end(ap);
+	return 0;
+}

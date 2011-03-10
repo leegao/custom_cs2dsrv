@@ -278,7 +278,7 @@ int OnFire(int id, int writesocket)
 
 		if (tilex <= 0 || tiley <= 0)
 			break;
-		int tilemode = map[tilex][tiley].mode;
+		int tilemode = map.tiles[tilex][tiley].mode;
 		if (tilemode == 1 || tilemode == 3 || tilemode == 4)
 		{
 			break;

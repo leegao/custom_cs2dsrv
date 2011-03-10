@@ -109,6 +109,33 @@ struct TILE
 	unsigned char mode;
 	unsigned char tileid;
 };
-struct TILE **map;
+struct ENTITY{
+	char* name;
+	unsigned char type;
+	int x;
+	int y;
+	char* trigger;
+	struct {
+		int type; // defaults to 0
+		char* value; // defaults to (char*)0 != '/0'
+	} args[10];
+};
+
+struct ENT_LL{ // singly linked list
+	struct ENT_LL *next;
+	struct ENTITY *ent; // pointer to a single entity
+}ENT_LL;
+
+struct MUTABLE_ENTITY{
+	struct ENTITY *entities; // Entity array (not pointer), search success overrides result from head
+	struct ENT_LL *head; // pointer to head of LL
+};
+
+struct map{
+	int* tc;
+	struct TILE **tiles; // Immutable once constructed
+	int ec;
+	struct ENTITY *entities; // switch to mutable_ent when we allow adding of entities (problematic in current CS2D)
+} map;
 
 #endif // STRUCTS_H_INCLUDED
