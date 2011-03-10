@@ -92,8 +92,8 @@ int check_sendqueue(int sock){ // returns the number of elements sent
 		if (peek(&send_q)->cost > cur) return --i; // next element in the send queue isn't ready yet.
 		struct {unsigned char* msg; int length; struct sockaddr_in addr;}* packet = pop(&send_q);
 		udp_send(sock, packet->msg, packet->length, &(packet->addr));
-		free(packet->msg);
-		free(packet);
+		//free(packet->msg);
+		//free(packet);
 	}
 	return i; // started off at 0, so extra ++ is correct
 }
