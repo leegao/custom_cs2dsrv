@@ -710,8 +710,8 @@ int joinroutine_unknown(unsigned char *message, int length,
 				player[i].ip = client->sin_addr;
 				player[i].port = client->sin_port;
 				player[i].joinstatus = 1;
-				player[i].client_nummer = 4;
-				player[i].server_nummer = 2;
+				player[i].client_number = 4;
+				player[i].server_number = 2;
 				break;
 			}
 		}

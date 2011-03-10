@@ -64,9 +64,9 @@ extern int dropped_weapons_count;
 struct PLAYER
 {
 	int used;
-	unsigned short client_nummer;
-	unsigned short server_nummer;
-	int lastpaket;
+	unsigned short client_number;
+	unsigned short server_number;
+	int lastpacket;
 	unsigned short joinstatus;
 
 	unsigned char *name;
