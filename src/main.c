@@ -6,7 +6,7 @@
  * Author/s of this file: Jermuk, FloooD
  */
 
-#include "../include/main.h"
+#include "main.h"
 
 /**
  * \fn int main()

@@ -6,7 +6,7 @@
  * Author/s of this file: Jermuk
  */
 
-#include "../include/weapons.h"
+#include "weapons.h"
 
 void AddWeapon(short id, char name[], short wpndmg, short wpndmg_z1,
 		short wpndmg_z2, short freq, short speed, short slot, short price,

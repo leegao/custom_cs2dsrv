@@ -6,7 +6,7 @@
  * Author/s of this file: Jermuk
  */
 
-#include "../include/map.h"
+#include "map.h"
 
 /**
  * \fn void ReadMap()

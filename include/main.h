@@ -43,7 +43,7 @@
 #include "functions.h"
 #include "sendto_functions.h"
 #include "respond_messages.h"
-#include "pakets.h"
+#include "packets.h"
 #include "script-functions.h"
 #include "map.h"
 

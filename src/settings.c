@@ -6,13 +6,12 @@
  * Author/s of this file: Jermuk, GuccaGucca, FloooD
  */
 
-#include "../include/settings.h"
+#include "settings.h"
 #include <stdarg.h>
 #include <string.h>
 
 unsigned char pre_authcode[] = "5TWs3Obv7";
-char startweapons[] =
-{ 50 };
+char startweapons[] = { 50 };
 int fpsnow = 0;
 int dropped_weapons_count = 0;
 
@@ -73,7 +72,7 @@ setting_closure read_config(const char* cfg_file, struct setting** settings){ //
 	int setting_num = 0;
 	f = fopen(cfg_file, "r");
 	setting_closure c = {0, 0};
-	if (f == NULL) perror(sprintf("Error opening file: %s", cfg_file));
+	if (!f) perror("Error opening CFG");
 	while (fgets(buf, 256, f)){
 		int ptr = 0;
 		while (buf_is_in (*buf++, 5, "\0", " ", "\t", "\n", "\r"));buf--; // trim
@@ -122,7 +121,6 @@ char *GetValue(setting_closure clsr, char *sname, char *alternate){
 				return string;
 			}
 		}
-
 	}
 	//If not found
 	char *string = malloc(strlen(alternate) + 1);
@@ -162,15 +160,13 @@ void ReadServerCfg(const char* cfg)
 	mp_dmspawnmoney = tointeger(GetValue(clsr, "mp_dmspawnmoney", "32000"));
 }
 
-int tointeger(char *c)
-{
+int tointeger(char *c){
 	int buff = atoi(c);
 	free(c);
 	return buff;
 }
 
-double todouble(char *c)
-{
+double todouble(char *c){
 	double buff = atof(c);
 	free(c);
 	return buff;

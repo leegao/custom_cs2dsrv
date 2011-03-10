@@ -6,7 +6,7 @@
  * Author/s of this file: Jermuk
  */
 
-#include "../include/log.h"
+#include "log.h"
 
 /**
  * \fn void myprintf(char *string, ...)

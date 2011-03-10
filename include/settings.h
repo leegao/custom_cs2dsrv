@@ -9,7 +9,7 @@
 #ifndef SETTINGS_H_INCLUDED
 #define SETTINGS_H_INCLUDED
 
-#include "../include/main.h"
+#include "main.h"
 
 /* --- Server Settings --- */
 #define MAX_BUF 1024

@@ -6,7 +6,7 @@
  * Author/s of this file: Jermuk, FloooD
  */
 
-#include "../include/script-functions.h"
+#include "script-functions.h"
 
 /*
  int OnJoin(int id, int writesocket)

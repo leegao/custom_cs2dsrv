@@ -6,7 +6,7 @@
  * Author/s of this file: Jermuk
  */
 
-#include "../include/respond_messages.h"
+#include "respond_messages.h"
 
 void SendSpawnMessage(int id, unsigned short x, unsigned short y,
 		int writesocket)

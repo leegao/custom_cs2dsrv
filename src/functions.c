@@ -6,7 +6,7 @@
  * Author/s of this file: Jermuk, FloooD
  */
 
-#include "../include/functions.h"
+#include "functions.h"
 
 /**
  * \fn void UpdateBuffer(void)
