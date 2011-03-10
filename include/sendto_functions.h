@@ -19,4 +19,23 @@ void SendToTeam(unsigned char *message, int length, int reliable, int team,
 void SendToAllOther(int id, unsigned char *message, int length, int reliable,
 		int writesocket);
 
+// A priority queue for scheduling
+typedef struct {
+	void* data;
+	long long cost;
+} pqnode;
+
+typedef struct {
+	pqnode q[1000];
+	int n;
+} pq;
+
+// Macro for queue initialization
+#define INIT_QUEUE(pq) (pq->n = 0)
+void init_queue(pq* q); // checks for null pointers and etc
+void push(pq* q, void* data, long long cost); // enqueue, lowest cost comes out first
+void* pop(pq* q); // dequeue
+int empty(pq* q);
+int contains(pq*, void* data);
+
 #endif /* SENDTO_FUNCTIONS_H_ */

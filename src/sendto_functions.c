@@ -77,3 +77,5 @@ void SendToAllOther(int id, unsigned char *message, int length, int reliable,
 		}
 	}
 }
+
+// Priority Queue implementation
