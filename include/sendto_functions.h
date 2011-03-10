@@ -33,7 +33,7 @@ typedef struct {
 // Macro for queue initialization
 #define INIT_QUEUE(pq) (pq->n = 0)
 void init_queue(pq* q); // checks for null pointers and etc
-void push(pq* q, void* data, long long cost); // enqueue, lowest cost comes out first
+void push(pq* q, void* data, long cost); // enqueue, lowest cost comes out first
 void* pop(pq* q); // dequeue
 int empty(pq* q);
 int contains(pq*, void* data);

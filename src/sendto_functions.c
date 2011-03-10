@@ -93,7 +93,7 @@ void init_queue(pq *q){
  * child -> 2*index + 1 or 2
  * child.cost is always less than parent.cost
  * */
-void push(pq *q, void* data, long long cost){
+void push(pq *q, void* data, long cost){
 	// Create a node to work with the data.
 	pqnode* x = (pqnode*)malloc(sizeof(pqnode));
 	x->data = data;
@@ -120,6 +120,50 @@ void push(pq *q, void* data, long long cost){
 	// insert the new value
 	q->q[next] = *x;
 }
+
+void* pop(pq *q){
+	int heapsize, root, childpos;
+
+	pqnode result = q->q[0];
+	q->q[0] = q->q[--q->n]; // take last element and put on root of tree, then we swap it down until it's no longer less than child
+
+	root = 0;
+	if (q->n > 1){
+		heapsize = q->n;
+		pqnode value = q->q[root];
+		while (root < heapsize){
+			childpos = ((2*root+1));
+			if(childpos < heapsize){
+				if((2*(root+1)) < heapsize && q->q[childpos+1].cost < q->q[childpos].cost) childpos++;
+				if(q->q[childpos].cost < q->q[root].cost){
+					pqnode temp = q->q[root];
+					q->q[root] = q->q[childpos];
+					q->q[childpos] = temp;
+					root = childpos;
+				}else{
+					q->q[root] = value;
+					break;
+				}
+			}else{
+				q->q[root] = value;
+				break;
+			}
+		}
+	}
+	return result.data;
+}
+
+int contains(pq *q, void *data){
+	int i;
+	for(i=0; i<(*q).n; i++)
+		if(q->q[i].data == data) return 1;
+
+	return 0;
+}
+
+//int find_cost(pq* q, long cost){
+//
+//}
 
 int empty(pq *q){
 	return !q->n;
