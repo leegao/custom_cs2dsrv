@@ -7,6 +7,8 @@
  */
 
 #include "../include/settings.h"
+#include <stdarg.h>
+#include <string.h>
 
 unsigned char pre_authcode[] = "5TWs3Obv7";
 char startweapons[] =
@@ -52,70 +54,50 @@ typedef struct setting_closure{
 int tointeger(char * c);
 double todouble(char *c);
 struct setting * settings[256];
-//int entries; // Usage is not global, might as well make it local
 
-//setting_closure readConfig(const char* cfg_file, struct setting** settings){ // rewrite
-//
-//}
+int buf_is_in(char c, int n, ...){
+	va_list ap;
+	va_start(ap, n);
+	int j;
+	for(j=0; j<n; j++){
+		char* i = (char*)(va_arg(ap, int)); // minimum is 4 bytes, so can't pop off chars
+		if (c == *i) return 1;} //Requires the type to cast to. Increments ap to the next argument.
+	va_end(ap);
+	return 0;
+}
 
-setting_closure readConfig(const char* cfg_file, struct setting** settings){ // We should make readconfig ubiquitous for other config files too.
-	FILE * pFile;
-	char s[256];
+setting_closure read_config(const char* cfg_file, struct setting** settings){ // rewritten, also renamed for C naming standard
+	FILE * f;
+	char *buf = (char*)malloc(1024);
+	char *clone = buf;
 	int setting_num = 0;
-	pFile = fopen("server.cfg", "r");
-
-	if (pFile == NULL)
-		perror("Error opening file: server.cfg");
-	else
-	{
-		while ((fgets(s, sizeof(s), pFile)) != NULL)
-		{
-			if (s[0] == '\n' || (s[0] == '/' && s[1] == '/'))
-				continue;
-			//char *s1,*s2,*type;
-
-			int i;
-			for (i = 0; i < strlen(s); i++)
-			{
-				if (s[i] == ' '){
-					i++; //skip ' ' char
-					struct setting * var;
-					var = (struct setting*) malloc(sizeof(struct setting));
-
-					var->name = malloc(i + 1);
-					if (var->name == NULL)
-						error_exit("Memory error in readConfig()\n");
-					strncpy(var->name, s, i);
-					var->name[i] = '\0';
-					// TODO: Bug -> on posix \n\r
-					//eprintf("%c ", s[i]);
-					if (s[strlen(s) - i - 1] == '\n') //if  \n found then remove it
-					{
-						var->value = malloc(strlen(s) - i - 1 + 1);
-						if (var->value == NULL)
-							error_exit("Memory error in readConfig()\n");
-						strncpy(var->value, &s[i], strlen(s) - i - 1); //also omit the \n
-						var->value[strlen(s) - i - 1] = '\0';
-					}
-					else
-					{
-						var->value = malloc(strlen(s) - i + 1);
-						if (var->value == NULL)
-							error_exit("Memory error in readConfig()\n");
-						strncpy(var->value, &s[i], strlen(s) - i); //also omit the \n
-						var->value[strlen(s) - i] = '\0';
-					}
-
-					settings[setting_num] = var;
-					break;
-				}
-			}
-			setting_num++;
-		}
-		fclose(pFile);
+	f = fopen(cfg_file, "r");
+	setting_closure c = {0, 0};
+	if (f == NULL) perror(sprintf("Error opening file: %s", cfg_file));
+	while (fgets(buf, 256, f)){
+		int ptr = 0;
+		while (buf_is_in (*buf++, 5, "\0", " ", "\t", "\n", "\r"));buf--; // trim
+		// Get until one of space or \t or \n or \r if malformatted
+		while (!buf_is_in(buf[ptr], 5, "\0", " ", "\t", "\n", "\r")) ptr++; // get header
+		struct setting *v = (struct setting*) malloc(sizeof(struct setting));
+		v->name = (char*)malloc(ptr+1);
+		memcpy(v->name, buf, ptr);v->name[ptr] = '\0';
+		buf+=ptr;ptr=0;
+		while (buf_is_in (buf[ptr], 5, "\0", " ", "\t", "\n", "\r")){
+			if (buf_is_in(buf[ptr], 3, "\0", "\n", "\r")) goto FAIL; ptr++; // OH NOEZ, GOTO, THE WORLD SHALL END
+		} // trim, and make sure not malformed
+		buf += ptr; ptr = 0;
+		while (!buf_is_in(buf[ptr], 5, "\0", "\n", "\r")) ptr++; // get value
+		v->value = (char*)malloc(ptr+1);
+		memcpy(v->value, buf, ptr); v->value[ptr] = '\0';
+		buf = clone;
+		settings[setting_num++] = v;
+		FAIL:
+		(void) 0; // nop
 	}
-	setting_closure strct = {setting_num, settings};
-	return strct;
+	c.entries = setting_num;
+	c.settings = settings;
+	return c;
 }
 
 char *GetValue(setting_closure clsr, char *sname, char *alternate){
@@ -154,7 +136,7 @@ char *GetValue(setting_closure clsr, char *sname, char *alternate){
 
 void ReadServerCfg(const char* cfg)
 {
-	setting_closure clsr = readConfig(cfg, settings);
+	setting_closure clsr = read_config(cfg, settings);
 
 	sv_name = (unsigned char *) GetValue(clsr, "sv_name", "Alpha Custom CS2D Server");
 	sv_map = (unsigned char *) GetValue(clsr, "sv_map", "de_cs2d");
