@@ -161,11 +161,32 @@ int contains(pq *q, void *data){
 	return 0;
 }
 
+int remove_data(pq *q, void *data){
+	int i;
+	for(i=0; i<(*q).n; i++)
+		if(q->q[i].data == data){q->q[i].data = 0; return 1;}
+	return 0;
+}
+
 void* find_cost(pq* q, long cost){
 	int root = 0;
 	while (root <= 1000){
 		pqnode n = q->q[root];
 		if (n.cost == cost) return n.data;
+		else if (n.cost > cost) return 0;
+		// Branch below
+		if (q->q[2*root+1].cost <= cost) root = 2*root + 1; // branch left
+		else if (q->q[2*(root+1)].cost <= cost) root = 2*(root+1); // branch right
+		else return 0;
+	}
+	return 0;
+}
+
+int remove_cost_data(pq* q, void* data, long cost){
+	int root = 0;
+	while (root <= 1000){
+		pqnode n = q->q[root];
+		if (n.cost == cost && data == n.data){n.data = 0;return 1;}
 		else if (n.cost > cost) return 0;
 		// Branch below
 		if (q->q[2*root+1].cost <= cost) root = 2*root + 1; // branch left

@@ -37,7 +37,9 @@ void push(pq* q, void* data, long cost); // enqueue, lowest cost comes out first
 void* pop(pq* q); // dequeue
 int empty(pq* q);
 int contains(pq*, void* data);
+int remove_data(pq*, void* data);
 void* find_cost(pq*, long cost);
+int remove_data_cost(pq*, void*, long);
 pqnode* peek(pq*);
 
 #endif /* SENDTO_FUNCTIONS_H_ */
