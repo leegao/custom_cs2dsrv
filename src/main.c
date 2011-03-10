@@ -47,19 +47,25 @@ int main(int argc, char *argv[])
 	 */
 	time_t checktime;
 	time(&checktime);
+#ifdef _WIN32
 
+#else
 	const int inc = NS_PER_S / sv_fps;
 	int frame = 0;
 	int previous = 0;
 
 	struct timespec current, next;
 	clock_gettime(CLOCK_MONOTONIC, &next);
+#endif
 
 	struct timeval timeout;
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 0; //1ms = 1000
 	while (1)
 	{
+
+#ifdef _WIN32
+#else
 		frame++;
 		next.tv_nsec += inc;
 		while (next.tv_nsec > NS_PER_S)
@@ -71,6 +77,7 @@ int main(int argc, char *argv[])
 			previous = frame;
 			//printf("current fps: %d\n", fpsnow); //debugging
 		}
+#endif
 
 		UpdateBuffer();
 		CheckForTimeout(readsocket);
