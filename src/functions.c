@@ -34,18 +34,14 @@ void UpdateBuffer(void)
  * \param port client's port
  * \return the playerid or 0 if not found
  */
-int IsPlayerKnown(struct in_addr ip, u_short port)
-{
+int IsPlayerKnown(struct in_addr ip, u_short port){
 	int i;
-	for (i = 1; i <= sv_maxplayers; i++)
-	{
-		if (!strcmp(inet_ntoa(ip), inet_ntoa(player[i].ip)) && port
-				== player[i].port)
-		{
+	for (i = 1; i <= sv_maxplayers; i++){
+		if (!strcmp(inet_ntoa(ip), inet_ntoa(player[i].ip)) && port == player[i].port){
 			return i;
 		}
 	}
-	return -1;
+	return 0; // false is 0
 }
 
 /**
@@ -55,9 +51,9 @@ int IsPlayerKnown(struct in_addr ip, u_short port)
 void ClearPlayer(int id)
 {
 	player[id].used = 0;
-	player[id].client_nummer = 0;
-	player[id].server_nummer = 0;
-	player[id].lastpaket = 0;
+	player[id].client_number = 0;
+	player[id].server_number = 0;
+	player[id].lastpacket = 0;
 	player[id].joinstatus = 0;
 
 	free(player[id].name);
@@ -217,8 +213,8 @@ int PlayerTimeout(int id)
 
 	int actualtime = mtime();
 
-	if (((player[id].lastpaket + TIMEOUT * 1000) < actualtime)
-			&& player[id].lastpaket != 0)
+	if (((player[id].lastpacket + TIMEOUT * 1000) < actualtime)
+			&& player[id].lastpacket != 0)
 	{
 		return 1;
 	}
@@ -299,34 +295,17 @@ unsigned int endian_swap_int(unsigned int *x)
  * \param id player-id
  * \return 0 if invalid; 1 if valid
  */
-int ValidatePaket(unsigned char *message, int id)
-{
-	/*
-	 unsigned short *pTempNummer = malloc(2);
-	 pTempNummer[0] = message[0];
-	 pTempNummer[1] = message[1];
-	 */
-	unsigned short *pTempNummer = (unsigned short *) message;
-	if (*pTempNummer % 2 != 0)
-	{
-		if (((*pTempNummer) + 2) < player[id].client_nummer || (*pTempNummer)
-				> (player[id].client_nummer + 2))
-		{
-			printf("Invalid paket! (Bad index: %d; expected: %d)\n", *pTempNummer, player[id].client_nummer);
-			//free(pTempNummer);
+int ValidatePacket(unsigned char *message, int id){
+	unsigned short cid = *(unsigned short *)message; // first two bytes in little endian = short (cid is in LE so we're good)
+	if (cid&1) // checks the LSBit, alternative  -> if (cid&1), not sure what the rationale of this is.
+		// TODO: this breaks if the player loses connection for a while, etc
+		if (cid < player[id].client_number - 2 || cid > player[id].client_number + 2){ // makes sure that cid is within 4 of the last time
+			printf("Invalid packet! Client ID is not synchronized wtih the server.");
 			return 0;
 		}
-	}
-	if (*pTempNummer - 1 > player[id].client_nummer)
-	{
-		player[id].client_nummer = *pTempNummer;
-	}
-	/*
-	 unsigned short *pNummer = &player[id].client_nummer;
-	 pNummer[0] = buffer[0];
-	 pNummer[1] = buffer[1];
-	 */
-	//free(pTempNummer);
+
+	if (cid - 1 > player[id].client_number)
+		player[id].client_number = cid;
 	return 1;
 }
 /**

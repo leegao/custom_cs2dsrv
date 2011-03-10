@@ -21,23 +21,26 @@ void SendToPlayer(unsigned char *message, int length, int id, int reliable,
 
 	if (reliable == 1)
 	{
-		unsigned short *pNummer = &player[id].server_nummer;
+		unsigned short *pNummer = &player[id].server_number;
 		memcpy(buffer, pNummer, sizeof(unsigned short));
-		player[id].server_nummer += 2;
+		player[id].server_number += 2;
 	}
 	else if (reliable == 0)
 	{
-		player[id].server_nummer--;
-		unsigned short *pNummer = &player[id].server_nummer;
+		player[id].server_number--;
+		unsigned short *pNummer = &player[id].server_number;
 		memcpy(buffer, pNummer, sizeof(unsigned short));
-		player[id].server_nummer++;
+		player[id].server_number++;
 	}
 	memcpy(buffer + 2, message, length);
 
-	struct {unsigned char* msg; int length; struct sockaddr_in addr;} payload = {buffer, length+2, tempclient};
-	push(&send_q, (void*)&payload, mtime());
+	struct {unsigned char* msg; int length; struct sockaddr_in addr;} *payload = malloc(sizeof(struct {unsigned char* a; int b; struct sockaddr_in c;}));
+	payload->addr = tempclient;
+	payload->length = length+2;
+	payload->msg = buffer;
+	push(&send_q, (void*)payload, mtime());
 
-//	udp_send(writesocket, buffer, length + 2, &tempclient);
+	//udp_send(writesocket, buffer, length + 2, &tempclient);
 
 //	free(buffer); // do not free the buffer while its still in use
 }
@@ -89,8 +92,8 @@ int check_sendqueue(int sock){ // returns the number of elements sent
 		if (peek(&send_q)->cost > cur) return --i; // next element in the send queue isn't ready yet.
 		struct {unsigned char* msg; int length; struct sockaddr_in addr;}* packet = pop(&send_q);
 		udp_send(sock, packet->msg, packet->length, &(packet->addr));
-		free(packet->msg);
-		free(packet);
+		//free(packet->msg);
+		//free(packet);
 	}
 	return i; // started off at 0, so extra ++ is correct
 }

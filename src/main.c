@@ -130,23 +130,17 @@ int main(int argc, char *argv[]){
 		FD_SET(sock, &descriptor);
 		select(sock + 1, &descriptor, NULL, NULL, &timeout);
 
-		if (FD_ISSET(sock, &descriptor))
-		{
+		if (FD_ISSET(sock, &descriptor)){
 			size = udp_recieve(sock, buffer, MAX_BUF, &newclient);
 
-			if (size < 3)
-			{
-				printf("Invalid paket! (size < 3)\n");
-			}
-			else
-			{
+			if (size < 3) {
+				perror("Invalid packet! (size < 3)\n");
+			} else {
 				int id = IsPlayerKnown(newclient.sin_addr, newclient.sin_port); /// Function returns id or -1 if unknown
-				if (id != -1)///When the player is known execute other commands as when the player is unknown
-				{
-					if (ValidatePaket(buffer, id)) ///Checks and raise the packet numbering if necessary
-					{
+				if (id){///When the player is known execute other commands as when the player is unknown
+					if (ValidatePacket(buffer, id)){ ///Checks and raise the packet numbering if necessary
 						PaketConfirmation(buffer, id, sock); ///If the numbering is even, send a confirmation
-						player[id].lastpaket = mtime();
+						player[id].lastpacket = mtime();
 						int control = 1;
 						int position = 2;
 						/**
