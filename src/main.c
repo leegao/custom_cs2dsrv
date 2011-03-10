@@ -6,18 +6,48 @@
  * Author/s of this file: Jermuk, FloooD
  */
 
-#include "main.h"
+#include <main.h>
+#include <getopt.h>
+#include "settings.h"
+
+void parse_opts(int argc, char *argv[]){
+	static struct option long_options[] = {
+		{"cfg", required_argument, 0, 'c'},
+		{"name", required_argument, 0, 0},
+		{0, 0, 0, 0}
+	};
+
+	while (1){
+		int option_index = 0;
+		int c = getopt_long (argc, argv, "c:", long_options, &option_index);
+		if (c<0) return;
+		switch (c){
+		case 'c':
+			cfg_file = optarg;
+			break;
+		case 0:
+			sv_name = optarg;
+			break;
+		default:
+			return;
+		}
+	}
+}
 
 /**
  * \fn int main()
  * \brief initialize sockets and if a message was recieved, give it to the right function.
  * \return EXIT_SUCCESS or EXIT_FAILURE
  */
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
+
+	// Parses the commandline arguments
+	parse_opts(argc, argv); // IE: ./server -c"server.cfg" --name "My Server"
+
 	/**
 	 * Initalize variables, weapons, players and sockets
 	 */
+
 	int readsocket;
 	struct sockaddr_in newclient;
 	unsigned char buffer[MAX_BUF];
@@ -26,7 +56,7 @@ int main(int argc, char *argv[])
 
 	ClearAllPlayer();
 	WeaponInit();
-	ReadServerCfg("server.cfg"); // Reads the server.cfg file (We can also check argv for servercfg --cfg flag
+	ReadServerCfg(cfg_file ? cfg_file:"server.cfg"); // Reads the server.cfg file (We can also check argv for servercfg --cfg flag
 
 	readsocket = create_socket();
 	bind_socket(&readsocket, INADDR_ANY, sv_hostport);
