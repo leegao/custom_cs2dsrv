@@ -86,6 +86,41 @@ void init_queue(pq *q){
 	q->n = 0;
 }
 
+// We will implement our PQ using a heap-like structure through a fixed array.
+/*
+ * Heap invariants:
+ * parent -> (index-1)/2
+ * child -> 2*index + 1 or 2
+ * child.cost is always less than parent.cost
+ * */
+void push(pq *q, void* data, long long cost){
+	// Create a node to work with the data.
+	pqnode* x = (pqnode*)malloc(sizeof(pqnode));
+	x->data = data;
+	x->cost = cost;
+
+	// Traversal indices.
+	int prev, next;
+
+	if (q->n > 1000) return perror("The current queue is full, did not add.");
+	q->q[(next = q->n++)] = *x;
+	prev = (next-1)/2; // heap invariant -> prev node is at (n-1)/2
+
+	while(next > 0 && q->q[next].cost < q->q[prev].cost){ // Heap invariant - child always less
+		// Swap
+		pqnode cur = q->q[next];
+		q->q[next] = q->q[prev];
+		q->q[prev] = cur;
+
+		// Re-establish traversal indices
+		next = prev; // child
+		prev = (next-1)/2; // parent
+	}
+
+	// insert the new value
+	q->q[next] = *x;
+}
+
 int empty(pq *q){
 	return !q->n;
 }
