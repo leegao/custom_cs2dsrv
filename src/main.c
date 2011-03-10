@@ -58,7 +58,7 @@ int main(int argc, char *argv[]){
 	 * Initalize variables, weapons, players and sockets
 	 */
 
-	int readsocket;
+	int sock;
 	struct sockaddr_in newclient;
 	unsigned char buffer[MAX_BUF];
 	int size;
@@ -68,8 +68,8 @@ int main(int argc, char *argv[]){
 	WeaponInit();
 	ReadServerCfg(cfg_file ? cfg_file:"server.cfg"); // Reads the server.cfg file (We can also check argv for --cfg or -c flag
 
-	readsocket = create_socket();
-	bind_socket(&readsocket, INADDR_ANY, sv_hostport);
+	sock = create_socket();
+	bind_socket(&sock, INADDR_ANY, sv_hostport);
 	atexit(cleanup);
 
 	//struct in_addr usgnip = GetIp("usgn.de");
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]){
 	OnServerStart();
 	ReadMap();
 	//if (argc == 1) //modify into optional offline mode
-	UsgnRegister(readsocket);
+	UsgnRegister(sock);
 
 	init_queue(&send_q);
 
@@ -122,17 +122,17 @@ int main(int argc, char *argv[]){
 #endif
 
 		UpdateBuffer();
-		CheckForTimeout(readsocket);
-		ExecuteFunctionsWithTime(&checktime, readsocket); // refactor into scheduler
-		CheckAllPlayerForReload(readsocket);
+		CheckForTimeout(sock);
+		ExecuteFunctionsWithTime(&checktime, sock); // refactor into scheduler
+		CheckAllPlayerForReload(sock);
 
 		FD_ZERO(&descriptor);
-		FD_SET(readsocket, &descriptor);
-		select(readsocket + 1, &descriptor, NULL, NULL, &timeout);
+		FD_SET(sock, &descriptor);
+		select(sock + 1, &descriptor, NULL, NULL, &timeout);
 
-		if (FD_ISSET(readsocket, &descriptor))
+		if (FD_ISSET(sock, &descriptor))
 		{
-			size = udp_recieve(readsocket, buffer, MAX_BUF, &newclient);
+			size = udp_recieve(sock, buffer, MAX_BUF, &newclient);
 
 			if (size < 3)
 			{
@@ -145,7 +145,7 @@ int main(int argc, char *argv[]){
 				{
 					if (ValidatePaket(buffer, id)) ///Checks and raise the packet numbering if necessary
 					{
-						PaketConfirmation(buffer, id, readsocket); ///If the numbering is even, send a confirmation
+						PaketConfirmation(buffer, id, sock); ///If the numbering is even, send a confirmation
 						player[id].lastpaket = mtime();
 						int control = 1;
 						int position = 2;
@@ -167,7 +167,7 @@ int main(int argc, char *argv[]){
 							{
 							case 1:
 								rtn = confirmation_known(message, tempsize, id,
-										readsocket);
+										sock);
 								break;
 							case 3:
 								rtn = connection_setup_known(message, tempsize,
@@ -175,85 +175,85 @@ int main(int argc, char *argv[]){
 										id);
 								break;
 							case 7:
-								rtn = fire(message, tempsize, id, readsocket);
+								rtn = fire(message, tempsize, id, sock);
 								break;
 							case 8:
 								rtn = advanced_fire(message, tempsize, id,
-										readsocket);
+										sock);
 								break;
 							case 9:
 								rtn = weaponchange(message, tempsize, id,
-										readsocket);
+										sock);
 								break;
 							case 10:
 								rtn = posupdaterun(message, tempsize, id,
-										readsocket);
+										sock);
 								break;
 							case 11:
 								rtn = posupdatewalk(message, tempsize, id,
-										readsocket);
+										sock);
 								break;
 							case 12:
 								rtn = rotupdate(message, tempsize, id,
-										readsocket);
+										sock);
 								break;
 							case 13:
 								rtn = posrotupdaterun(message, tempsize, id,
-										readsocket);
+										sock);
 								break;
 							case 14:
 								rtn = posrotupdatewalk(message, tempsize, id,
-										readsocket);
+										sock);
 								break;
 							case 16:
-								rtn = reload(message, tempsize, id, readsocket);
+								rtn = reload(message, tempsize, id, sock);
 								break;
 							case 20:
 								rtn = teamchange(message, tempsize, id,
-										readsocket);
+										sock);
 								break;
 							case 23:
-								rtn = buy(message, tempsize, id, readsocket);
+								rtn = buy(message, tempsize, id, sock);
 								break;
 							case 24:
-								rtn = drop(message, tempsize, id, readsocket);
+								rtn = drop(message, tempsize, id, sock);
 								break;
 							case 28:
 								// Spray 28 - 0 - x x - y y - color
-								rtn = spray(message, tempsize, id, readsocket);
+								rtn = spray(message, tempsize, id, sock);
 								break;
 							case 32:
 								rtn
 										= specpos(message, tempsize, id,
-												readsocket);
+												sock);
 								break;
 							case 39:
 								rtn = respawnrequest(message, tempsize, id,
-										readsocket);
+										sock);
 								break;
 							case 236:
 								rtn
 										= rcon_pw(message, tempsize, id,
-												readsocket);
+												sock);
 								break;
 							case 240:
 								rtn = chatmessage(message, tempsize, id,
-										readsocket);
+										sock);
 								break;
 							case 249:
 								rtn = ping_ingame(message, tempsize, id,
-										readsocket);
+										sock);
 								break;
 							case 252:
 								rtn = joinroutine_known(message, tempsize, id,
-										readsocket);
+										sock);
 								break;
 							case 253:
-								rtn = leave(id, readsocket);
+								rtn = leave(id, sock);
 								break;
 							default:
 								SendMessageToPlayer(id, "Not implemented yet!",
-										1, readsocket);
+										1, sock);
 								unknown(message, tempsize, buffer, size,
 										position);
 								rtn = tempsize;
@@ -302,22 +302,22 @@ int main(int argc, char *argv[]){
 									newclient.sin_addr, newclient.sin_port);
 							break;
 						case 27:
-							rtn = UsgnPacket(27, message, tempsize, readsocket);
+							rtn = UsgnPacket(27, message, tempsize, sock);
 							break;
 						case 28:
-							rtn = UsgnPacket(28, message, tempsize, readsocket);
+							rtn = UsgnPacket(28, message, tempsize, sock);
 							break;
 						case 250:
 							rtn = ping_serverlist(message, tempsize,
-									&newclient, readsocket);
+									&newclient, sock);
 							break;
 						case 251:
 							rtn = serverinfo_request(message, tempsize,
-									&newclient, readsocket);
+									&newclient, sock);
 							break;
 						case 252:
 							rtn = joinroutine_unknown(message, tempsize,
-									&newclient, readsocket);
+									&newclient, sock);
 							break;
 						default:
 							unknown(message, tempsize, buffer, size, position);
@@ -343,8 +343,10 @@ int main(int argc, char *argv[]){
 					}
 				}
 			}
-
 		}
+
+		check_sendqueue(sock);
+
 #ifdef _WIN32
 		Sleep(1000 / sv_fps); //who cares about windows :D
 #else

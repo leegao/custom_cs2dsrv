@@ -19,6 +19,8 @@ void SendToTeam(unsigned char *message, int length, int reliable, int team,
 void SendToAllOther(int id, unsigned char *message, int length, int reliable,
 		int writesocket);
 
+int check_sendqueue(int);
+
 // A priority queue for scheduling
 typedef struct {
 	void* data;
