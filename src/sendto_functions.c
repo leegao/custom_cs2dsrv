@@ -175,6 +175,10 @@ void* find_cost(pq* q, long cost){
 	return 0;
 }
 
+pqnode* peek(pq* q){
+	return &(q->q[0]);
+}
+
 int empty(pq *q){
 	return !q->n;
 }
