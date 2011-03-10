@@ -347,91 +347,80 @@ int OnHit(int hitter, int victim, int writesocket)
 
 int OnBuyAttempt(int id, int wpnid, int writesocket)
 {
-	int i;
-	for (i = 0; i <= 99; i++)
+	if (weapons[wpnid].name == NULL) //weapon does not exist
 	{
-		if (weapons[wpnid].name != NULL) //test if weapon available
+		SendBuyFailedMessage(id, 244, writesocket);
+		return 1;
+	}
+	if (player[id].money - weapons[wpnid].price < 0) //not enough money
+	{
+		SendBuyFailedMessage(id, 253, writesocket);
+		return 1;
+	}
+	if (weapons[wpnid].team != 0 && weapons[wpnid].team != player[id].team) //Check if he is in the right team to buy this weapon
+	{
+		SendBuyFailedMessage(id, 252, writesocket);
+		return 1;
+	}
+
+	//Check if in buyzone
+	if (player[id].team == 1)
+	{
+		int b;
+		for (b = 0; b <= tspawncount; b++)
 		{
-			if (player[id].money - weapons[wpnid].price >= 0)
+			int playerx = player[id].x;
+			int playery = player[id].y;
+			int tempx = tspawnx[b] * 32;
+			int tempy = tspawny[b] * 32;
+			//If player in buyzone (5*5)
+			if (playerx >= tempx - 64 && playerx <= tempx + 64
+					&& playery >= tempy - 64 && playery
+					<= tempy + 64)
 			{
-				if (weapons[wpnid].team == 0 || weapons[wpnid].team
-						== player[id].team) //Check if he is in the right team to buy this weapon
-				{
-					if (player[id].team == 1)
-					{
-						//Check if in buyzone
-						int b;
-						for (b = 0; b <= tspawncount; b++)
-						{
-							int playerx = player[id].x;
-							int playery = player[id].y;
-							int tempx = tspawnx[b] * 32;
-							int tempy = tspawny[b] * 32;
-							//If player in buyzone (5*5)
-							if (playerx >= tempx - 64 && playerx <= tempx + 64
-									&& playery >= tempy - 64 && playery
-									<= tempy + 64)
-							{
-								int g;
-								for (g = 0; g <= 99; g++)
-								{
-									if (player[id].slot[g].id != wpnid)
-									{
-										return 0;
-									}
-								}
-								SendBuyFailedMessage(id, 251, writesocket); //You have it already
-								return 1;
-							}
-						}
-						SendBuyFailedMessage(id, 255, writesocket);
-						return 1;
-					}
-					else if (player[id].team == 2)
-					{
-						int b;
-						for (b = 0; b <= ctspawncount; b++)
-						{
-							int playerx = player[id].x;
-							int playery = player[id].y;
-							int tempx = ctspawnx[b] * 32;
-							int tempy = ctspawny[b] * 32;
-							//If player in buyzone (5*5)
-							if (playerx >= tempx - 64 && playerx <= tempx + 64
-									&& playery >= tempy - 64 && playery
-									<= tempy + 64)
-							{
-								int g;
-								for (g = 0; g <= 99; g++)
-								{
-									if (player[id].slot[g].id != wpnid)
-									{
-										return 0;
-									}
-								}
-								SendBuyFailedMessage(id, 251, writesocket); //You have it already
-								return 1;
-							}
-						}
-						SendBuyFailedMessage(id, 255, writesocket); //Not in a buyzone
-						return 1;
-					}
-				}
-				else
-				{
-					SendBuyFailedMessage(id, 252, writesocket); //you cant buy this item
-					return 1;
-				}
-			}
-			else
-			{
-				SendBuyFailedMessage(id, 253, writesocket); //not enough money
-				return 1;
+				b = 0; //kinda ugly but idk how to break from the if statement without goto
+				break;
 			}
 		}
+		if (b > 0)
+		{
+			SendBuyFailedMessage(id, 255, writesocket);
+			return 1;
+		}
 	}
-	//if nothing found
-	SendBuyFailedMessage(id, 244, writesocket);
+	else if (player[id].team == 2)
+	{
+		int b;
+		for (b = 0; b <= ctspawncount; b++)
+		{
+			int playerx = player[id].x;
+			int playery = player[id].y;
+			int tempx = ctspawnx[b] * 32;
+			int tempy = ctspawny[b] * 32;
+			//If player in buyzone (5*5)
+			if (playerx >= tempx - 64 && playerx <= tempx + 64
+					&& playery >= tempy - 64 && playery
+					<= tempy + 64)
+			{
+				b = 0;
+				break;
+			}
+		}
+		if (b > 0)
+		{
+			SendBuyFailedMessage(id, 255, writesocket);
+			return 1;
+		}
+	}
+
+	if (player[id].slot[weapons[wpnid].slot].id == wpnid)
+	{
+		SendBuyFailedMessage(id, 251, writesocket); //You have it already
+		return 1;
+	}
+
+	//yay finally return 0 after 100 return 1's
+	return 0;
 	/*
 	 * 242 nothing
 	 * 243 Grenade rebuying is not allowed at this server
@@ -448,7 +437,6 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 	 * 254 buytime passed;
 	 * 255 you are not in a buyzone
 	 */
-	return 1;
 }
 
 int OnBuy(int id, int wpnid, int writesocket)

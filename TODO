@@ -1,6 +1,8 @@
 current bugs:
+-uh shitty buying system?
 
 currently working on:
+-buying system
 -port everything from Lua Lag Compensation (which is really an entire hit detection system)
 -arguments that override server.cfg and default settings (such as -off for offline-mode)
 
