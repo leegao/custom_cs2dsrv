@@ -11,6 +11,8 @@
 #include <stdarg.h>
 #include <string.h>
 
+char* cfg_file = NULL;
+
 unsigned char pre_authcode[] = "5TWs3Obv7";
 char startweapons[] = { 50 };
 int fpsnow = 0;
@@ -137,7 +139,7 @@ void ReadServerCfg(const char* cfg)
 {
 	setting_closure clsr = read_config(cfg, settings);
 
-	sv_name = (unsigned char *) GetValue(clsr, "sv_name", "Alpha Custom CS2D Server");
+	sv_name = sv_name ? sv_name : (unsigned char *) GetValue(clsr, "sv_name", "Alpha Custom CS2D Server");
 	sv_map = (unsigned char *) GetValue(clsr, "sv_map", "de_cs2d");
 	sv_hostport = tointeger(GetValue(clsr, "sv_hostport", "36963"));
 	sv_maxplayers = tointeger(GetValue(clsr, "sv_maxplayers", "32")) + 1;
