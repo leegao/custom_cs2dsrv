@@ -231,7 +231,6 @@ int buy(unsigned char *message, int length, int id, int writesocket)
 	{
 	case 0:
 		OnBuy(id, wpnid, writesocket);
-		SendBuyMessage(id, wpnid, writesocket);
 		break;
 	case 1:
 		break;

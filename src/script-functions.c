@@ -216,7 +216,7 @@ int OnFire(int id, int writesocket)
 	}
 	if (mtime() < player[id].firetimer)
 	{
-		printf("Firetimer error!\n");
+		printf("Firetimer error!%u %u\n", mtime(), player[id].firetimer);
 		return 1;
 	}
 	else
@@ -336,23 +336,9 @@ int OnHit(int hitter, int victim, int writesocket)
 
 int OnBuyAttempt(int id, int wpnid, int writesocket)
 {
-	if (weapons[wpnid].name == NULL) //weapon does not exist
-	{
-		SendBuyFailedMessage(id, 244, writesocket);
-		return 1;
-	}
-	if (player[id].money - weapons[wpnid].price < 0) //not enough money
-	{
-		SendBuyFailedMessage(id, 253, writesocket);
-		return 1;
-	}
-	if (weapons[wpnid].team != 0 && weapons[wpnid].team != player[id].team) //Check if he is in the right team to buy this weapon
-	{
-		SendBuyFailedMessage(id, 252, writesocket);
-		return 1;
-	}
+	//order of checks: buyzone, buytime, money, unbuyable, already have
 
-	//Check if in buyzone
+	//buyzone check
 	int b;
 	if (player[id].team == 1)
 	{
@@ -396,16 +382,47 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 		SendBuyFailedMessage(id, 255, writesocket);
 		return 1;
 	}
+	////
+	
+	//TODO: buytime check
+	//will be implemented with standard gamemode.
+	////
 
-	if (player[id].wpntable[wpnid].status > 0)
+	//money check
+	if (wpnid != 57 && wpnid != 58 && player[id].money < weapons[wpnid].price)
 	{
-		SendBuyFailedMessage(id, 251, writesocket); //You have it already
+		SendBuyFailedMessage(id, 253, writesocket);
 		return 1;
 	}
+	////
 
-	//yay finally return 0 after 100 return 1's
+	//unbuyable or doesn't exist or wrong team check
+	if (weapons[wpnid].name == NULL || weapons[wpnid].team == 3)
+	{
+		SendBuyFailedMessage(id, 244, writesocket);
+		return 1;
+	}
+	
+
+	if (weapons[wpnid].team != 0 && weapons[wpnid].team != player[id].team)
+	{
+		SendBuyFailedMessage(id, 252, writesocket);
+		return 1;
+	}
+	////
+
+	//already equipped check
+	if (player[id].wpntable[wpnid].status > 0)
+	{
+		SendBuyFailedMessage(id, 251, writesocket);
+		return 1;
+	}
+	////
+
+	//passed all the checks
 	return 0;
-	/*
+
+	/* SendBuyFailedMessage param 2:
 	 * 242 nothing
 	 * 243 Grenade rebuying is not allowed at this server
 	 * 244 it's not allowed to buy that weapon at this server
@@ -425,9 +442,86 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 
 int OnBuy(int id, int wpnid, int writesocket)
 {
-	player[id].money -= weapons[wpnid].price;
-	player[id].actualweapon = GivePlayerWeapon(id, wpnid); //Return wpnid 
-	printf("%s bought %s!\n", player[id].name, weapons[wpnid].name);
+	switch (wpnid)
+	{
+	case 57: //armor
+	case 58: //armor
+	{
+		if (player[id].armor < weapons[wpnid].price / 10)
+		{
+			if (player[id].money > weapons[wpnid].price)
+			{
+				player[id].money -= weapons[wpnid].price - player[id].armor * 10;
+				player[id].armor = weapons[wpnid].price / 10;
+			}
+			else
+			{
+				SendBuyFailedMessage(id, 253, writesocket);
+				return 1;
+			}
+		}
+		else
+		{
+			SendBuyFailedMessage(id, 251, writesocket);
+			return 1;
+		}
+		break;
+	}
+	case 61: //primary ammo
+	{
+		int bought = 0;
+		int i;
+		for (i = 0; i <= 0xFF; i++)
+		{
+			if (weapons[i].slot == 1 && player[id].wpntable[i].status > 0 &&
+				player[id].wpntable[i].ammo2 < weapons[i].ammo2) //if player has non-full weapon in slot 1
+			{
+				player[id].wpntable[i].ammo2 = weapons[i].ammo2;
+				bought = 1;
+			}
+		}
+		if (bought == 0)
+		{
+			SendBuyFailedMessage(id, 248, writesocket);
+			return 1;
+		}
+		else
+			player[id].money -= weapons[wpnid].price;
+		break;
+	}
+	case 62: //secondary ammo
+	{
+		int bought = 0;
+		int i;
+		for (i = 0; i <= 6; i++)
+		{
+			if (player[id].wpntable[i].status > 0 &&
+				player[id].wpntable[i].ammo2 < weapons[i].ammo2) //if player has non-full pistol
+			{
+				player[id].wpntable[i].ammo2 = weapons[i].ammo2;
+				bought = 1;
+			}
+		}
+		if (bought == 0)
+		{
+			SendBuyFailedMessage(id, 248, writesocket);
+			return 1;
+		}
+		else
+			player[id].money -= weapons[wpnid].price;
+		break;
+	}
+	default:
+	{
+		player[id].money -= weapons[wpnid].price;
+		GivePlayerWeapon(id, wpnid);
+		if (weapons[wpnid].slot > 0)
+			player[id].actualweapon = wpnid;
+		break;
+	}
+	}
+	//printf("%s bought %s!\n", player[id].name, weapons[wpnid].name);
+	SendBuyMessage(id, wpnid, writesocket);
 	return 0;
 }
 

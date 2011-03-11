@@ -43,7 +43,7 @@ void WeaponInit()
 {
 	int i;
 	for (i = 0; i <= 0xff; i++){
-		AddWeapon(i, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		AddWeapon(i, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3); //3 to make unbuyable by default
 	}
 	/*
 	 * id, name, wpndmg, wpndmg_z1, wpndmg_z2, freq, speed, slot, price, range, accuracy, ammo1, ammo2, reloadtime, special, team
@@ -91,24 +91,24 @@ void WeaponInit()
 	AddWeapon(39, "Famas", 14, 0, 0, 120, 1, 1, 2250, 300, 1, 25, 90, 1250, 2, 2);
 	AddWeapon(40, "M249", 15, 0, 0, 80, 1, 1, 5750, 300, 8, 100, 200, 2300, 0, 0);
 	AddWeapon(41, "Tactical Shield", 0, 0, 0, 0, 1, 1, 1000, 0, 0, 0, 0, 0, 0, 2);
-	AddWeapon(45, "Laser", 1000, 0, 0, 1200, 1, 1, 6500, 1000, 0, 15, 45, 1000, 0, 0);
-	AddWeapon(46, "Flamethrower", 30, 0, 0, 120, 1, 1, 3200, 55, 0, 100, 200, 1000, 0, 0);
-	AddWeapon(47, "RPG Launcher", 325, 0, 0, 2000, 1, 1, 4000, 700, 0, 1, 2, 2500, 0, 0);
-	AddWeapon(48, "Rocket Launcher", 70, 0, 0, 800, 1, 1, 5500, 700, 0, 20, 60, 1500, 0, 0);
-	AddWeapon(49, "Grenade Launcher", 75, 0, 0, 800, 1, 1, 5500, 320, 0, 20, 60, 1500, 0, 0);
+	AddWeapon(45, "Laser", 1000, 0, 0, 1200, 1, 1, 6500, 1000, 0, 15, 45, 1000, 0, 3);
+	AddWeapon(46, "Flamethrower", 30, 0, 0, 120, 1, 1, 3200, 55, 0, 100, 200, 1000, 0, 3);
+	AddWeapon(47, "RPG Launcher", 325, 0, 0, 2000, 1, 1, 4000, 700, 0, 1, 2, 2500, 0, 3);
+	AddWeapon(48, "Rocket Launcher", 70, 0, 0, 800, 1, 1, 5500, 700, 0, 20, 60, 1500, 0, 3);
+	AddWeapon(49, "Grenade Launcher", 75, 0, 0, 800, 1, 1, 5500, 320, 0, 20, 60, 1500, 0, 3);
 	AddWeapon(50, "Knife", 45, 90, 0, 320, 1, 3, 0, 7, 0, -1, -1, 0, 3, 0);
 	AddWeapon(51, "HE", 105, 0, 0, 400, 1, 4, 300, 320, 0, 1, 0, 0, 7, 0);
 	AddWeapon(52, "Flashbang", 0, 0, 0, 400, 1, 4, 200, 320, 0, 2, 0, 0, 7, 0);
 	AddWeapon(53, "Smoke Grenade", 0, 0, 0, 400, 1, 4, 300, 320, 0, 1, 0, 0, 7, 0);
 	AddWeapon(54, "Flare", 0, 0, 0, 400, 1, 4, 150, 320, 0, 1, 0, 0, 7, 0);
-	AddWeapon(55, "Bomb", 0, 0, 0, 0, 1, 5, 0, 0, 0, 0, 0, 0, 0, 0);
+	AddWeapon(55, "Bomb", 0, 0, 0, 0, 1, 5, 0, 0, 0, 0, 0, 0, 0, 3);
 	AddWeapon(56, "Defuse Kit", 0, 0, 0, 0, 1, 0, 200, 0, 0, 0, 0, 0, 0, 2);
 	AddWeapon(57, "Kevlar", 0, 0, 0, 0, 1, 0, 650, 0, 0, 0, 0, 0, 0, 0);
 	AddWeapon(58, "Kevlar+Helm", 0, 0, 0, 0, 1, 0, 1000, 0, 0, 0, 0, 0, 0, 0);
 	AddWeapon(59, "Night Vision", 0, 0, 0, 0, 1, 0, 1250, 0, 0, 0, 0, 0, 0, 0);
 	AddWeapon(61, "Primary Ammo", 0, 0, 0, 0, 1, 0, 50, 0, 0, 0, 0, 0, 0, 0);
 	AddWeapon(62, "Secondary Ammo", 0, 0, 0, 0, 1, 0, 50, 0, 0, 0, 0, 0, 0, 0);
-	AddWeapon(63, "Planted Bomb", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	AddWeapon(63, "Planted Bomb", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3);
 
 }
 

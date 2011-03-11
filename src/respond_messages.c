@@ -157,7 +157,8 @@ void SendBuyMessage(int id, int wpnid, int writesocket)
 
 	free(buffer);
 
-	SendWeaponChangeMessage(id, wpnid, writesocket);
+	if (weapons[wpnid].slot > 0)
+		SendWeaponChangeMessage(id, wpnid, writesocket);
 }
 
 void SendHitMessage(int id, int victim, int health, int writesocket)
