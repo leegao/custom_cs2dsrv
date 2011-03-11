@@ -1385,7 +1385,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 					buffer[position] = 0; //Unknown
 					position++;
 					buffer[position]
-							= player[i].slot[player[i].actualweapon].id; //Aktuelle Waffe
+							= player[i].actualweapon; //Aktuelle Waffe
 					position++;
 					buffer[position] = 0; //Unknown
 					position++;
@@ -1703,9 +1703,7 @@ int reload(unsigned char *message, int length, int id, int writesocket)
 	{
 		SendReloadMessage(id, 1, writesocket);
 		player[id].reloading = player[id].actualweapon;
-		player[id].reloadtimer
-				= mtime()
-						+ weapons[player[id].slot[player[id].actualweapon].id].reloadtime;
+		player[id].reloadtimer = mtime() + weapons[player[id].actualweapon].reloadtime;
 	}
 	return paketlength;
 }

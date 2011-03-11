@@ -15,7 +15,7 @@
 struct WEAPON
 {
 	short weapondamage, weapondamage_z1, weapondamage_z2;
-	short shoottime, reloadtime;
+	short reloadtime;
 	short freq; //every freq ms one shoot
 	short speed;
 	short slot;
@@ -37,9 +37,8 @@ struct WEAPON
 
 struct PLAYER_WEAPON
 {
-	short id, slot;
+	short status;
 	short ammo1, ammo2;
-	short special;
 };
 /*
  * special
@@ -81,8 +80,8 @@ struct PLAYER
 	unsigned short x, y;
 	unsigned short buffer_x[BUFFER_SIZE + 1], buffer_y[BUFFER_SIZE + 1];
 	unsigned char health, armor;
-	unsigned char actualweapon;
-	struct PLAYER_WEAPON slot[10];
+	unsigned char actualweapon; //id of used weapon
+	struct PLAYER_WEAPON wpntable[0xff];
 	float rotation; //-180 to +180
 	int specposx, specposy;
 	unsigned short money;
@@ -95,7 +94,6 @@ struct PLAYER
 	unsigned short latency;
 
 	int firetimer, zoomtimer;
-	int zoommode;
 	int rcon;
 
 	/* Address*/

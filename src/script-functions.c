@@ -109,23 +109,15 @@ int OnRespawn(int id, int writesocket)
  */
 int OnWeaponChangeAttempt(int id, int wpnid, int writesocket)
 {
-	int i;
-	for (i = 0; i <= 9; i++)
-	{
-		if (player[id].slot[i].id == wpnid)
-		{
-			player[id].actualweapon = i;
-			if (weapons[wpnid].special == 4 || weapons[wpnid].special == 5)
-			{
-				player[id].zoommode = 0;
-			}
-			player[id].reloading = 0;
+	if (player[id].wpntable[wpnid].status <= 0)
+		return 1;
+	player[id].actualweapon = wpnid;
+	if (weapons[wpnid].special == 4 || weapons[wpnid].special == 5)
+		player[id].wpntable[wpnid].status = 1;
+	player[id].reloading = 0;
 
-			//printf("%s switched to %s\n", player[id].name, weapons[player[id].slot[player[id].actualweapon].id].name);
-			return 0;
-		}
-	}
-	return 1;
+	printf("%s switched to %s\n", player[id].name, weapons[wpnid].name);
+	return 0;
 }
 
 /*
@@ -136,17 +128,14 @@ int OnWeaponChangeAttempt(int id, int wpnid, int writesocket)
  */
 int OnAdvancedFire(int id, int status, int writesocket)
 {
-	int wpnid = player[id].slot[player[id].actualweapon].id;
+	int wpnid = player[id].actualweapon;
 
 	if (mtime() < player[id].zoomtimer)
 	{
 		printf("Zoomtimer error!\n");
 		return 1;
 	}
-	else
-	{
-		player[id].zoomtimer = mtime() + 500;
-	}
+	player[id].zoomtimer = mtime() + 500;
 
 	switch (weapons[wpnid].special)
 	{
@@ -158,37 +147,37 @@ int OnAdvancedFire(int id, int status, int writesocket)
 	{
 		if (status <= 1)
 		{
-			player[id].zoommode = status;
+			player[id].wpntable[wpnid].status = status + 1;
 			break;
 		}
 		return 1;
 	}
 	case 3:
 	{
-		player[id].zoommode = 1;
+		player[id].wpntable[wpnid].status = 2;
 		OnFire(id, writesocket);
-		player[id].zoommode = 0;
+		player[id].wpntable[wpnid].status = 1;
 		break;
 	}
 	case 4:
 	{
 		if (status <= 1)
 		{
-			player[id].zoommode = status;
+			player[id].wpntable[wpnid].status = status + 1;
 			break;
 		}
 		return 1;
 	}
 	case 5:
 	{
-		if (status <= 2 && player[id].zoommode + 1 == status)
+		if (status <= 2 && player[id].wpntable[wpnid].status == status)
 		{
-			player[id].zoommode = status;
+			player[id].wpntable[wpnid].status = status + 1;
 			break;
 		}
-		else if (player[id].zoommode == 2)
+		else if (player[id].wpntable[wpnid].status == 3)
 		{
-			player[id].zoommode = 0;
+			player[id].wpntable[wpnid].status = 1;
 			break;
 		}
 		return 1;
@@ -212,7 +201,7 @@ int OnAdvancedFire(int id, int status, int writesocket)
 int OnFire(int id, int writesocket)
 {
 	//printf("%s tried to shoot!\n", player[id].name);
-	short *ammo1 = &player[id].slot[player[id].actualweapon].ammo1;
+	short *ammo1 = &player[id].wpntable[player[id].actualweapon].ammo1;
 	if (*ammo1 <= 0 && *ammo1 != -1)
 	{
 		printf("Not enough ammo!\n");
@@ -233,11 +222,11 @@ int OnFire(int id, int writesocket)
 	else
 	{
 		player[id].firetimer = mtime()
-				+ weapons[player[id].slot[player[id].actualweapon].id].freq;
+				+ weapons[player[id].actualweapon].freq;
 	}
 
 	int i;
-	int range = weapons[player[id].slot[player[id].actualweapon].id].range;
+	int range = weapons[player[id].actualweapon].range;
 
 	int startx = player[id].x;
 	int starty = player[id].y;
@@ -314,17 +303,17 @@ int OnFire(int id, int writesocket)
  */
 int OnHit(int hitter, int victim, int writesocket)
 {
-	int wpnid = player[hitter].slot[player[hitter].actualweapon].id;
+	int wpnid = player[hitter].actualweapon;
 	int damage;
-	switch (player[hitter].zoommode)
+	switch (player[hitter].wpntable[wpnid].status)
 	{
-	case 0:
+	case 1:
 		damage = weapons[wpnid].weapondamage;
 		break;
-	case 1:
+	case 2:
 		damage = weapons[wpnid].weapondamage_z1;
 		break;
-	case 2:
+	case 3:
 		damage = weapons[wpnid].weapondamage_z2;
 		break;
 	default:
@@ -364,9 +353,9 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 	}
 
 	//Check if in buyzone
+	int b;
 	if (player[id].team == 1)
 	{
-		int b;
 		for (b = 0; b <= tspawncount; b++)
 		{
 			int playerx = player[id].x;
@@ -378,19 +367,13 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 					&& playery >= tempy - 64 && playery
 					<= tempy + 64)
 			{
-				b = 0; //kinda ugly but idk how to break from the if statement without goto
+				b = 0;
 				break;
 			}
-		}
-		if (b > 0)
-		{
-			SendBuyFailedMessage(id, 255, writesocket);
-			return 1;
 		}
 	}
 	else if (player[id].team == 2)
 	{
-		int b;
 		for (b = 0; b <= ctspawncount; b++)
 		{
 			int playerx = player[id].x;
@@ -406,14 +389,15 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 				break;
 			}
 		}
-		if (b > 0)
-		{
-			SendBuyFailedMessage(id, 255, writesocket);
-			return 1;
-		}
 	}
 
-	if (player[id].slot[weapons[wpnid].slot].id == wpnid)
+	if (b > 0)
+	{
+		SendBuyFailedMessage(id, 255, writesocket);
+		return 1;
+	}
+
+	if (player[id].wpntable[wpnid].status > 0)
 	{
 		SendBuyFailedMessage(id, 251, writesocket); //You have it already
 		return 1;
@@ -442,7 +426,7 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 int OnBuy(int id, int wpnid, int writesocket)
 {
 	player[id].money -= weapons[wpnid].price;
-	player[id].actualweapon = GivePlayerWeapon(id, wpnid); //Return slot
+	player[id].actualweapon = GivePlayerWeapon(id, wpnid); //Return wpnid 
 	printf("%s bought %s!\n", player[id].name, weapons[wpnid].name);
 	return 0;
 }
@@ -578,18 +562,12 @@ int OnMoveAttempt(int id, unsigned short x, unsigned short y, int status,
 int OnDrop(int id, unsigned char wpnid, unsigned short ammo1, unsigned short ammo2,
 		unsigned char unknown1, unsigned char unknown2, unsigned char unknown3, int writesocket)
 {
-	int i;
-	for (i = 0; i < 10; i++)
+	if ((player[id].wpntable[wpnid].status > 0) &&
+		(player[id].wpntable[wpnid].ammo1 == ammo1) &&
+		(player[id].wpntable[wpnid].ammo2 == ammo2))
 	{
-		if (player[id].slot[i].id == wpnid)
-		{
-			if (player[id].slot[i].ammo1 == ammo1 && player[id].slot[i].ammo2
-					== ammo2)
-			{
-				return 0;
-			}
-			break;
-		}
+		RemovePlayerWeapon(id, wpnid);
+		return 0;
 	}
 	return 1;
 }

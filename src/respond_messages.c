@@ -601,7 +601,7 @@ void SendKillMessage(int id, int victim, int writesocket)
 	position++;
 	buffer[position] = id;
 	position++;
-	buffer[position] = player[id].slot[player[id].actualweapon].id;
+	buffer[position] = player[id].actualweapon;
 	position++;
 	memcpy(buffer + position, &player[victim].x, 2);
 	position += 2;
@@ -647,7 +647,7 @@ void SendKillMessage(int id, int victim, int writesocket)
 	position++;
 	buffer[position] = id;
 	position++;
-	buffer[position] = player[id].slot[player[id].actualweapon].id;
+	buffer[position] = player[id].actualweapon;
 	position++;
 	memcpy(buffer + position, &player[victim].x, 2);
 	position += 2;

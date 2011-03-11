@@ -84,9 +84,11 @@ void ClearPlayer(int id)
 	player[id].rcon = 0;
 
 	int i;
-	for (i = 0; i <= 9; i++)
+	for (i = 0; i <= 0xFF; i++)
 	{
-		player[id].slot[i].id = 0;
+		player[id].wpntable[i].status = 0;
+		player[id].wpntable[i].ammo1 = 0;
+		player[id].wpntable[i].ammo2 = 0;
 	}
 	for (i = 0; i <= sv_lcbuffer; i++)
 	{
@@ -99,7 +101,6 @@ void ClearPlayer(int id)
 
 	player[id].start = 0;
 	player[id].money = mp_startmoney;
-	player[id].zoommode = 0;
 
 	/* Address*/
 	player[id].port = 0;
@@ -141,23 +142,14 @@ void CheckForTimeout(int writesocket)
  * \brief adds an specific weapon to a player
  * \param id player-id
  * \param wpnid weapon-id
- * \return the slot-id or 0 if not found
+ * \return the weapon-id or 0 if not found
  */
 int GivePlayerWeapon(int id, int wpnid)
 {
-	int i;
-	for (i = 0; i <= 9; i++)
-	{
-		if (player[id].slot[i].id == 0)
-		{
-			player[id].slot[i].id = wpnid;
-			player[id].slot[i].slot = weapons[wpnid].slot;
-			player[id].slot[i].ammo1 = weapons[wpnid].ammo1;
-			player[id].slot[i].ammo2 = weapons[wpnid].ammo2;
-			return i;
-		}
-	}
-	return 0;
+	player[id].wpntable[wpnid].status = 1;
+	player[id].wpntable[wpnid].ammo1 = weapons[wpnid].ammo1;
+	player[id].wpntable[wpnid].ammo2 = weapons[wpnid].ammo2;
+	return wpnid;
 }
 /**
  * \fn void RemovePlayerWeapon(int id, int wpnid)
@@ -167,18 +159,9 @@ int GivePlayerWeapon(int id, int wpnid)
  */
 void RemovePlayerWeapon(int id, int wpnid)
 {
-	int i;
-	for (i = 0; i <= 9; i++)
-	{
-		if (player[id].slot[i].id == wpnid)
-		{
-			player[id].slot[i].id = 0;
-			player[id].slot[i].slot = 0;
-			player[id].slot[i].ammo1 = 0;
-			player[id].slot[i].ammo2 = 0;
-			break;
-		}
-	}
+	player[id].wpntable[wpnid].status = 0;
+	player[id].wpntable[wpnid].ammo1 = 0;
+	player[id].wpntable[wpnid].ammo2 = 0;
 }
 /**
  * \fn void RemoveAllPlayerWeapon(int id)
@@ -187,16 +170,12 @@ void RemovePlayerWeapon(int id, int wpnid)
  */
 void RemoveAllPlayerWeapon(int id)
 {
-	int i;
-	for (i = 0; i <= 9; i++)
+	int wpnid;
+	for (wpnid = 0; wpnid <= 0xFF; wpnid++)
 	{
-		player[id].slot[i].id = 0;
-		player[id].slot[i].slot = 0;
-		player[id].slot[i].ammo1 = 0;
-		player[id].slot[i].ammo2 = 0;
-		player[id].slot[i].special = 0;
-		player[id].zoommode = 0;
-
+		player[id].wpntable[wpnid].status = 0;
+		player[id].wpntable[wpnid].ammo1 = 0;
+		player[id].wpntable[wpnid].ammo2 = 0;
 	}
 }
 
@@ -421,20 +400,19 @@ void CheckAllPlayerForReload(int writesocket)
 		{
 			if (player[i].reloadtimer <= mtime())
 			{
+				if ((player[i].wpntable[player[i].reloading].ammo2 -=
+					weapons[player[i].reloading].ammo1 -
+					player[i].wpntable[player[i].reloading].ammo1) < 0)
+				{
+					player[i].wpntable[player[i].reloading].ammo1 =
+						weapons[player[i].reloading].ammo1 + player[i].wpntable[player[i].reloading].ammo2;
+					player[i].wpntable[player[i].reloading].ammo2 = 0;
+				}
+				else //normal
+				{
+					player[i].wpntable[player[i].reloading].ammo1 = weapons[player[i].reloading].ammo1;
+				}
 				SendReloadMessage(i, 2, writesocket);
-				if (player[i].slot[player[i].reloading].ammo2
-						-= player[i].slot[player[i].reloading].ammo1 > 0)
-				{
-					player[i].slot[player[i].reloading].ammo2
-							-= player[i].slot[player[i].reloading].ammo1;
-					player[i].slot[player[i].reloading].ammo1
-							= weapons[player[i].slot[player[i].reloading].id].ammo1;
-				}
-				else
-				{
-					player[i].slot[player[i].reloading].ammo1
-							= player[i].slot[player[i].reloading].ammo2;
-				}
 				player[i].reloading = 0;
 			}
 		}
