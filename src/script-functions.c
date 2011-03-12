@@ -442,6 +442,7 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 
 int OnBuy(int id, int wpnid, int writesocket)
 {
+	int i;
 	switch (wpnid)
 	{
 	case 57: //armor
@@ -470,7 +471,6 @@ int OnBuy(int id, int wpnid, int writesocket)
 	case 61: //primary ammo
 	{
 		int bought = 0;
-		int i;
 		for (i = 0; i <= 0xFF; i++)
 		{
 			if (weapons[i].slot == 1 && player[id].wpntable[i].status > 0 &&
@@ -492,7 +492,6 @@ int OnBuy(int id, int wpnid, int writesocket)
 	case 62: //secondary ammo
 	{
 		int bought = 0;
-		int i;
 		for (i = 0; i <= 6; i++)
 		{
 			if (player[id].wpntable[i].status > 0 &&
@@ -514,9 +513,24 @@ int OnBuy(int id, int wpnid, int writesocket)
 	default:
 	{
 		player[id].money -= weapons[wpnid].price;
-		GivePlayerWeapon(id, wpnid);
 		if (weapons[wpnid].slot > 0)
+		{
+			if (weapons[wpnid].slot < 3) //dont increase # of weapons only for slot 1 or 2
+			{
+				for (i = 0; i <= 0xFF; i++)
+				{
+					if (player[id].wpntable[i].status > 0 && weapons[i].slot == weapons[wpnid].slot)
+					{
+						RemovePlayerWeapon(id, i);
+						SendDropMessage(id, i, player[id].wpntable[i].ammo1,
+							player[id].wpntable[i].ammo2, 0, 0, 0, writesocket);
+						break;
+					}
+				}
+			}
 			player[id].actualweapon = wpnid;
+		}
+		GivePlayerWeapon(id, wpnid);
 		break;
 	}
 	}

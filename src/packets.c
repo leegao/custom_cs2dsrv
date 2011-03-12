@@ -1812,7 +1812,6 @@ int drop(unsigned char *message, int length, int id, int writesocket)
 			writesocket))
 	{
 	case 0:
-		RemovePlayerWeapon(id, wpnid);
 		SendDropMessage(id, wpnid, ammo1, ammo2, unknown1, unknown2, unknown3,
 				writesocket);
 		break;
