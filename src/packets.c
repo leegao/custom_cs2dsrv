@@ -1910,16 +1910,14 @@ byte* s__peek__(stream* s){
 int s__seek__(stream* s, int pos){
 	if (pos < 0) return 0;
 	if (pos < s->size) return (int)(s->cur = s->mem+pos);
-	else return (s->cur = s->mem + s->size);
+	else return (int)(s->cur = s->mem + s->size);
 }
 
 int s__trim__(stream* s, int pos){
 	if (pos < 0) return 0;
 	if (pos < s->size) return
-		((s->cur = s->mem+pos)
-				&&
-		(s->size = pos));
-	else return (s->cur = s->mem + s->size);
+		((s->cur = s->mem+pos) && (s->size = pos));
+	else return (int)(s->cur = s->mem + s->size);
 }
 
 // specific cases
@@ -1969,6 +1967,14 @@ byte* read_str(stream* s){
 	return str;
 }
 
+int write_str(stream* s, byte* str){
+	int n = strlen((char*)str)+1;
+	byte* str_ = (byte*)malloc(n--);
+	memcpy(str_+1, str, n);
+	*str_ = n++;
+	return Stream.write(s, str_, n);
+}
+
 byte* read_line(stream* s){
 	byte* raw = Stream.peek(s);
 	int n = 0;
@@ -1978,6 +1984,14 @@ byte* read_line(stream* s){
 	memcpy(str, src, n);
 	str[n] = 0;
 	return str;
+}
+
+int write_line(stream* s, byte* str){
+	int n = strlen((char*)str)+1;
+	byte* str_ = (byte*)malloc(n--);
+	memcpy(str_, str, n);
+	str_[n++] = '\n';
+	return Stream.write(s, str_, n);
 }
 
 void start_stream(){

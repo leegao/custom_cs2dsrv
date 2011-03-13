@@ -76,9 +76,9 @@ int main(int argc, char *argv[]){
 	start_stream();
 
 	stream* s = init_stream(NULL);
-	Stream.write(s, "abc\nabc\n", 4);
+	write_str(s, "abc\nabc");
 	//byte* i = Stream.read(s, 2);
-	int i = read_line(s);
+	int i = read_str(s);
 
 	printf("%d %s %d\n",s -> mem, i, s->size);
 	/**
