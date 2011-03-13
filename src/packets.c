@@ -1876,7 +1876,7 @@ stream* init_stream(stream* s){
 }
 
 byte* s__read__(stream* s, int n){
-	return (byte*)(((int)s->size+n<=s->n*Stream.quanta) && s->cur);
+	return (byte*)(((int)s->size+n<=s->n*Stream.quanta) && s->mem);
 }
 
 int s__write__(stream* s, byte* a, int n){
@@ -1885,26 +1885,36 @@ int s__write__(stream* s, byte* a, int n){
 	int lg = (s->size + n) - (Stream.quanta*s->n);
 	if (lg > 0) {
 		byte* t = s->mem;
-		s->mem = (byte*)malloc(Stream.quanta * (s->n += lg/Stream.quanta));
+		s->mem = (byte*)malloc(Stream.quanta * (s->n += 1+lg/Stream.quanta));
 		if (!s->mem) return 0;
-		memcpy(t,s->mem,s->size);
+		memcpy(s->mem, t, s->size);
 		s->cur = s->mem+s->size;
 	}
-	memcpy(a,s->cur, n);
+	//printf("%d %d\n", s->mem, s->cur);
+	memcpy(s->cur, a, n);
+	//return 0;
 	s->cur+=n;
 	s->size += n;
 	return 1;
 }
 
 byte s__peek__(stream* s){
-	return *s->cur;
+	return *s->mem;
 }
 
 int s__seek__(stream* s, int pos){
 	if (pos < 0) return 0;
-	int i;
-	if ((i = pos-(int)(s->cur-s->mem)) < s->size) return 0&&(s->cur += i);
-	else return ((int)(s->cur-s->mem) + s->size -1);
+	if (pos < s->size) return (int)(s->cur = s->mem+pos);
+	else return (s->cur = s->mem + s->size);
+}
+
+int s__trim__(stream* s, int pos){
+	if (pos < 0) return 0;
+	if (pos < s->size) return
+		((s->cur = s->mem+pos)
+				&&
+		(s->size = pos));
+	else return (s->cur = s->mem + s->size);
 }
 
 void start_stream(){
@@ -1913,4 +1923,5 @@ void start_stream(){
 	Stream.write = &s__write__;
 	Stream.peek = &s__peek__;
 	Stream.seek = &s__seek__;
+	Stream.trim = &s__trim__;
 }

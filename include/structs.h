@@ -148,6 +148,7 @@ typedef struct stream_{ // Bytestreams only
 struct{
 	byte* (*read) (stream*, int); // postcondition: void* is a pointer >= top, top is advanced
 	int (*write) (stream*, byte*, int); // precondition: void* must be a valid pointer, top is unchanged
+	int (*trim) (stream*, int);
 	byte (*peek) (stream*); // top is unchanged
 	int (*seek) (stream*, int); // top is changed
 
