@@ -75,7 +75,12 @@ int main(int argc, char *argv[]){
 	init_queue(&send_q);
 	start_stream();
 
-	printf("%s %d %d %d\n",s->mem, s -> mem, s->cur, s->size);
+	stream* s = init_stream(NULL);
+	Stream.write(s, "\xfe\xf3", 2);
+	//byte* i = Stream.read(s, 2);
+	short i = *(short*)Stream.read(s, 2);
+
+	printf("%d %hX %d\n",s -> mem, i, s->size);
 	/**
 	 * \var needed for ExecuteFunctionsWithTime()
 	 */

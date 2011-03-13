@@ -1876,7 +1876,12 @@ stream* init_stream(stream* s){
 }
 
 byte* s__read__(stream* s, int n){
-	return (byte*)(((int)s->size+n<=s->n*Stream.quanta) && s->mem);
+	byte* m = s->mem;
+	if (n > s->size) return 0;
+	s->size -= n;
+	s->mem += n;
+	return m;
+	//return (byte*)(n<=s->size && (((s->size-=n) && 0) + ((s->mem+=n) && 0) + m));
 }
 
 int s__write__(stream* s, byte* a, int n){
@@ -1898,8 +1903,8 @@ int s__write__(stream* s, byte* a, int n){
 	return 1;
 }
 
-byte s__peek__(stream* s){
-	return *s->mem;
+byte* s__peek__(stream* s){
+	return s->mem;
 }
 
 int s__seek__(stream* s, int pos){
