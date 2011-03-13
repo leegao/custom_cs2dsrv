@@ -75,35 +75,6 @@ int main(int argc, char *argv[]){
 	init_queue(&send_q);
 	start_stream();
 
-	stream* s = init_stream(NULL_STREAM);
-	Stream.write(s, (byte*)"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"123456789\n"
-			"1234567890\n", 252);
-	//Stream.trim(s, 0);
-	Stream.write(s, "asdfasdf", 9);
-
 	printf("%s %d %d %d\n",s->mem, s -> mem, s->cur, s->size);
 	/**
 	 * \var needed for ExecuteFunctionsWithTime()
