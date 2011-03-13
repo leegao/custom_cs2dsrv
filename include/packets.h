@@ -57,6 +57,7 @@ int rcon_pw(unsigned char *message, int length, int id, int writesocket);
 
 // auxiliary functions
 #define NULL_STREAM ((stream*)0)
+#define EMPTY_STREAM(s) (!!((s)->size))
 stream* init_stream(stream*);
 void start_stream();
 

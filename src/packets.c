@@ -1922,6 +1922,48 @@ int s__trim__(stream* s, int pos){
 	else return (s->cur = s->mem + s->size);
 }
 
+// specific cases
+byte read_byte(stream* s){
+	byte* i = (byte*)Stream.read(s, 1);
+	return i ? *i : 0u;
+}
+
+short read_short(stream* s){
+	short* i = (short*)Stream.read(s, 2);
+	return i ? *i : 0;
+}
+
+int read_int(stream* s){
+	int* i = (int*)Stream.read(s, 4);
+	return i ? *i : 0;
+}
+
+float read_float(stream* s){
+	float* f = (float*)Stream.read(s, 4);
+	return f ? *f : 0.0;
+}
+
+byte* read_str(stream* s){
+	byte i = read_byte(s);
+	if (!i) return 0;
+	byte* str = (byte*)malloc(i+1), *src = Stream.read(s, i+1);
+	if (!src) return 0;
+	memcpy(str, src, i);
+	str[i] = 0;
+	return str;
+}
+
+byte* read_line(stream* s){
+	byte* raw = Stream.peek(s);
+	int n = 0;
+	while(*raw++ != '\n' && n < s->size)n++;
+	if (!n) return 0;
+	byte* str = (byte*)malloc(n+1), *src = Stream.read(s, n+1);
+	memcpy(str, src, n);
+	str[n] = 0;
+	return str;
+}
+
 void start_stream(){
 	Stream.quanta = 0xff;
 	Stream.read = &s__read__;

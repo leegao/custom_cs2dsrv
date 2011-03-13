@@ -76,11 +76,11 @@ int main(int argc, char *argv[]){
 	start_stream();
 
 	stream* s = init_stream(NULL);
-	Stream.write(s, "\xfe\xf3", 2);
+	Stream.write(s, "abc\nabc\n", 4);
 	//byte* i = Stream.read(s, 2);
-	short i = *(short*)Stream.read(s, 2);
+	int i = read_line(s);
 
-	printf("%d %hX %d\n",s -> mem, i, s->size);
+	printf("%d %s %d\n",s -> mem, i, s->size);
 	/**
 	 * \var needed for ExecuteFunctionsWithTime()
 	 */
