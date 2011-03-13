@@ -1928,9 +1928,17 @@ byte read_byte(stream* s){
 	return i ? *i : 0u;
 }
 
+int write_byte(stream* s, byte c){
+	return Stream.write(s, &c, 1);
+}
+
 short read_short(stream* s){
 	short* i = (short*)Stream.read(s, 2);
 	return i ? *i : 0;
+}
+
+int write_short(stream* s, short c){
+	return Stream.write(s, (byte*)&c, 2);
 }
 
 int read_int(stream* s){
@@ -1938,9 +1946,17 @@ int read_int(stream* s){
 	return i ? *i : 0;
 }
 
+int write_int(stream* s, int c){
+	return Stream.write(s, (byte*)&c, 4);
+}
+
 float read_float(stream* s){
 	float* f = (float*)Stream.read(s, 4);
 	return f ? *f : 0.0;
+}
+
+int write_float(stream* s, float c){
+	return Stream.write(s, (byte*)&c, 4);
 }
 
 byte* read_str(stream* s){
