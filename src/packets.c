@@ -1960,7 +1960,7 @@ int write_float(stream* s, float c){
 byte* read_str(stream* s){
 	byte i = read_byte(s);
 	if (!i) return 0;
-	byte* str = (byte*)malloc(i+1), *src = Stream.read(s, i+1);
+	byte* str = (byte*)malloc(i+1), *src = Stream.read(s, i);
 	if (!src) return 0;
 	memcpy(str, src, i);
 	str[i] = 0;
