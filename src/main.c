@@ -42,17 +42,7 @@ void parse_opts(int argc, char *argv[]){
 int main(int argc, char *argv[]){
 
 	// Parses the commandline arguments
-	parse_opts(argc, argv); // IE: ./server -c"server.cfg" --name "My Server"
-
-//	// priority queue test:
-//	pq q;
-//	INIT_QUEUE (&q);
-//	push(&q, 1, 1);
-//	push(&q, 4, 3);
-//	push(&q, 5, 2);
-//
-//	printf("%d\n", pop(&q));
-//	printf("%d\n", find_cost(&q, 3));
+	parse_opts(argc, argv); // IE: ./server -cserver.cfg --name "My Server"
 
 	/**
 	 * Initalize variables, weapons, players and sockets
@@ -83,6 +73,7 @@ int main(int argc, char *argv[]){
 	UsgnRegister(sock);
 
 	init_queue(&send_q);
+	start_stream();
 
 	/**
 	 * \var needed for ExecuteFunctionsWithTime()

@@ -53,4 +53,11 @@ int UsgnPacket(int packetid, unsigned char *message, int length,
 		int writesocket);
 int drop(unsigned char *message, int length, int id, int writesocket);
 int rcon_pw(unsigned char *message, int length, int id, int writesocket);
+
+
+// auxiliary functions
+#define NULL_STREAM = ((stream*)0)
+stream* init_stream(stream*);
+void start_stream();
+
 #endif // PAKETS_H_INCLUDED

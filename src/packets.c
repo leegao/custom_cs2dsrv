@@ -1861,3 +1861,56 @@ int rcon_pw(unsigned char *message, int length, int id, int writesocket)
 
 	return length;
 }
+
+
+
+// auxiliary functions
+//Stream.quanta = 0xff;
+stream* init_stream(stream* s){
+	if (!s || !s->n || !s->mem) s = (stream*)malloc(sizeof(struct stream_));
+	s -> mem = (byte*)malloc(Stream.quanta);
+	s -> cur = s->mem;
+	s -> size = 0;
+	s -> n = 1;
+	return s;
+}
+
+byte* s__read__(stream* s, int n){
+	return (byte*)(((int)s->size+n<=s->n*Stream.quanta) && s->cur);
+}
+
+int s__write__(stream* s, byte* a, int n){
+	if (!s) return 0;
+	if (!s->n || !s->mem) init_stream(s);
+	int lg = (s->size + n) - (Stream.quanta*s->n);
+	if (lg > 0) {
+		byte* t = s->mem;
+		s->mem = (byte*)malloc(Stream.quanta * (s->n += lg/Stream.quanta));
+		if (!s->mem) return 0;
+		memcpy(t,s->mem,s->size);
+		s->cur = s->mem+s->size;
+	}
+	memcpy(a,s->cur, n);
+	s->cur+=n;
+	s->size += n;
+	return 1;
+}
+
+byte s__peek__(stream* s){
+	return *s->cur;
+}
+
+int s__seek__(stream* s, int pos){
+	if (pos < 0) return 0;
+	int i;
+	if ((i = pos-(int)(s->cur-s->mem)) < s->size) return 0&&(s->cur += i);
+	else return ((int)(s->cur-s->mem) + s->size -1);
+}
+
+void start_stream(){
+	Stream.quanta = 0xff;
+	Stream.read = &s__read__;
+	Stream.write = &s__write__;
+	Stream.peek = &s__peek__;
+	Stream.seek = &s__seek__;
+}

@@ -136,4 +136,25 @@ struct map{
 	struct ENTITY *entities; // switch to mutable_ent when we allow adding of entities (problematic in current CS2D)
 } map;
 
+typedef unsigned char byte;
+
+typedef struct stream_{ // Bytestreams only
+	byte* mem; // head of everything
+	byte* cur; // head of the stream
+
+	int n, size; // number of bytes, quantas, total num of bytes
+} stream;
+
+struct{
+	byte* (*read) (stream*, int); // postcondition: void* is a pointer >= top, top is advanced
+	int (*write) (stream*, byte*, int); // precondition: void* must be a valid pointer, top is unchanged
+	byte (*peek) (stream*); // top is unchanged
+	int (*seek) (stream*, int); // top is changed
+
+	//int (*push) (stream*, byte*, int); // Pushes onto the front of the stream, top is decreased
+	//byte* (*pop) (stream*, int); // Pops from the back of the stream, top is unchanged
+
+	int quanta; // atomic size of mem (not the size of the bytes)
+} Stream;
+
 #endif // STRUCTS_H_INCLUDED
