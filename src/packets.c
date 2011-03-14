@@ -514,7 +514,7 @@ int joinroutine_known(stream* packet, int id){
 	case 0:
 		break;
 	case 1:{
-		if (player[id].joinstatus){
+		if (player[id].joinstatus == 1){
 			player[id].name = Stream.read_str(packet);
 			byte* password = Stream.read_str(packet);
 			byte* encryption1 = Stream.read_str(packet);
@@ -524,6 +524,7 @@ int joinroutine_known(stream* packet, int id){
 			byte* mhash = Stream.read_str(packet);
 			Stream.read_byte(packet); // we need to profile this
 			player[id].win = Stream.read_str(packet);
+			// we have one left over byte in this stream...
 
 			stream* buf = init_stream(NULL);
 			int tempstatus = CheckPlayerData(password);
@@ -567,319 +568,109 @@ int joinroutine_known(stream* packet, int id){
 			free(buf);
 
 			onlineplayer++;
-		}
-		else
-		{
-			printf("Unexpected join data (%d) from %s; expected %d\n", message[1], player[id].name, player[id].joinstatus+1);
+		} else {
+			printf("Unexpected join data (1) from %s; expected %d\n", player[id].name, player[id].joinstatus+1);
 		}
 		break;
 	}
-	case 3:
-	{
-		if (player[id].joinstatus == 2)
-		{
-			int position = 2;
-
-			paketlength = 5;
-			if (paketlength > length)
-			{
-				printf("Invalid packet (joinroutine_known)!\n");
-				return length;
-			}
-
+	case 3:{
+		if (player[id].joinstatus == 2){
 			//Map-Hash
-			int stringsize = message[position];
-			if (stringsize > 255 || stringsize >= (length - position + 1))
-			{
-				printf("Map-Hash too big\n");
-				return length;
-			}
-			position++;
-
-			unsigned char *maphash = malloc(stringsize + 1);
-			if (maphash == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-			memcpy(maphash, message + position, stringsize);
-			maphash[stringsize] = '\0';
-			position += stringsize;
-			paketlength += stringsize;
-
-			//printf("\tMaphash: %s\n", maphash);
-
-			//pre_authcode_respond
-			stringsize = message[position];
-			if (stringsize > 255 || stringsize >= (length - position + 1))
-			{
-				printf("pre_authcon_respond too big\n");
-				return length;
-			}
-			position++;
-
-			unsigned char *pre_authcode_respond = malloc(stringsize + 1);
-			if (pre_authcode_respond == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-			memcpy(pre_authcode_respond, message + position, stringsize);
-			pre_authcode_respond[stringsize] = '\0';
-			position += stringsize;
-			paketlength += stringsize;
-
-			//printf("\tpre_authcode_respond: %s\n", pre_authcode_respond);
-
-			//Player Version
-			//unsigned char mapstatus = message[position]; //avoid warning
-			position++;
-			//printf("\tMapstatus: %d\n", mapstatus);
+			byte* mhash = Stream.read_str(packet);
+			byte* pre_authcode_respond = Stream.read_str(packet);
+			byte mapstatus = Stream.read_byte(packet);
 
 			free(pre_authcode_respond);
-			free(maphash);
+			free(mhash);
 
-			//Respond
-			stringsize = 3;
-			unsigned char *buffer = malloc(stringsize);
-			if (buffer == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-
-			position = 0;
-
-			buffer[position] = 252;
-			position++;
-			buffer[position] = 4;
-			position++;
-			buffer[position] = 0; //CheckPlayerData()
-			position++;
-
-			SendToPlayer(buffer, stringsize, id, 1);
+			SendToPlayer("\x252\4\0", 3, id, 1);
 			player[id].joinstatus = 3;
-		}
-		else
-		{
-			printf("Unexpected join data (%d) from %s; expected %d\n", message[1], player[id].name, player[id].joinstatus+1);
+		} else {
+			printf("Unexpected join data (3) from %s; expected %d\n", player[id].name, player[id].joinstatus+1);
 		}
 		break;
 	}
-	case 5:
-	{
+	case 5: {
 		if (player[id].joinstatus == 3)
 		{
-			int position = 2;
-
-			paketlength = 3;
-			if (paketlength > length)
-			{
-				printf("Invalid packet (joinroutine_known)!\n");
-				return length;
-			}
-			//Map-Hash
-			int stringsize = message[position];
-			if (stringsize > 255 || stringsize >= (length - position + 1))
-			{
-				printf("Mapname too big\n");
-				return length;
-			}
-			position++;
-
-			unsigned char *mapname = malloc(stringsize + 1);
-			if (mapname == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-			memcpy(mapname, message + position, stringsize);
-			mapname[stringsize] = '\0';
-			position += stringsize;
-			paketlength += stringsize;
-
-			//printf("\tMapname: %s\n", mapname);
-
+			byte* mapname = Stream.read_str(packet);
 
 			//----------- ServerData -----------
 
-			stringsize = 28 + u_strlen(sv_map) + u_strlen(sv_name);
-			unsigned char *buffer = malloc(stringsize);
-			if (buffer == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
+			stream* buf = init_stream(NULL);
 
-			position = 0;
+			Stream.write(buf, "\x252\6\0", 3);
+			Stream.write_str(buf, sv_map);
+			Stream.write_str(buf, sv_name);
+			byte wtf[] = {
+					0,
+					0,
+					sv_friendlyfire,
+					0,
+					mp_roundtime,
+					mp_freezetime,
+					mp_c4timer,
+					32,
+					124,
+					0,
+					0,
+					1,
+					0,
+					sv_maxplayers,
+					sv_fow,
+					mp_specmode,
+					sv_gamemode,
+					mp_respawndelay,
+					mp_infammo,
+					3, 'A', 'C', 'K'
+			};
+			Stream.write(buf, wtf, 23);
 
-			buffer[position] = 252;
-			position++;
-			buffer[position] = 6;
-			position++;
-			buffer[position] = 0; //CheckPlayerData()
-			position++;
-
-			buffer[position] = u_strlen(sv_map);
-			position++;
-			memcpy(buffer + position, sv_map, u_strlen(sv_map));
-			position += u_strlen(sv_map);
-
-			buffer[position] = u_strlen(sv_name);
-			position++;
-			memcpy(buffer + position, sv_name, u_strlen(sv_name));
-			position += u_strlen(sv_name);
-
-			buffer[position] = 0; //Unknown
-			position++;
-			buffer[position] = 0; //Unknown
-			position++;
-			buffer[position] = sv_friendlyfire;
-			position++;
-			buffer[position] = 0; //Unknown
-			position++;
-			buffer[position] = mp_roundtime;
-			position++;
-			buffer[position] = mp_freezetime;
-			position++;
-			buffer[position] = mp_c4timer;
-			position++;
-			buffer[position] = 32; //Unknown
-			position++;
-			buffer[position] = 124; //Unknown
-			position++;
-			buffer[position] = 0; //Unknown
-			position++;
-			buffer[position] = 0; //Unknown
-			position++;
-			buffer[position] = 1; //Unknown
-			position++;
-			buffer[position] = 0; //Unknown
-			position++;
-			buffer[position] = sv_maxplayers;
-			position++;
-			buffer[position] = sv_fow;
-			position++;
-			buffer[position] = mp_specmode;
-			position++;
-			buffer[position] = sv_gamemode;
-			position++;
-			buffer[position] = mp_respawndelay;
-			position++;
-			buffer[position] = mp_infammo;
-			position++;
-			buffer[position] = 3; //u_strlen ACK
-			position++;
-			buffer[position] = 65; //A
-			position++;
-			buffer[position] = 67; //C
-			position++;
-			buffer[position] = 75; //K
-			position++;
-
-			SendToPlayer(buffer, stringsize, id, 1);
-			free(buffer);
+			SendToPlayer(buf->mem, buf->size, id, 1);
+			free(buf);
 
 			//----------- PlayerData -----------
-			stringsize = 4;
-			buffer = malloc(stringsize);
-			if (buffer == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-
-			position = 0;
-
-			buffer[position] = 252;
-			position++;
-			buffer[position] = 7;
-			position++;
-			buffer[position] = 1;
-			position++;
-			buffer[position] = onlineplayer;
-			position++;
+			buf = init_stream(NULL);
+			Stream.write(buf, "\x252\7\1", 3);
+			Stream.write_byte(buf, onlineplayer);
 
 			int i;
-			for (i = 1; i <= sv_maxplayers; i++)
-			{
-				if (player[i].used == 1 && player[i].joinstatus >= 1 && i != id)
-				{
-					unsigned char *encodedname;
-					encodedname = GetEncodedString(player[i].name, u_strlen(
-							player[i].name));
-					unsigned short *deaths = &player[i].deaths;
-					unsigned short tempscore = (unsigned) (player[i].deaths
-							+ 1000);
-					unsigned short *score = &tempscore;
+			for (i = 1; i <= sv_maxplayers; i++){
+				if (player[i].used == 1 && player[i].joinstatus >= 1 && i != id){
+					unsigned char *encodedname = GetEncodedString(player[i].name, u_strlen(player[i].name));
+					unsigned short deaths = player[i].deaths;
+					unsigned short score = (unsigned) (player[i].deaths + 1000);
 
-					unsigned short tempx = (player[i].x);
-					unsigned short tempy = (player[i].y);
-					unsigned short *x = &tempx;
-					unsigned short *y = &tempy;
+					unsigned short x = (player[i].x);
+					unsigned short y = (player[i].y);
+					float rot = player[i].rotation;
 
-					float *ptemprotation = &player[i].rotation;
-
-					int playersize = 25 + u_strlen(encodedname);
-					buffer = realloc(buffer, position + 1 + playersize); //+1 because e.g. buffer[10] are 11 chars
-					if (buffer == NULL)
-						error_exit("Memory error ( joinroutine_known() )\n");
-
-					buffer[position] = i;
-					position++;
-
-					buffer[position] = u_strlen(encodedname);
-					position++;
-					memcpy(buffer + position, encodedname,
-							u_strlen(encodedname));
-					position += u_strlen(encodedname);
+					Stream.write_byte(buf, i);
+					Stream.write_str(buf, encodedname);
 					free(encodedname);
 
-					buffer[position] = 0; //Unknown
-					position++;
-					buffer[position] = player[i].team;
-					position++;
-					buffer[position] = 0; //Unknown
-					position++;
-					buffer[position] = player[i].skin; //Unknown
-					position++;
-					/*
-					 buffer[position] = score[0]; //Deaths
-					 position++;
-					 buffer[position] = score[1]; //Deaths
-					 position++;
-					 */
-					memcpy(buffer + position, score, 2);
-					position += 2;
-					/*
-					 buffer[position] = deaths[0]; //Deaths
-					 position++;
-					 buffer[position] = deaths[1]; //Deaths
-					 position++;
-					 */
-					memcpy(buffer + position, deaths, 2);
-					position += 2;
-					memcpy(buffer + position, x, 2);
-					position += 2;
-					buffer[position] = 0; //Unknown
-					position++;
-					buffer[position] = 0; //Unknown
-					position++;
-					memcpy(buffer + position, y, 2);
-					position += 2;
-					buffer[position] = 0; //Unknown
-					position++;
-					buffer[position] = 0; //Unknown
-					position++;
-					buffer[position] = ptemprotation[0]; //Rotation
-					position++;
-					buffer[position] = ptemprotation[1]; //Rotation
-					position++;
-					buffer[position] = player[i].health; //Health
-					position++;
-					buffer[position] = player[i].armor; //Armor
-					position++;
-					buffer[position] = 0; //Unknown
-					position++;
-					buffer[position]
-							= player[i].actualweapon; //Aktuelle Waffe
-					position++;
-					buffer[position] = 0; //Unknown
-					position++;
-					/*
-					 01 00 01 00 00 e8 03 00 00 70 00 00 00 70 01 00 00 7d ff 64 00 00 32 00
-					 04 00 01 00 00 e8 03 00 00 0c 18 00 00 0c 18 00 00 66 ff 64 00 00 32 00
-					 01 00 01 00 00 e8 03 00 00 00 01 00 00 00 01 00 00 12 00 64 00 00 32 00
-					 01 00 02 00 00 e8 03 00 00 01 10 00 00 01 10
-					 e8 03 00 00 12 01 00 00 01 03
-					 e8 03 00 00 0c 18 00 00 0d 18 00 00 ab 00 64 00 00 1e 00
-					 e8 03 00 00 10 18 00 00 10 18 00 00 b6 ff 64 c9 00 49 00
-					 01 00 01 00 00 4c 04 96 00 10 18 00 00 10 18 00 00 5e ff 64 00 00 02 00
-					 */
+					byte wtf2[] = {
+							0,
+							player[i].team,
+							0,
+							player[i].skin,
+					};
+					Stream.write(buf, wtf2, 4);
+
+					Stream.write_short(buf, score);
+					Stream.write_short(buf, deaths);
+					Stream.write_int(buf, x);
+					Stream.write_int(buf, y);
+					Stream.write_short(buf, rot);
+
+					byte wtf3[] = {
+							player[i].health, player[i].armor, 0, player[i].actualweapon, 0
+					};
+					Stream.write(buf, wtf3, 5);
 				}
 			}
+
+			// Rest of the packet only concerns with the current player
 			if (1)
 			{
 				unsigned char *encodedname;
