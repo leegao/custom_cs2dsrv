@@ -14,6 +14,7 @@ void parse_opts(int argc, char *argv[]){
 	static struct option long_options[] = {
 		{"cfg", required_argument, 0, 'c'},
 		{"name", required_argument, 0, 0},
+		{"nousgn", no_argument, 0, 1},
 		{0, 0, 0, 0}
 	};
 
@@ -28,6 +29,9 @@ void parse_opts(int argc, char *argv[]){
 		case 0:
 			sv_name = (unsigned char*)optarg;
 			break;
+		case 1:
+			no_usgn = 1;
+			break;
 		default:
 			return;
 		}
@@ -40,7 +44,6 @@ void parse_opts(int argc, char *argv[]){
  * \return EXIT_SUCCESS or EXIT_FAILURE
  */
 int main(int argc, char *argv[]){
-
 	// Parses the commandline arguments
 	parse_opts(argc, argv); // IE: ./server -cserver.cfg --name "My Server"
 
@@ -69,8 +72,8 @@ int main(int argc, char *argv[]){
 	 */
 	OnServerStart();
 	ReadMap();
-	//if (argc == 1) //modify into optional offline mode
-	//UsgnRegister(sock);
+	if (!no_usgn) //modify into optional offline mode
+	  UsgnRegister(sock);
 
 	init_queue(&send_q);
 	start_stream();

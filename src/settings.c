@@ -12,6 +12,7 @@
 #include <string.h>
 
 char* cfg_file = NULL;
+int no_usgn = 0;
 
 unsigned char pre_authcode[] = "5TWs3Obv7";
 char startweapons[] = { 50 };

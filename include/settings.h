@@ -18,6 +18,7 @@
 #define SETTINGS_PATH "server.cfg"
 
 extern char* cfg_file;
+extern int no_usgn;
 extern unsigned char pre_authcode[];
 
 extern unsigned char *sv_name;
