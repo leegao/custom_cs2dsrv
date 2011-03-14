@@ -48,5 +48,6 @@
 #include "map.h"
 
 int main();
+void just(byte*, int);
 
 #endif // MAIN_H_INCLUDED

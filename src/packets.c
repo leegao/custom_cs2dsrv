@@ -383,7 +383,7 @@ int teamchange(stream* packet, int id){
  * \return read bytes (specific: 5)
  */
 int ping_serverlist(stream* packet, struct sockaddr_in *client, int writesocket){
-	CHECK_STREAM(packet, 3);
+	CHECK_STREAM(packet, 4);
 
 	unsigned char *tempbuffer = malloc(packet->size+3);
 	if (tempbuffer == NULL)
@@ -396,13 +396,14 @@ int ping_serverlist(stream* packet, struct sockaddr_in *client, int writesocket)
 	tempbuffer[4] = packet->mem[2];
 	//memcpy(tempbuffer + 3, packet->mem, packet->size);
 
-	//send_now(tempbuffer, 5, *client);
-	udp_send(writesocket, tempbuffer, 5, client);
+	send_now(tempbuffer, 5, *client);
+	//udp_send(writesocket, tempbuffer, 5, client);
 	free(tempbuffer);
+	Stream.read(packet, 4);
 }
 
 int serverinfo_request(stream* packet,
-		struct sockaddr_in *client)
+		struct sockaddr_in *client, int sock)
 {
 	CHECK_STREAM(packet,1);
 	byte* message = packet->mem;
@@ -413,8 +414,7 @@ int serverinfo_request(stream* packet,
 	Stream.write_short(buf, 1);
 	Stream.write_byte(buf, 0xfb);
 	Stream.write_byte(buf, Stream.read_byte(packet));
-
-	switch (message[1])
+	switch (message[0])
 	{
 	case 1:
 	case 2:
@@ -427,16 +427,10 @@ int serverinfo_request(stream* packet,
 			Stream.write_byte(buf, sv_gamemode);
 		Stream.write_byte(buf, bot_count);
 		send_now(buf->mem, buf->size, *client);
-		//udp_send(writesocket, buffer, stringsize, client);
-		break;
-	case 4:
-		break;
-	case 5:
-		break;
-	default:
-		break;
+		//udp_send(sock, buf->mem, buf->size, client);
 	}
 	free(buf);
+	Stream.read(packet, packet->size);
 }
 
 int joinroutine_unknown(stream* packet, struct sockaddr_in *client){

@@ -10,6 +10,12 @@
 #include <getopt.h>
 #include "settings.h"
 
+void just(byte* str, int l){
+	printf(""); int i;
+	for (i=0;i<l;i++)eprintf("%x ", str[i]);
+	eprintf("\n");
+}
+
 void parse_opts(int argc, char *argv[]){
 	static struct option long_options[] = {
 		{"cfg", required_argument, 0, 'c'},
@@ -120,7 +126,7 @@ int main(int argc, char *argv[]){
 
 		UpdateBuffer();
 		CheckForTimeout(sock);
-		ExecuteFunctionsWithTime(&checktime, sock); // refactor into scheduler
+		//ExecuteFunctionsWithTime(&checktime, sock); // refactor into scheduler
 		CheckAllPlayerForReload(sock);
 
 		FD_ZERO(&descriptor);
@@ -254,18 +260,22 @@ int main(int argc, char *argv[]){
 				}
 				else
 				{
-					int control = 1;
+					int control = 1,i;
 					int position = 2;
+
 					stream *packet = init_stream(NULL);
-					Stream.write(packet, buffer+2, size);
+					Stream.write(packet, buffer+2, size-2);
+
 					while (control)
 					{
 						int tempsize = size - position;
+						int lol;
 
+						just(packet->mem, packet->size);
 
 						//memcpy(packet, buffer + position, tempsize);
 
-						switch (Stream.read_byte(packet))
+						switch (lol=(Stream.read_byte(packet)))
 						//payload
 						{
 						case 1:
@@ -288,14 +298,16 @@ int main(int argc, char *argv[]){
 							break;
 						case 251:
 							serverinfo_request(packet,
-									&newclient);
+									&newclient, sock);
 							break;
 						case 252:
 							joinroutine_unknown(packet,
 									&newclient);
 							break;
 						default:
-							printf("%d %d", size, packet->size);
+							//printf("%x: %d %d\n", lol, size, packet->size);
+							//for (i=0;i<size;i++)eprintf("%x ", buffer[i]);
+							//eprintf("\n");
 							unknown(packet,  buffer, packet->size);
 							break;
 						}

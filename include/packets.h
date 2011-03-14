@@ -36,7 +36,7 @@ int teamchange(stream*, int id);
 int ping_serverlist(stream*,
 		struct sockaddr_in *client, int socket);
 int serverinfo_request(stream*,
-		struct sockaddr_in *client);
+		struct sockaddr_in *client, int);
 int joinroutine_unknown(stream*,
 		struct sockaddr_in *client);
 int specpos(stream*, int id);
