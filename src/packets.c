@@ -488,26 +488,15 @@ int specpos(stream* packet, int id){
 
 int chatmessage(stream* packet, int id){
 	CHECK_STREAM(packet, 4);
-	unsigned char team, unknown;
-	int paketsize;
+	byte team, *msg;
 
 	team = Stream.read_byte(packet);
-	Stream.read_str(packet);
+	msg = Stream.read_str2(packet);
 
-	unknown = Stream.read_byte(packet);
-
-	unsigned char *string = malloc(paketsize);
-	if (string == NULL)
-		error_exit("Memory error ( chatmessage() )\n");
-	memcpy(string, message + position, paketsize);
-
-	string[paketsize] = '\0';
-	position += paketsize;
-
-	switch (OnChatMessage(id, string, team))
+	switch (OnChatMessage(id, msg, team))
 	{
 	case 0:
-		SendChatMessage(id, string, team);
+		SendChatMessage(id, msg, team);
 		break;
 	case 1:
 		break;
@@ -516,9 +505,7 @@ int chatmessage(stream* packet, int id){
 		break;
 	}
 
-	free(string);
-
-	return paketlength;
+	free(msg);
 }
 
 int joinroutine_known(stream* packet, int id)
@@ -1654,6 +1641,16 @@ byte* read_str(stream* s){
 	return str;
 }
 
+byte* read_str2(stream* s){
+	short i = read_short(s);
+	if (!i) return 0;
+	byte* str = (byte*)malloc(i+1), *src = Stream.read(s, i);
+	if (!src) return 0;
+	memcpy(str, src, i);
+	str[i] = 0;
+	return str;
+}
+
 int write_str(stream* s, byte* str){
 	int n = strlen((char*)str)+1;
 	byte* str_ = (byte*)malloc(n--);
@@ -1702,4 +1699,6 @@ void start_stream(){
 	Stream.write_float = &write_float;
 	Stream.write_str = &write_str;
 	Stream.write_line = &write_line;
+
+	Stream.read_str2 = &read_str2;
 }

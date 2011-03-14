@@ -169,6 +169,8 @@ struct{
 	int (*write_str) (stream*, byte*);
 	int (*write_line) (stream*, byte*);
 
+	byte* (*read_str2) (stream*);
+
 	int quanta; // atomic size of mem (not the size of the bytes)
 } Stream;
 
