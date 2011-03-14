@@ -132,7 +132,7 @@ void CheckForTimeout(int writesocket)
 		if (player[i].used == 1 && PlayerTimeout(i))
 		{
 			printf("Client %d timed out!\n", i);
-			SendLeaveMessage(i, writesocket);
+			SendLeaveMessage(i);
 			ClearPlayer(i);
 		}
 	}
@@ -293,7 +293,7 @@ int ValidatePacket(unsigned char *message, int id){
  * \param *message pointer to the message
  * \param id player-id
  */
-void PaketConfirmation(unsigned char *message, int id, int writesocket)
+void PaketConfirmation(unsigned char *message, int id)
 {
 	unsigned short *pTempNummer = (unsigned short *) message;
 	/*
@@ -308,7 +308,7 @@ void PaketConfirmation(unsigned char *message, int id, int writesocket)
 		buffer[0] = 0x01;
 		memcpy(buffer + 1, pTempNummer, 2);
 
-		SendToPlayer(buffer, stringsize, id, 0, writesocket);
+		SendToPlayer(buffer, stringsize, id, 0);
 
 		free(buffer);
 	}
@@ -412,7 +412,7 @@ void CheckAllPlayerForReload(int writesocket)
 				{
 					player[i].wpntable[player[i].reloading].ammo1 = weapons[player[i].reloading].ammo1;
 				}
-				SendReloadMessage(i, 2, writesocket);
+				SendReloadMessage(i, 2);
 				player[i].reloading = 0;
 			}
 		}
@@ -503,8 +503,7 @@ void ExecuteFunctionsWithTime(time_t *checktime, int writesocket)
 		if (actualtime % 5 == 0) //execute every 5 seconds
 		{
 			SendPingList(writesocket);
-			SendMessageToAll("This is an alpha version! Don't play at it!", 1,
-					writesocket); //Do not remove or change this until server reaches beta status
+			SendMessageToAll("This is an alpha version! Don't play at it!", 1); //Do not remove or change this until server reaches beta status
 			PingAllPlayer(writesocket);
 		}
 		else if (actualtime % 50 == 0)

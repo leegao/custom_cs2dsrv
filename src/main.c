@@ -135,11 +135,13 @@ int main(int argc, char *argv[]){
 			} else {
 				int id = IsPlayerKnown(newclient.sin_addr, newclient.sin_port); /// Function returns id or -1 if unknown
 				if (id){///When the player is known execute other commands as when the player is unknown
-					if (ValidatePacket(buffer, id)){ ///Checks and raise the packet numbering if necessary
-						PaketConfirmation(buffer, id, sock); ///If the numbering is even, send a confirmation
+					if (ValidatePacket(buffer,id)){ ///Checks and raise the packet numbering if necessary
+						PaketConfirmation(buffer,id); ///If the numbering is even, send a confirmation
 						player[id].lastpacket = mtime();
 						int control = 1;
-						int position = 2;
+						stream* packet = init_stream(NULL);
+						Stream.write(packet, buffer+2, size-2);
+
 						/**
 						 * This while construct splits the recieved UDP-message
 						 * into cs2d-messages.
@@ -147,125 +149,106 @@ int main(int argc, char *argv[]){
 						 */
 						while (control)
 						{
-							int tempsize = size - position;
+							//int tempsize = size - position;
 
-							unsigned char *message = malloc(tempsize);
-							memcpy(message, buffer + position, tempsize);
+							//unsigned char *message = malloc(tempsize);
+							//memcpy(message, buffer + position, tempsize);
+
 							int rtn = 0;
 
-							switch (message[0])
-							//payload
-							{
+							switch ((rtn+Stream.read_byte(packet))){
 							case 1:
-								rtn = confirmation_known(message, tempsize, id,
-										sock);
+								confirmation_known(packet,id);
 								break;
 							case 3:
-								rtn = connection_setup_known(message, tempsize,
+								connection_setup_known(packet,
 										newclient.sin_addr, newclient.sin_port,
 										id);
 								break;
 							case 7:
-								rtn = fire(message, tempsize, id, sock);
+								fire(packet, id);
 								break;
 							case 8:
-								rtn = advanced_fire(message, tempsize, id,
-										sock);
+								advanced_fire(packet, id);
 								break;
 							case 9:
-								rtn = weaponchange(message, tempsize, id,
-										sock);
+								weaponchange(packet, id);
 								break;
 							case 10:
-								rtn = posupdaterun(message, tempsize, id,
-										sock);
+								posupdaterun(packet, id);
 								break;
 							case 11:
-								rtn = posupdatewalk(message, tempsize, id,
-										sock);
+								posupdatewalk(packet, id);
 								break;
 							case 12:
-								rtn = rotupdate(message, tempsize, id,
-										sock);
+								rotupdate(packet, id);
 								break;
 							case 13:
-								rtn = posrotupdaterun(message, tempsize, id,
-										sock);
+								posrotupdaterun(packet, id);
 								break;
 							case 14:
-								rtn = posrotupdatewalk(message, tempsize, id,
-										sock);
+								posrotupdatewalk(packet, id);
 								break;
 							case 16:
-								rtn = reload(message, tempsize, id, sock);
+								reload(packet, id);
 								break;
 							case 20:
-								rtn = teamchange(message, tempsize, id,
-										sock);
+								teamchange(packet, id);
 								break;
 							case 23:
-								rtn = buy(message, tempsize, id, sock);
+								buy(packet, id);
 								break;
 							case 24:
-								rtn = drop(message, tempsize, id, sock);
+								drop(packet, id);
 								break;
 							case 28:
 								// Spray 28 - 0 - x x - y y - color
-								rtn = spray(message, tempsize, id, sock);
+								spray(packet, id);
 								break;
 							case 32:
 								rtn
-										= specpos(message, tempsize, id,
-												sock);
+										= specpos(packet, id);
 								break;
 							case 39:
-								rtn = respawnrequest(message, tempsize, id,
-										sock);
+								respawnrequest(packet, id);
 								break;
 							case 236:
 								rtn
-										= rcon_pw(message, tempsize, id,
-												sock);
+										= rcon_pw(packet, id);
 								break;
 							case 240:
-								rtn = chatmessage(message, tempsize, id,
-										sock);
+								chatpacket(packet, id);
 								break;
 							case 249:
-								rtn = ping_ingame(message, tempsize, id,
-										sock);
+								ping_ingame(packet, id);
 								break;
 							case 252:
-								rtn = joinroutine_known(message, tempsize, id,
-										sock);
+								joinroutine_known(packet, id);
 								break;
 							case 253:
-								rtn = leave(id, sock);
+								leave(packet,id);
 								break;
 							default:
-								SendMessageToPlayer(id, "Not implemented yet!",
-										1, sock);
-								unknown(message, tempsize, buffer, size,
-										position);
-								rtn = tempsize;
+								SendpacketToPlayer(id, "Not implemented yet!",
+										1);
+								unknown(packet,  buffer, rtn);
 								break;
 							}
 
-							position = position + rtn;
-							if (position == size)
+							if (EMPTY_STREAM(packet))
 							{
-								free(message);
+								free(packet);
 								break;
 							}
 							/**
 							 * Security check (Buffer Overflow)
 							 */
-							else if (position > size)
-							{
-								printf("Error while reading packet: position(%d) > size(%d)\n", position, size);
-								free(message);
-							}
-							free(message);
+//							else if (position > size)
+//							{
+//								printf("Error while reading packet: position(%d) > size(%d)\n", position, size);
+//								free(packet);
+//							}
+							free(packet);
 						}
 					}
 				}
@@ -277,49 +260,46 @@ int main(int argc, char *argv[]){
 					{
 						int tempsize = size - position;
 
-						unsigned char *message = malloc(tempsize);
-						memcpy(message, buffer + position, tempsize);
-						int rtn = 0;
+						unsigned char *packet = malloc(tempsize);
+						memcpy(packet, buffer + position, tempsize);
 
-						switch (message[0])
+						switch (packet[0])
 						//payload
 						{
 						case 1:
-							rtn = confirmation_unknown(message, tempsize,
+							confirmation_unknown(packet,
 									newclient.sin_addr, newclient.sin_port);
 							break;
 						case 3:
-							rtn = connection_setup_unknown(message, tempsize,
+							connection_setup_unknown(packet,
 									newclient.sin_addr, newclient.sin_port);
 							break;
 						case 27:
-							rtn = UsgnPacket(27, message, tempsize, sock);
+							UsgnPacket(27, packet);
 							break;
 						case 28:
-							rtn = UsgnPacket(28, message, tempsize, sock);
+							UsgnPacket(28, packet);
 							break;
 						case 250:
-							rtn = ping_serverlist(message, tempsize,
-									&newclient, sock);
+							ping_serverlist(packet,
+									&newclient);
 							break;
 						case 251:
-							rtn = serverinfo_request(message, tempsize,
-									&newclient, sock);
+							serverinfo_request(packet,
+									&newclient);
 							break;
 						case 252:
-							rtn = joinroutine_unknown(message, tempsize,
-									&newclient, sock);
+							joinroutine_unknown(packet,
+									&newclient);
 							break;
 						default:
-							unknown(message, tempsize, buffer, size, position);
-							rtn = tempsize;
+							unknown(packet,  buffer, size);
 							break;
 						}
 
-						position = position + rtn;
 						if (position == size)
 						{
-							free(message);
+							free(packet);
 							break;
 						}
 						/**
@@ -328,9 +308,9 @@ int main(int argc, char *argv[]){
 						else if (position > size)
 						{
 							printf("Error while reading packet: position(%d) > size(%d)\n", position, size);
-							free(message);
+							free(packet);
 						}
-						free(message);
+						free(packet);
 					}
 				}
 			}

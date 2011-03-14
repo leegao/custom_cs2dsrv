@@ -9,39 +9,39 @@
 #include "script-functions.h"
 
 /*
- int OnJoin(int id, int writesocket)
+ int OnJoin(int id)
  id - Who joins
  Return Values:
  0 - OK
  */
-int OnJoin(int id, int writesocket)
+int OnJoin(int id)
 {
-	SendJoinMessage(id, writesocket);
+	SendJoinMessage(id);
 	printf("%s (#%d) has joined the game!\n\tUsing ip %s:%d and usgn-id #%d!\n", player[id].name, id, inet_ntoa(player[id].ip), player[id].port, *player[id].usgn);
 	return 0;
 }
 
 /*
- int OnLeave(int id, int writesocket)
+ int OnLeave(int id)
  id - Who leaves
  Return Values:
  0 - OK
  */
-int OnLeave(int id, int writesocket)
+int OnLeave(int id)
 {
-	SendLeaveMessage(id, writesocket);
+	SendLeaveMessage(id);
 	printf("%s has left the game!\n", player[id].name);
 	return 0;
 }
 
 /*
- int OnSpecmove(int id, int newx, int newy, int writesocket)
+ int OnSpecmove(int id, int newx, int newy)
  Return Values:
  0 - OK
  1 - Don't save it
  */
 
-int OnSpecmove(int id, int newx, int newy, int writesocket)
+int OnSpecmove(int id, int newx, int newy)
 {
 	return 0;
 }
@@ -73,12 +73,12 @@ int OnExit()
 }
 
 /*
- int OnRespawnRequest(int id, int writesocket)
+ int OnRespawnRequest(int id)
  Return Values:
  0 - Respawn
  1 - Don't Respawn
  */
-int OnRespawnRequest(int id, int writesocket)
+int OnRespawnRequest(int id)
 {
 	if (player[id].dead == 1)
 	{
@@ -93,21 +93,21 @@ int OnRespawnRequest(int id, int writesocket)
 }
 
 /*
- int OnRespawn(int id, int writesocket)
+ int OnRespawn(int id)
  Return Values:
  0 - OK
  */
-int OnRespawn(int id, int writesocket)
+int OnRespawn(int id)
 {
 	return 0;
 }
 
 /*
- int OnRespawn(int id, int writesocket)
+ int OnRespawn(int id)
  Return Values:
  0 - OK
  */
-int OnWeaponChangeAttempt(int id, int wpnid, int writesocket)
+int OnWeaponChangeAttempt(int id, int wpnid)
 {
 	if (player[id].wpntable[wpnid].status <= 0)
 		return 1;
@@ -121,12 +121,12 @@ int OnWeaponChangeAttempt(int id, int wpnid, int writesocket)
 }
 
 /*
- int OnAdvancedFire(int id, int status, int writesocket)
+ int OnAdvancedFire(int id, int status)
  Return Values:
  0 - OK
  1 - Not OK
  */
-int OnAdvancedFire(int id, int status, int writesocket)
+int OnAdvancedFire(int id, int status)
 {
 	int wpnid = player[id].actualweapon;
 
@@ -155,7 +155,7 @@ int OnAdvancedFire(int id, int status, int writesocket)
 	case 3:
 	{
 		player[id].wpntable[wpnid].status = 2;
-		OnFire(id, writesocket);
+		OnFire(id);
 		player[id].wpntable[wpnid].status = 1;
 		break;
 	}
@@ -184,7 +184,7 @@ int OnAdvancedFire(int id, int status, int writesocket)
 	}
 	default:
 	{
-		SendMessageToPlayer(id, "Not implemented yet!", 1, writesocket);
+		SendMessageToPlayer(id, "Not implemented yet!", 1);
 		return 1;
 	}
 
@@ -193,12 +193,12 @@ int OnAdvancedFire(int id, int status, int writesocket)
 	return 0;
 }
 /*
- int OnFire(int id, int writesocket)
+ int OnFire(int id)
  Return Values:
  0 - OK
  1 - Not OK
  */
-int OnFire(int id, int writesocket)
+int OnFire(int id)
 {
 	//printf("%s tried to shoot!\n", player[id].name);
 	short *ammo1 = &player[id].wpntable[player[id].actualweapon].ammo1;
@@ -288,7 +288,7 @@ int OnFire(int id, int writesocket)
 				 + (player[b].y - starty) * (player[b].y - starty))
 				 <= 16)*/
 				{
-					OnHit(id, b, writesocket);
+					OnHit(id, b);
 					playershit[b] = 1;
 				}
 			}
@@ -297,11 +297,11 @@ int OnFire(int id, int writesocket)
 	return 0;
 }
 /*
- int OnHit(int hitter, int victim, int writesocket)
+ int OnHit(int hitter, int victim)
  Return Values:
  0 - OK
  */
-int OnHit(int hitter, int victim, int writesocket)
+int OnHit(int hitter, int victim)
 {
 	int wpnid = player[hitter].actualweapon;
 	int damage;
@@ -323,18 +323,18 @@ int OnHit(int hitter, int victim, int writesocket)
 	if (player[victim].health - damage > 0)
 	{
 		player[victim].health -= damage;
-		SendHitMessage(victim, hitter, player[victim].health, writesocket);
+		SendHitMessage(victim, hitter, player[victim].health);
 		//printf("%s hitted %s with %s\n", player[hitter].name, player[victim].name, weapons[wpnid].name);
 	}
 	else
 	{
-		OnKill(hitter, victim, wpnid, writesocket);
+		OnKill(hitter, victim, wpnid);
 	}
 
 	return 0;
 }
 
-int OnBuyAttempt(int id, int wpnid, int writesocket)
+int OnBuyAttempt(int id, int wpnid)
 {
 	//order of checks: buyzone, buytime, money, unbuyable, already have
 
@@ -379,7 +379,7 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 
 	if (b > 0)
 	{
-		SendBuyFailedMessage(id, 255, writesocket);
+		SendBuyFailedMessage(id, 255);
 		return 1;
 	}
 	////
@@ -391,7 +391,7 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 	//money check
 	if (wpnid != 57 && wpnid != 58 && player[id].money < weapons[wpnid].price)
 	{
-		SendBuyFailedMessage(id, 253, writesocket);
+		SendBuyFailedMessage(id, 253);
 		return 1;
 	}
 	////
@@ -399,14 +399,14 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 	//unbuyable or doesn't exist or wrong team check
 	if (weapons[wpnid].name == NULL || weapons[wpnid].team == 3)
 	{
-		SendBuyFailedMessage(id, 244, writesocket);
+		SendBuyFailedMessage(id, 244);
 		return 1;
 	}
 	
 
 	if (weapons[wpnid].team != 0 && weapons[wpnid].team != player[id].team)
 	{
-		SendBuyFailedMessage(id, 252, writesocket);
+		SendBuyFailedMessage(id, 252);
 		return 1;
 	}
 	////
@@ -414,7 +414,7 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 	//already equipped check
 	if (player[id].wpntable[wpnid].status > 0)
 	{
-		SendBuyFailedMessage(id, 251, writesocket);
+		SendBuyFailedMessage(id, 251);
 		return 1;
 	}
 	////
@@ -440,7 +440,7 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 	 */
 }
 
-int OnBuy(int id, int wpnid, int writesocket)
+int OnBuy(int id, int wpnid)
 {
 	int i;
 	switch (wpnid)
@@ -457,13 +457,13 @@ int OnBuy(int id, int wpnid, int writesocket)
 			}
 			else
 			{
-				SendBuyFailedMessage(id, 253, writesocket);
+				SendBuyFailedMessage(id, 253);
 				return 1;
 			}
 		}
 		else
 		{
-			SendBuyFailedMessage(id, 251, writesocket);
+			SendBuyFailedMessage(id, 251);
 			return 1;
 		}
 		break;
@@ -482,7 +482,7 @@ int OnBuy(int id, int wpnid, int writesocket)
 		}
 		if (bought == 0)
 		{
-			SendBuyFailedMessage(id, 248, writesocket);
+			SendBuyFailedMessage(id, 248);
 			return 1;
 		}
 		else
@@ -503,7 +503,7 @@ int OnBuy(int id, int wpnid, int writesocket)
 		}
 		if (bought == 0)
 		{
-			SendBuyFailedMessage(id, 248, writesocket);
+			SendBuyFailedMessage(id, 248);
 			return 1;
 		}
 		else
@@ -523,7 +523,7 @@ int OnBuy(int id, int wpnid, int writesocket)
 					{
 						RemovePlayerWeapon(id, i);
 						SendDropMessage(id, i, player[id].wpntable[i].ammo1,
-							player[id].wpntable[i].ammo2, 0, 0, 0, writesocket);
+							player[id].wpntable[i].ammo2, 0, 0, 0);
 						break;
 					}
 				}
@@ -535,11 +535,11 @@ int OnBuy(int id, int wpnid, int writesocket)
 	}
 	}
 	//printf("%s bought %s!\n", player[id].name, weapons[wpnid].name);
-	SendBuyMessage(id, wpnid, writesocket);
+	SendBuyMessage(id, wpnid);
 	return 0;
 }
 
-int OnKill(int hitter, int victim, int wpnid, int writesocket)
+int OnKill(int hitter, int victim, int wpnid)
 {
 	player[victim].health = 0;
 	player[victim].dead = 1;
@@ -551,18 +551,18 @@ int OnKill(int hitter, int victim, int wpnid, int writesocket)
 	else
 		player[hitter].money += 300;
 	RemoveAllPlayerWeapon(victim);
-	SendHitMessage(victim, hitter, player[victim].health, writesocket);
-	SendKillMessage(hitter, victim, writesocket);
+	SendHitMessage(victim, hitter, player[victim].health);
+	SendKillMessage(hitter, victim);
 	printf("%s killed %s with %s\n", player[hitter].name, player[victim].name, weapons[wpnid].name);
 	return 0;
 }
 /*
- int OnChatMessage(int id, unsigned char *message, int team, int writesocket)
+ int OnChatMessage(int id, unsigned char *message, int team)
  Return Values:
  0 - OK
  1 - don't send it
  */
-int OnChatMessage(int id, unsigned char *message, int team, int writesocket)
+int OnChatMessage(int id, unsigned char *message, int team)
 {
 	if (u_strlen(message) >= 4 && strncmp((char *) message, "!log", 4) == 0)
 	{
@@ -581,7 +581,7 @@ int OnChatMessage(int id, unsigned char *message, int team, int writesocket)
 	{
 		char buffer[30]; //Resulting stringlength unknown: Text = 24 chars
 		sprintf(buffer, "Current server FPS: %d", fpsnow);
-		SendMessageToPlayer(id, buffer, 1, writesocket);
+		SendMessageToPlayer(id, buffer, 1);
 		return 1;
 	}
 
@@ -597,24 +597,22 @@ int OnChatMessage(int id, unsigned char *message, int team, int writesocket)
 }
 
 /*
- int OnTeamChangeAttempt(int id, unsigned char team, unsigned char skin, int writesocket)
+ int OnTeamChangeAttempt(int id, unsigned char team, unsigned char skin)
  Return Values:
  0 - OK
  1 - Don't join
  */
-int OnTeamChangeAttempt(int id, unsigned char team, unsigned char skin,
-		int writesocket)
+int OnTeamChangeAttempt(int id, unsigned char team, unsigned char skin)
 {
 	return 0;
 }
 
 /*
- int OnTeamChange(int id, unsigned char team, unsigned char skin, int writesocket)
+ int OnTeamChange(int id, unsigned char team, unsigned char skin)
  Return Values:
  0 - OK
  */
-int OnTeamChange(int id, unsigned char team, unsigned char skin,
-		int writesocket)
+int OnTeamChange(int id, unsigned char team, unsigned char skin)
 {
 	if (skin != 5)
 	{
@@ -633,25 +631,24 @@ int OnTeamChange(int id, unsigned char team, unsigned char skin,
 			printf("%s joined a unknown team\n", player[id].name);
 			break;
 		}
-		SendHitMessage(id, id, 0, writesocket);
+		SendHitMessage(id, id, 0);
 		player[id].dead = 1;
 		RemoveAllPlayerWeapon(id);
 	}
 	if (team <= 2)
 	{
-		SendTeamChangeMessage(id, team, skin, writesocket);
+		SendTeamChangeMessage(id, team, skin);
 	}
 	return 0;
 }
 
 /*
- int OnMoveAttempt(int id, unsigned short x, unsigned short y, int status, int writesocket)
+ int OnMoveAttempt(int id, unsigned short x, unsigned short y, int status)
  Return Values:
  0 - OK
  1 - Don't move
  */
-int OnMoveAttempt(int id, unsigned short x, unsigned short y, int status,
-		int writesocket)
+int OnMoveAttempt(int id, unsigned short x, unsigned short y, int status)
 {
 	/*
 	 int newx = (int)ceil((x)/32);
@@ -662,13 +659,13 @@ int OnMoveAttempt(int id, unsigned short x, unsigned short y, int status,
 }
 
 /*
- int OnDrop(int id, unsigned char wpnid, unsigned short ammo1, unsigned short ammo2, unsigned char unknown1, int writesocket)
+ int OnDrop(int id, unsigned char wpnid, unsigned short ammo1, unsigned short ammo2, unsigned char unknown1)
  Return Values:
  0 - OK
  1 - Don't drop
  */
 int OnDrop(int id, unsigned char wpnid, unsigned short ammo1, unsigned short ammo2,
-		unsigned char unknown1, unsigned char unknown2, unsigned char unknown3, int writesocket)
+		unsigned char unknown1, unsigned char unknown2, unsigned char unknown3)
 {
 	if ((player[id].wpntable[wpnid].status > 0) &&
 		(player[id].wpntable[wpnid].ammo1 == ammo1) &&

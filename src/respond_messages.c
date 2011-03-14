@@ -8,8 +8,7 @@
 
 #include "respond_messages.h"
 
-void SendSpawnMessage(int id, unsigned short x, unsigned short y,
-		int writesocket)
+void SendSpawnMessage(int id, unsigned short x, unsigned short y)
 {
 	int stringsize = 11;
 	unsigned char *buffer = malloc(stringsize);
@@ -88,12 +87,12 @@ void SendSpawnMessage(int id, unsigned short x, unsigned short y,
 	 }
 	 */
 
-	SendToAll(buffer, stringsize + count, 1, writesocket);
+	SendToAll(buffer, stringsize + count, 1);
 
 	free(buffer);
 }
 
-void SendAdvancedFireMessage(int id, int status, int writesocket)
+void SendAdvancedFireMessage(int id, int status)
 {
 	int stringsize = 3;
 	unsigned char *buffer = malloc(stringsize);
@@ -109,12 +108,12 @@ void SendAdvancedFireMessage(int id, int status, int writesocket)
 	buffer[position] = status;
 	position++;
 
-	SendToAll(buffer, stringsize, 1, writesocket);
+	SendToAll(buffer, stringsize, 1);
 
 	free(buffer);
 }
 
-void SendFireMessage(int id, int writesocket)
+void SendFireMessage(int id)
 {
 	int stringsize = 2;
 	unsigned char *buffer = malloc(stringsize);
@@ -128,12 +127,12 @@ void SendFireMessage(int id, int writesocket)
 	buffer[position] = id;
 	position++;
 
-	SendToAll(buffer, stringsize, 1, writesocket);
+	SendToAll(buffer, stringsize, 1);
 
 	free(buffer);
 }
 
-void SendBuyMessage(int id, int wpnid, int writesocket)
+void SendBuyMessage(int id, int wpnid)
 {
 	int stringsize = 6;
 	unsigned char *buffer = malloc(stringsize);
@@ -153,15 +152,15 @@ void SendBuyMessage(int id, int wpnid, int writesocket)
 	buffer[position] = 0;
 	position++;
 
-	SendToPlayer(buffer, stringsize, id, 1, writesocket);
+	SendToPlayer(buffer, stringsize, id, 1);
 
 	free(buffer);
 
 	if (weapons[wpnid].slot > 0)
-		SendWeaponChangeMessage(id, wpnid, writesocket);
+		SendWeaponChangeMessage(id, wpnid);
 }
 
-void SendHitMessage(int id, int victim, int health, int writesocket)
+void SendHitMessage(int id, int victim, int health)
 {
 	int stringsize = 5;
 	unsigned char *buffer = malloc(stringsize);
@@ -181,12 +180,12 @@ void SendHitMessage(int id, int victim, int health, int writesocket)
 	buffer[position] = 0;
 	position++;
 
-	SendToAll(buffer, stringsize, 1, writesocket);
+	SendToAll(buffer, stringsize, 1);
 
 	free(buffer);
 }
 
-void SendWeaponChangeMessage(int id, int wpnid, int writesocket)
+void SendWeaponChangeMessage(int id, int wpnid)
 {
 	int stringsize = 4;
 	unsigned char *buffer = malloc(stringsize);
@@ -204,13 +203,12 @@ void SendWeaponChangeMessage(int id, int wpnid, int writesocket)
 	buffer[position] = 0;
 	position++;
 
-	SendToAll(buffer, stringsize, 1, writesocket);
+	SendToAll(buffer, stringsize, 1);
 
 	free(buffer);
 }
 
-void SendPosUpdate(int id, unsigned short x, unsigned short y, int status,
-		int writesocket)
+void SendPosUpdate(int id, unsigned short x, unsigned short y, int status)
 {
 	int stringsize = 6;
 	unsigned char *buffer = malloc(stringsize);
@@ -235,13 +233,13 @@ void SendPosUpdate(int id, unsigned short x, unsigned short y, int status,
 	memcpy(buffer + position, py, 2);
 	position += 2;
 
-	SendToAllOther(id, buffer, stringsize, 1, writesocket);
+	SendToAllOther(id, buffer, stringsize, 1);
 
 	free(buffer);
 }
 
 void SendPosRotUpdate(int id, unsigned short x, unsigned short y, int status,
-		float rotation, int writesocket)
+		float rotation)
 {
 	int stringsize = 10;
 	unsigned char *buffer = malloc(stringsize);
@@ -270,12 +268,12 @@ void SendPosRotUpdate(int id, unsigned short x, unsigned short y, int status,
 	memcpy(buffer + position, &rotation, 4);
 	position += 4;
 
-	SendToAllOther(id, buffer, stringsize, 1, writesocket);
+	SendToAllOther(id, buffer, stringsize, 1);
 
 	free(buffer);
 }
 
-void SendRotUpdate(int id, float rotation, int writesocket)
+void SendRotUpdate(int id, float rotation)
 {
 	int stringsize = 6;
 	unsigned char *buffer = malloc(stringsize);
@@ -292,12 +290,12 @@ void SendRotUpdate(int id, float rotation, int writesocket)
 	position++;
 	memcpy(buffer + position, &rotation, sizeof(float));
 
-	SendToAllOther(id, buffer, stringsize, 1, writesocket);
+	SendToAllOther(id, buffer, stringsize, 1);
 
 	free(buffer);
 }
 
-void SendMessageToPlayer(int id, char *message, int status, int writesocket)
+void SendMessageToPlayer(int id, char *message, int status)
 {
 	/*
 	 1 - Chat
@@ -325,7 +323,7 @@ void SendMessageToPlayer(int id, char *message, int status, int writesocket)
 	memcpy(buffer + position, message, strlen(message));
 	position += strlen(message);
 
-	SendToPlayer(buffer, stringsize, id, 1, writesocket);
+	SendToPlayer(buffer, stringsize, id, 1);
 
 	switch (status)
 	{
@@ -346,7 +344,7 @@ void SendMessageToPlayer(int id, char *message, int status, int writesocket)
 	free(buffer);
 }
 
-void SendMessageToAll(char *message, int status, int writesocket)
+void SendMessageToAll(char *message, int status)
 {
 	/*
 	 1 - Chat
@@ -374,7 +372,7 @@ void SendMessageToAll(char *message, int status, int writesocket)
 	memcpy(buffer + position, message, strlen(message));
 	position += strlen(message);
 
-	SendToAll(buffer, stringsize, 1, writesocket);
+	SendToAll(buffer, stringsize, 1);
 
 	switch (status)
 	{
@@ -395,7 +393,7 @@ void SendMessageToAll(char *message, int status, int writesocket)
 	free(buffer);
 }
 
-void SendJoinMessage(int id, int writesocket)
+void SendJoinMessage(int id)
 {
 	int stringsize = 4 + u_strlen(player[id].name);
 	unsigned char *buffer = malloc(stringsize);
@@ -417,11 +415,11 @@ void SendJoinMessage(int id, int writesocket)
 	buffer[position] = 0; //u_strlen ACK
 	position++;
 
-	SendToAll(buffer, stringsize, 1, writesocket);
+	SendToAll(buffer, stringsize, 1);
 	free(buffer);
 }
 
-void SendLeaveMessage(int id, int writesocket)
+void SendLeaveMessage(int id)
 {
 	if (player[id].joinstatus >= 4)
 	{
@@ -438,12 +436,12 @@ void SendLeaveMessage(int id, int writesocket)
 		buffer[position] = 0; //u_strlen ACK
 		position++;
 
-		SendToAll(buffer, stringsize, 1, writesocket);
+		SendToAll(buffer, stringsize, 1);
 		free(buffer);
 	}
 }
 
-void SendChatMessage(int id, unsigned char *message, int team, int writesocket)
+void SendChatMessage(int id, unsigned char *message, int team)
 {
 	int stringsize = 5 + u_strlen(message);
 	unsigned char *buffer = malloc(stringsize);
@@ -466,17 +464,16 @@ void SendChatMessage(int id, unsigned char *message, int team, int writesocket)
 	position += u_strlen(message);
 	if (team == 1)
 	{
-		SendToAll(buffer, stringsize, 1, writesocket);
+		SendToAll(buffer, stringsize, 1);
 	}
 	else if (team == 2)
 	{
-		SendToTeam(buffer, stringsize, 1, player[id].team, writesocket);
+		SendToTeam(buffer, stringsize, 1, player[id].team);
 	}
 	free(buffer);
 }
 
-void SendTeamChangeMessage(int id, unsigned char team, unsigned char skin,
-		int writesocket)
+void SendTeamChangeMessage(int id, unsigned char team, unsigned char skin)
 {
 	int stringsize = 4;
 	unsigned char *buffer = malloc(stringsize);
@@ -494,7 +491,7 @@ void SendTeamChangeMessage(int id, unsigned char team, unsigned char skin,
 	buffer[position] = skin;
 	position++;
 
-	SendToAll(buffer, stringsize, 1, writesocket);
+	SendToAll(buffer, stringsize, 1);
 	free(buffer);
 }
 
@@ -525,7 +522,7 @@ void PingAllPlayer(int writesocket)
 
 			player[i].start = mtime();
 
-			SendToPlayer(buffer, stringsize, i, 0, writesocket);
+			SendToPlayer(buffer, stringsize, i, 0);
 
 			free(buffer);
 		}
@@ -533,7 +530,7 @@ void PingAllPlayer(int writesocket)
 	}
 }
 
-void SendReloadMessage(int id, int status, int writesocket)
+void SendReloadMessage(int id, int status)
 {
 	int stringsize = 3;
 	unsigned char *buffer = malloc(stringsize);
@@ -549,13 +546,12 @@ void SendReloadMessage(int id, int status, int writesocket)
 	buffer[position] = status;
 	position++;
 
-	SendToAll(buffer, stringsize, 1, writesocket);
+	SendToAll(buffer, stringsize, 1);
 	free(buffer);
 }
 
 // 28 - id - xx - yy - c
-void SendSprayMessage(char id, unsigned short xx, unsigned short yy, char c,
-		int writesocket)
+void SendSprayMessage(char id, unsigned short xx, unsigned short yy, char c)
 {
 	int stringsize = 8;
 	unsigned char *buffer = malloc(stringsize * sizeof(char));
@@ -573,12 +569,12 @@ void SendSprayMessage(char id, unsigned short xx, unsigned short yy, char c,
 	position += 2;
 	buffer[position++] = c;
 
-	// SendToAll(buffer, stringsize, 1, writesocket); -- Make sure that the spray-image send packet is crafted first.
+	// SendToAll(buffer, stringsize, 1); -- Make sure that the spray-image send packet is crafted first.
 	free(buffer);
 }
 
 //FIXME complete SendKillMessage
-void SendKillMessage(int id, int victim, int writesocket)
+void SendKillMessage(int id, int victim)
 {
 	char sHealth[4];
 	char sArmor[4]; //= player[id].health
@@ -632,7 +628,7 @@ void SendKillMessage(int id, int victim, int writesocket)
 	memcpy(buffer + position, &sArmor, sArmorLength);
 	position += sArmorLength;
 
-	SendToPlayer(buffer, stringsize, victim, 1, writesocket);
+	SendToPlayer(buffer, stringsize, victim, 1);
 	free(buffer);
 
 	stringsize = 8;
@@ -655,7 +651,7 @@ void SendKillMessage(int id, int victim, int writesocket)
 	memcpy(buffer + position, &player[victim].y, 2);
 	position += 2;
 
-	SendToAllOther(victim, buffer, stringsize, 1, writesocket);
+	SendToAllOther(victim, buffer, stringsize, 1);
 	free(buffer);
 }
 
@@ -691,11 +687,11 @@ void SendPingList(int writesocket)
 		}
 	}
 
-	SendToAll(buffer, stringsize, 0, writesocket);
+	SendToAll(buffer, stringsize, 0);
 	free(buffer);
 }
 
-void SendBuyFailedMessage(int id, int status, int writesocket)
+void SendBuyFailedMessage(int id, int status)
 {
 	int stringsize = 6;
 	unsigned char *buffer = malloc(stringsize);
@@ -735,13 +731,13 @@ void SendBuyFailedMessage(int id, int status, int writesocket)
 	 *
 	 */
 
-	SendToPlayer(buffer, stringsize, id, 1, writesocket);
+	SendToPlayer(buffer, stringsize, id, 1);
 
 	free(buffer);
 }
 
 void SendDropMessage(int id, int wpnid, int ammo1, int ammo2, int unknown1,
-		int unknown2, int unknown3, int writesocket)
+		int unknown2, int unknown3)
 {
 	/*
 	 int stringsize = 7;
@@ -764,7 +760,7 @@ void SendDropMessage(int id, int wpnid, int ammo1, int ammo2, int unknown1,
 	 position++;
 	 buffer[position] = 0;
 	 position++;
-	 SendToPlayer(buffer, stringsize, id, 1, writesocket);
+	 SendToPlayer(buffer, stringsize, id, 1);
 	 free(buffer);
 	 buffer = NULL;
 	 */
@@ -813,13 +809,13 @@ void SendDropMessage(int id, int wpnid, int ammo1, int ammo2, int unknown1,
 	buffer[position] = 50;
 	position++;
 
-	SendToAll(buffer, stringsize, 1, writesocket);
+	SendToAll(buffer, stringsize, 1);
 
 	free(buffer);
 }
 
 void SendRconPwMessage(int id, const unsigned char* message, int len,
-		unsigned char success, int writesocket)
+		unsigned char success)
 {
 	int stringsize = len + 1;
 	unsigned char *buffer = malloc(stringsize * sizeof(char));
@@ -827,6 +823,6 @@ void SendRconPwMessage(int id, const unsigned char* message, int len,
 		error_exit("Memory error ( SendRconPwMessage() )\n");
 	memcpy(buffer, (void*) message, len);
 	buffer[stringsize] = success;
-	SendToPlayer(buffer, stringsize, id, 1, writesocket); //
+	SendToPlayer(buffer, stringsize, id, 1); //
 	free(buffer);
 }

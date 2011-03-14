@@ -12,52 +12,52 @@
 #include "main.h"
 //#include ""
 
-int unknown(unsigned char *message, int length, unsigned char *buffer,
-		int size, int position);
-int connection_setup_unknown(unsigned char *message, int length,
+int unknown(stream*, unsigned char *buffer,
+		int size);
+int connection_setup_unknown(stream*,
 		struct in_addr ip, unsigned short port);
-int connection_setup_known(unsigned char *message, int length,
+int connection_setup_known(stream*,
 		struct in_addr ip, unsigned short port, int id);
-int ping_ingame(unsigned char *message, int length, int id, int writesocket);
-int confirmation_unknown(unsigned char *message, int length, struct in_addr ip,
+int ping_ingame(stream*, int id);
+int confirmation_unknown(stream*, struct in_addr ip,
 		unsigned short port);
-int confirmation_known(unsigned char *message, int length, int id,
-		int writesocket);
-int fire(unsigned char *message, int length, int id, int writesocket);
-int advanced_fire(unsigned char *message, int length, int id, int writesocket);
-int buy(unsigned char *message, int length, int id, int writesocket);
-int rotupdate(unsigned char *message, int length, int id, int writesocket);
-int posupdatewalk(unsigned char *message, int length, int id, int writesocket);
-int posupdaterun(unsigned char *message, int length, int id, int writesocket);
-int posrotupdatewalk(unsigned char *message, int length, int id,
-		int writesocket);
-int
-posrotupdaterun(unsigned char *message, int length, int id, int writesocket);
-int respawnrequest(unsigned char *message, int length, int id, int writesocket);
-int weaponchange(unsigned char *message, int length, int id, int writesocket);
-int teamchange(unsigned char *message, int length, int id, int writesocket);
-int ping_serverlist(unsigned char *message, int length,
-		struct sockaddr_in *client, int writesocket);
-int serverinfo_request(unsigned char *message, int length,
-		struct sockaddr_in *client, int writesocket);
-int joinroutine_unknown(unsigned char *message, int length,
-		struct sockaddr_in *client, int writesocket);
-int specpos(unsigned char *message, int length, int id, int writesocket);
-int chatmessage(unsigned char *message, int length, int id, int writesocket);
-int joinroutine_known(unsigned char *message, int length, int id,
-		int writesocket);
-int leave(int id, int writesocket);
-int reload(unsigned char *message, int length, int id, int writesocket);
-int spray(unsigned char *message, int length, int id, int writesocket);
-int UsgnPacket(int packetid, unsigned char *message, int length,
-		int writesocket);
-int drop(unsigned char *message, int length, int id, int writesocket);
-int rcon_pw(unsigned char *message, int length, int id, int writesocket);
+void confirmation_known(stream*, int id);
+int fire(stream*, int id);
+int advanced_fire(stream*, int id);
+int buy(stream*, int id);
+int rotupdate(stream*, int id);
+int posupdatewalk(stream*, int id);
+int posupdaterun(stream*, int id);
+int posrotupdatewalk(stream*, int id);
+int posrotupdaterun(stream*, int id);
+int respawnrequest(stream*, int id);
+int weaponchange(stream*, int id);
+int teamchange(stream*, int id);
+int ping_serverlist(stream*,
+		struct sockaddr_in *client);
+int serverinfo_request(stream*,
+		struct sockaddr_in *client);
+int joinroutine_unknown(stream*,
+		struct sockaddr_in *client);
+int specpos(stream*, int id);
+int chatmessage(stream*, int id);
+int joinroutine_known(stream*, int id);
+int leave(stream*, int id);
+int reload(stream*, int id);
+int spray(stream*, int id);
+int UsgnPacket(int packetid, stream*);
+int drop(stream*, int id);
+int rcon_pw(stream*, int id);
 
 
 // auxiliary functions
 #define NULL_STREAM ((stream*)0)
 #define EMPTY_STREAM(s) (!!((s)->size))
+#define CHECK_STREAM(s,b) if (((s)->size) < (b)){ \
+	printf("Invalid packet check: %s()", __func__); \
+	return; \
+}\
+
 stream* init_stream(stream*);
 void start_stream();
 

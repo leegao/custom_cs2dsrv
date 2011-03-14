@@ -18,23 +18,20 @@
  * \param position where the unknown message in buffer begins
  * \return read bytes (specific: parameter length)
  */
-int unknown(unsigned char *message, int length, unsigned char *buffer,
-		int size, int position)
-{
-	int paketlength = length;
+int unknown(stream* packet, unsigned char *buffer,
+		int pid){
 	int i;
-	printf("Unknown packet: ");
-	for (i = 2; i <= position - 1; i++)
-	{
-		eprintf("%d-", buffer[i]);
-	}
-	eprintf("\n\t");
-	for (i = 0; i <= length - 1; i++)
-	{
-		eprintf("%d-", message[i]);
+	printf("Unknown packet: %d\n",pid);
+//	for (i = 2; i <= position - 1; i++){
+//		eprintf("%d-", buffer[i]);
+//	}
+//	eprintf("\n\t");
+	int l = packet->size;
+	byte* msg = Stream.read(packet, l);
+	for (i = 0; i <= l - 1; i++){
+		eprintf("%d-", msg[i]);
 	}
 	eprintf("\n");
-	return paketlength;
 }
 
 /**
@@ -46,16 +43,10 @@ int unknown(unsigned char *message, int length, unsigned char *buffer,
  * \param port clients port
  * \return read bytes (specific: 3)
  */
-int connection_setup_unknown(unsigned char *message, int length,
-		struct in_addr ip, unsigned short port)
-{
-	int paketlength = 3;
-	if (length < paketlength)
-	{
+int connection_setup_unknown(stream* packet,
+		struct in_addr ip, unsigned short port){
+	if (!Stream.read(packet, 2))
 		printf("Invalid packet (connection_setup_unknown)!\n");
-		return length;
-	}
-	return paketlength;
 }
 
 /**
@@ -67,21 +58,14 @@ int connection_setup_unknown(unsigned char *message, int length,
  * \param port clients port
  * \return read bytes (specific: 3)
  */
-int connection_setup_known(unsigned char *message, int length,
-		struct in_addr ip, unsigned short port, int id)
-{
-	int paketlength = 3;
-	if (length < paketlength)
-	{
+int connection_setup_known(stream* packet,
+		struct in_addr ip, unsigned short port, int id){
+	if (!Stream.read(packet,2))
 		printf("Invalid packet (connection_setup_known)!\n");
-		return length;
-	}
-
-	return paketlength;
 }
 
 /**
- * \fn int ping_ingame(unsigned char *message, int length, int id, int writesocket)
+ * \fn int ping_ingame(unsigned char *message, int length, int id)
  * \brief handles a answer from the server ingame ping. this function calculates the latency
  * \param *message pointer to the message
  * \param length sizeof message
@@ -89,17 +73,10 @@ int connection_setup_known(unsigned char *message, int length,
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 5)
  */
-int ping_ingame(unsigned char *message, int length, int id, int writesocket)
-{
-	int paketlength = 5;
-	if (length < paketlength)
-	{
+int ping_ingame(stream *packet, int id){
+	if (!Stream.read(packet,4))
 		printf("Invalid packet (ping_ingame)!\n");
-		return length;
-	}
 	player[id].latency = mtime() - player[id].start;
-	//printf("%s: %d\n", player[id].name, player[id].latency);
-	return paketlength;
 }
 
 /**
@@ -111,21 +88,13 @@ int ping_ingame(unsigned char *message, int length, int id, int writesocket)
  * \param port clients port
  * \return read bytes (specific: 3)
  */
-int confirmation_unknown(unsigned char *message, int length, struct in_addr ip,
-		unsigned short port)
-{
-	int paketlength = 3;
-	if (length < paketlength)
-	{
+int confirmation_unknown(stream* packet, struct in_addr ip, unsigned short port){
+	if (!Stream.read(packet, 2))
 		printf("Invalid packet (confirmation_unknown)!\n");
-		return length;
-	}
-
-	return paketlength;
 }
 
 /**
- * \fn int confirmation_known(unsigned char *message, int length, int id, int writesocket)
+ * \fn int confirmation_known(unsigned char *message, int length, int id)
  * \brief handles a confirmation for known player
  * \param *message pointer to the message
  * \param length sizeof message
@@ -133,20 +102,13 @@ int confirmation_unknown(unsigned char *message, int length, struct in_addr ip,
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 3)
  */
-int confirmation_known(unsigned char *message, int length, int id,
-		int writesocket)
-{
-	int paketlength = 3;
-	if (length < paketlength)
-	{
+void confirmation_known(stream *packet, int id){
+	if (packet->size < 2)
 		printf("Invalid packet (confirmation_known)!\n");
-		return length;
-	}
-	return paketlength;
 }
 
 /**
- * \fn int fire(unsigned char *message, int length, int id, int writesocket)
+ * \fn int fire(unsigned char *message, int length, int id)
  * \brief handles a fire
  * \param *message pointer to the message
  * \param length sizeof message
@@ -154,27 +116,16 @@ int confirmation_known(unsigned char *message, int length, int id,
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 1)
  */
-int fire(unsigned char *message, int length, int id, int writesocket)
-{
-	int paketlength = 1;
-	if (length < paketlength)
-	{
-		printf("Invalid packet (fire)!\n");
-		return length;
-	}
-	switch (OnFire(id, writesocket))
-	{
+int fire(stream *packet, int id){
+	switch (OnFire(id)){
 	case 0:
-		SendFireMessage(id, writesocket);
-		break;
-	case 1:
+		SendFireMessage(id);
 		break;
 	}
-	return paketlength;
 }
 
 /**
- * \fn int advanced_fire(unsigned char *message, int length, int id, int writesocket)
+ * \fn int advanced_fire(unsigned char *message, int length, int id)
  * \brief handles a advanced_fire (right click)
  * \param *message pointer to the message
  * \param length sizeof message
@@ -182,29 +133,18 @@ int fire(unsigned char *message, int length, int id, int writesocket)
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 1)
  */
-int advanced_fire(unsigned char *message, int length, int id, int writesocket)
-{
-	int paketlength = 2;
-	if (length < paketlength)
-	{
-		printf("Invalid packet (advanced_fire)!\n");
-		return length;
-	}
-	unsigned int status = message[1];
+int advanced_fire(stream* packet, int id){
+	unsigned int status = Stream.read_byte(packet);
 
-	switch (OnAdvancedFire(id, status, writesocket))
-	{
+	switch (OnAdvancedFire(id, status)){
 	case 0:
-		SendAdvancedFireMessage(id, status, writesocket);
-		break;
-	case 1:
+		SendAdvancedFireMessage(id, status);
 		break;
 	}
-	return paketlength;
 }
 
 /**
- * \fn int buy(unsigned char *message, int length, int id, int writesocket)
+ * \fn int buy(stream* packet, int id)
  * \brief handles a buy request
  * \param *message pointer to the message
  * \param length sizeof message
@@ -212,34 +152,20 @@ int advanced_fire(unsigned char *message, int length, int id, int writesocket)
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 3)
  */
-int buy(unsigned char *message, int length, int id, int writesocket)
-{
-	int paketlength = 3;
-	if (length < paketlength)
-	{
-		printf("Invalid packet (buy)!\n");
-		return length;
-	}
+int buy(stream* packet, int id){
+	CHECK_STREAM(packet, 2);
+	int wpnid = Stream.read_byte(packet);
 
-	int position = 1;
-	int wpnid;
-
-	wpnid = message[position];
-	position++;
-
-	switch (OnBuyAttempt(id, wpnid, writesocket))
+	switch (OnBuyAttempt(id, wpnid))
 	{
 	case 0:
-		OnBuy(id, wpnid, writesocket);
-		break;
-	case 1:
+		OnBuy(id, wpnid);
 		break;
 	}
-	return paketlength;
 }
 
 /**
- * \fn int rotupdate(unsigned char *message, int length, int id, int writesocket)
+ * \fn int rotupdate(stream* packet, int id)
  * \brief handles a rotation update
  * \param *message pointer to the message
  * \param length sizeof message
@@ -247,27 +173,16 @@ int buy(unsigned char *message, int length, int id, int writesocket)
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 5)
  */
-int rotupdate(unsigned char *message, int length, int id, int writesocket)
-{
-	int paketlength = 5;
-	float temprotation;
-	if (length < paketlength)
-	{
-		printf("Invalid packet (rot_update)!\n");
-		return length;
-	}
-	memcpy(&temprotation, message + 1, sizeof(float));
+int rotupdate(stream* packet, int id){
+	CHECK_STREAM(packet, 4);
+	float temprotation = Stream.read_float(packet);
 	if (temprotation >= -180 && temprotation <= 180)
-	{
-		//if(temprotation < 0) temprotation += 360;
-		memcpy(&player[id].rotation, &temprotation, sizeof(float));
-		SendRotUpdate(id, player[id].rotation, writesocket);
-	}
-	return paketlength;
+		SendRotUpdate(id, (player[id].rotation = temprotation));
+	Stream.read(packet, 3);
 }
 
 /**
- * \fn int posupdatewalk(unsigned char *message, int length, int id, int writesocket)
+ * \fn int posupdatewalk(stream* packet, int id)
  * \brief handles a position walk update
  * \param *message pointer to the message
  * \param length sizeof message
@@ -275,35 +190,25 @@ int rotupdate(unsigned char *message, int length, int id, int writesocket)
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 5)
  */
-int posupdatewalk(unsigned char *message, int length, int id, int writesocket)
+int posupdatewalk(stream* packet, int id)
 {
-	int paketlength = 5;
-	unsigned short tempx;
-	unsigned short tempy;
-	if (length < paketlength)
-	{
-		printf("Invalid packet (posupdatewalk)!\n");
-		return length;
-	}
-	memcpy(&tempx, message + 1, 2);
-	memcpy(&tempy, message + 3, 2);
-	switch (OnMoveAttempt(id, tempx, tempy, 0, writesocket))
+	CHECK_STREAM(packet, 4);
+	unsigned short tempx = Stream.read_short(packet);
+	unsigned short tempy = Stream.read_short(packet);
+
+	switch (OnMoveAttempt(id, tempx, tempy, 0))
 	{
 	case 0:
-		SendPosUpdate(id, tempx, tempy, 0, writesocket);
+		SendPosUpdate(id, tempx, tempy, 0);
 		player[id].x = tempx;
 		player[id].y = tempy;
 		break;
 	case 1:
-		SendPosUpdate(id, player[id].x, player[id].y, 0, writesocket);
-		break;
-	default:
-		break;
+		SendPosUpdate(id, player[id].x, player[id].y, 0);
 	}
-	return paketlength;
 }
 /**
- * \fn int posupdaterun(unsigned char *message, int length, int id, int writesocket)
+ * \fn int posupdaterun(stream* packet, int id)
  * \brief handles a position run update
  * \param *message pointer to the message
  * \param length sizeof message
@@ -311,35 +216,22 @@ int posupdatewalk(unsigned char *message, int length, int id, int writesocket)
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 5)
  */
-int posupdaterun(unsigned char *message, int length, int id, int writesocket)
-{
-	int paketlength = 5;
-	unsigned short tempx;
-	unsigned short tempy;
-	if (length < paketlength)
-	{
-		printf("Invalid packet (posupdaterun)!\n");
-		return length;
-	}
-	memcpy(&tempx, message + 1, 2);
-	memcpy(&tempy, message + 3, 2);
-	switch (OnMoveAttempt(id, tempx, tempy, 0, writesocket))
-	{
+int posupdaterun(stream* packet, int id){
+	CHECK_STREAM(packet, 4);
+	unsigned short tempx = Stream.read_short(packet);
+	unsigned short tempy = Stream.read_short(packet);
+	switch (OnMoveAttempt(id, tempx, tempy, 0)){
 	case 0:
-		SendPosUpdate(id, tempx, tempy, 1, writesocket);
+		SendPosUpdate(id, tempx, tempy, 1);
 		player[id].x = tempx;
 		player[id].y = tempy;
 		break;
 	case 1:
-		SendPosUpdate(id, player[id].x, player[id].y, 1, writesocket);
-		break;
-	default:
-		break;
+		SendPosUpdate(id, player[id].x, player[id].y, 1);
 	}
-	return paketlength;
 }
 /**
- * \fn int posrotupdatewalk(unsigned char *message, int length, int id, int writesocket))
+ * \fn int posrotupdatewalk(stream* packet, int id))
  * \brief handles a position walk and rotation update
  * \param *message pointer to the message
  * \param length sizeof message
@@ -347,46 +239,31 @@ int posupdaterun(unsigned char *message, int length, int id, int writesocket)
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 9)
  */
-int posrotupdatewalk(unsigned char *message, int length, int id,
-		int writesocket)
+int posrotupdatewalk(stream* packet, int id)
 {
-	int paketlength = 9;
-	unsigned short tempx;
-	unsigned short tempy;
-	float rotation;
-	if (length < paketlength)
-	{
-		printf("Invalid packet (posrotupdatewalk)!\n");
-		return length;
-	}
-	memcpy(&tempx, message + 1, 2);
-	memcpy(&tempy, message + 3, 2);
-	memcpy(&rotation, message + 5, sizeof(float));
-
+	CHECK_STREAM(packet, 8);
+	unsigned short tempx = Stream.read_short(packet);
+	unsigned short tempy = Stream.read_short(packet);
+	float rotation = Stream.read_float(packet);
 	if (rotation >= -180 && rotation <= 180)
 	{
-		switch (OnMoveAttempt(id, tempx, tempy, 0, writesocket))
+		switch (OnMoveAttempt(id, tempx, tempy, 0))
 		{
 		case 0:
 			//if(rotation < 0) rotation += 360;
-			SendPosRotUpdate(id, tempx, tempy, 0, rotation, writesocket);
-			memcpy(&player[id].rotation, &rotation, sizeof(float));
+			SendPosRotUpdate(id, tempx, tempy, 0, rotation);
+			player[id].rotation = rotation;
 			player[id].x = tempx;
 			player[id].y = tempy;
 			break;
 		case 1:
-			SendPosRotUpdate(id, player[id].x, player[id].y, 0,
-					player[id].rotation, writesocket);
-			break;
-		default:
-			break;
+			SendPosRotUpdate(id, player[id].x, player[id].y, 0, player[id].rotation); // no change?
 		}
 	}
-	return paketlength;
 }
 
 /**
- * \fn int posrotupdaterun(unsigned char *message, int length, int id, int writesocket))
+ * \fn int posrotupdaterun(stream* packet, int id))
  * \brief handles a position run and rotation update
  * \param *message pointer to the message
  * \param length sizeof message
@@ -394,45 +271,28 @@ int posrotupdatewalk(unsigned char *message, int length, int id,
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 9)
  */
-int posrotupdaterun(unsigned char *message, int length, int id, int writesocket)
-{
-	int paketlength = 9;
-	unsigned short tempx;
-	unsigned short tempy;
-	float rotation;
-	if (length < paketlength)
-	{
-		printf("Invalid packet (posrotupdatewalk)!\n");
-		return length;
-	}
-	memcpy(&tempx, message + 1, 2);
-	memcpy(&tempy, message + 3, 2);
-	memcpy(&rotation, message + 5, sizeof(float));
+int posrotupdaterun(stream* packet, int id){
+	CHECK_STREAM(packet, 8);
+	unsigned short tempx = Stream.read_short(packet);
+	unsigned short tempy = Stream.read_short(packet);
+	float rotation = Stream.read_float(packet);
 
-	if (rotation >= -180 && rotation <= 180)
-	{
-		switch (OnMoveAttempt(id, tempx, tempy, 1, writesocket))
-		{
+	if (rotation >= -180 && rotation <= 180){
+		switch (OnMoveAttempt(id, tempx, tempy, 1)){
 		case 0:
-			//if(rotation < 0) rotation += 360;
-			SendPosRotUpdate(id, tempx, tempy, 1, rotation, writesocket);
-			memcpy(&player[id].rotation, &rotation, sizeof(float));
+			SendPosRotUpdate(id, tempx, tempy, 1, rotation);
+			player[id].rotation = rotation;
 			player[id].x = tempx;
 			player[id].y = tempy;
 			break;
 		case 1:
-			SendPosRotUpdate(id, player[id].x, player[id].y, 1,
-					player[id].rotation, writesocket);
-			break;
-		default:
-			break;
+			SendPosRotUpdate(id, player[id].x, player[id].y, 1, player[id].rotation);
 		}
 	}
-	return paketlength;
 }
 
 /**
- * \fn int respawnrequest(unsigned char *message, int length, int id, int writesocket)
+ * \fn int respawnrequest(stream* packet, int id)
  * \brief handles a respawn request
  * \param *message pointer to the message
  * \param length sizeof message
@@ -440,57 +300,40 @@ int posrotupdaterun(unsigned char *message, int length, int id, int writesocket)
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 1)
  */
-int respawnrequest(unsigned char *message, int length, int id, int writesocket)
+int respawnrequest(stream* packet, int id)
 {
-	int paketlength = 1;
-	if (length < paketlength)
-	{
-		printf("Invalid packet (respawnrequest)! (WTF?)\n");
-		return length;
-	}
-	switch (OnRespawnRequest(id, writesocket))
-	{
+	int tmp;
+	switch (OnRespawnRequest(id)){
 	case 0:
-		srand(time(NULL));
-		switch (player[id].team)
-		{
+		// srand(time(NULL)); // This is fucking stupid, srand then rand -> predictable pattern in most cases
+		switch (player[id].team){
 		case 0:
 			printf("%s tried to spawn as spectator!\n", player[id].name);
 			break;
 		case 1:
-		{
-			int tmp = rand() % tspawncount;
-			printf("%s spawned!\n", player[id].name);
+			tmp = rand() % tspawncount;
+			printf("%s spawned as a terrorist.\n", player[id].name);
 			player[id].health = 100;
 			player[id].dead = 0;
 			player[id].x = (tspawnx[tmp] + 0.5) * 32;
 			player[id].y = (tspawny[tmp] + 0.5) * 32;
-			SendSpawnMessage(id, player[id].x, player[id].y, writesocket);
+			SendSpawnMessage(id, player[id].x, player[id].y);
 			break;
-		}
 		case 2:
-		{
-			int tmp = rand() % ctspawncount;
-			printf("%s spawned!\n", player[id].name);
+			tmp = rand() % ctspawncount;
+			printf("%s spawned as a counter-terrorist.\n", player[id].name);
 			player[id].health = 100;
 			player[id].dead = 0;
 			player[id].x = (ctspawnx[tmp] + 0.5) * 32;
 			player[id].y = (ctspawny[tmp] + 0.5) * 32;
-			SendSpawnMessage(id, player[id].x, player[id].y, writesocket);
+			SendSpawnMessage(id, player[id].x, player[id].y);
 			break;
 		}
-
-		}
-		break;
-	case 1:
-		break;
-	default:
 		break;
 	}
-	return paketlength;
 }
 /**
- * \fn int weaponchange(unsigned char *message, int length, int id, int writesocket)
+ * \fn int weaponchange(stream* packet, int id)
  * \brief handles a weapon change
  * \param *message pointer to the message
  * \param length sizeof message
@@ -498,35 +341,19 @@ int respawnrequest(unsigned char *message, int length, int id, int writesocket)
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 3)
  */
-int weaponchange(unsigned char *message, int length, int id, int writesocket)
+int weaponchange(stream* packet, int id)
 {
-	int paketlength = 3;
-	if (length < paketlength)
-	{
-		printf("Invalid packet (weaponchange)!\n");
-		return length;
-	}
-	int position = 1;
-	int wpnid;
+	CHECK_STREAM(packet, 2);
 
-	wpnid = message[position];
-	position++;
-
-	switch (OnWeaponChangeAttempt(id, wpnid, writesocket))
-	{
+	byte wpnid = Stream.read_byte(packet);
+	switch (OnWeaponChangeAttempt(id, wpnid)){
 	case 0:
-		SendWeaponChangeMessage(id, wpnid, writesocket);
-		break;
-	case 1:
-		break;
-	default:
-		break;
+		SendWeaponChangeMessage(id, wpnid);
 	}
-	return paketlength;
 }
 
 /**
- * \fn int teamchange(unsigned char *message, int length, int id, int writesocket)
+ * \fn int teamchange(stream* packet, int id)
  * \brief handles a team change
  * \param *message pointer to the message
  * \param length sizeof message
@@ -534,34 +361,20 @@ int weaponchange(unsigned char *message, int length, int id, int writesocket)
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 3)
  */
-int teamchange(unsigned char *message, int length, int id, int writesocket)
-{
-	int paketlength = 3;
-	if (length < paketlength)
-	{
-		printf("Invalid packet (teamchange)!\n");
-		return length;
-	}
-	unsigned char team = message[1];
-	unsigned char skin = message[2];
+int teamchange(stream* packet, int id){
+	CHECK_STREAM(packet, 2);
+	unsigned char team = Stream.read_byte(packet);
+	unsigned char skin = Stream.read_byte(packet);
 
-	switch (OnTeamChangeAttempt(id, team, skin, writesocket))
-	{
+	switch (OnTeamChangeAttempt(id, team, skin)){
 	case 0:
 		player[id].team = team;
-		if (skin != 5)
-			player[id].skin = skin;
-		OnTeamChange(id, team, skin, writesocket);
-		break;
-	case 1:
-		break;
-	default:
-		break;
+		if (skin != 5) player[id].skin = skin;
+		OnTeamChange(id, team, skin);
 	}
-	return paketlength;
 }
 /**
- * \fn int ping_serverlist(unsigned char *message, int length, struct sockaddr_in *client, int writesocket)
+ * \fn int ping_serverlist(stream* packet, struct sockaddr_in *client)
  * \brief handles a team change
  * \param *message pointer to the message
  * \param length sizeof message
@@ -569,110 +382,52 @@ int teamchange(unsigned char *message, int length, int id, int writesocket)
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 5)
  */
-int ping_serverlist(unsigned char *message, int length,
-		struct sockaddr_in *client, int writesocket)
-{
-	int paketlength = 5;
-	if (length < paketlength)
-	{
-		printf("Invalid packet (ping_serverlist)!\n");
-		return length;
-	}
+int ping_serverlist(stream* packet, struct sockaddr_in *client, int writesocket){
+	CHECK_STREAM(packet, 3);
 
-	unsigned char *tempbuffer = malloc(paketlength);
+	unsigned char *tempbuffer = malloc(packet->size+3);
 	if (tempbuffer == NULL)
 		error_exit("Memory error ( ping_serverlist() )");
 
 	tempbuffer[0] = 0x01;
 	tempbuffer[1] = 0x00;
-	memcpy(tempbuffer + 2, message, paketlength - 2);
+	tempbuffer[2] = packet->mem[0];
+	tempbuffer[3] = packet->mem[1];
+	tempbuffer[4] = packet->mem[2];
+	//memcpy(tempbuffer + 3, packet->mem, packet->size);
 
 	//send_now(tempbuffer, 5, *client);
 	udp_send(writesocket, tempbuffer, 5, client);
 	free(tempbuffer);
-	return paketlength;
 }
 
-int serverinfo_request(unsigned char *message, int length,
-		struct sockaddr_in *client, int writesocket)
+int serverinfo_request(stream* packet,
+		struct sockaddr_in *client)
 {
-	int paketlength = length;
-	if (length < 2)
-	{
-		printf("Invalid packet (serverinfo_request)!\n");
-		return length;
-	}
-
-	/*
-	 int i;
-	 printf("serverinfo_request (%d): ", message[0]);
-	 for (i = 1; i <= paketlength; i++)
-	 {
-	 printf("%d-", message[i]);
-	 }
-	 printf("(%d)\n", paketlength);
-	 int joinroutine_known(unsigned char *message, int length, int id, int writesocket)
-	 */
-
-	int stringsize = 10 + u_strlen(sv_name) + u_strlen(sv_map);
-	if (sv_gamemode != 0)
-	{
-		stringsize++;
-	}
-
-	unsigned char *buffer = malloc(stringsize);
-	if (buffer == NULL)
+	CHECK_STREAM(packet,1);
+	byte* message = packet->mem;
+	stream* buf = init_stream(NULL);
+	if (!buf)
 		error_exit("Memory error ( serverinfo_request() )");
 
-	int position = 0;
-	buffer[position] = 1;
-	position++;
-	buffer[position] = 0;
-	position++;
-	buffer[position] = 0xFB;
-	position++;
-	buffer[position] = message[1];
-	position++;
+	Stream.write_short(buf, 1);
+	Stream.write_byte(buf, 0xfb);
+	Stream.write_byte(buf, Stream.read_byte(packet));
 
 	switch (message[1])
 	{
 	case 1:
 	case 2:
-		/*
-		 if(message[2] == 0)
-		 {
-		 paketlength = 2;
-		 }
-		 else
-		 {
-		 paketlength = 6;
-		 }
-		 */
-		paketlength = 4;
-
-		buffer[position] = GetServerStatus();
-		position++;
-		buffer[position] = u_strlen(sv_name);
-		position++;
-		memcpy(buffer + position, sv_name, u_strlen(sv_name));
-		position += u_strlen(sv_name);
-		buffer[position] = u_strlen(sv_map);
-		position++;
-		memcpy(buffer + position, sv_map, u_strlen(sv_map));
-		position += u_strlen(sv_map);
-		buffer[position] = onlineplayer;
-		position++;
-		buffer[position] = sv_maxplayers;
-		position++;
+		Stream.write_byte(buf, GetServerStatus());
+		Stream.write_str(buf, sv_name);
+		Stream.write_str(buf, sv_map);
+		Stream.write_byte(buf, onlineplayer);
+		Stream.write_byte(buf, sv_maxplayers);
 		if (sv_gamemode != 0)
-		{
-			buffer[position] = sv_gamemode;
-			position++;
-		}
-		buffer[position] = bot_count;
-		position++;
-		//send_now(buffer, stringsize, *client);
-		udp_send(writesocket, buffer, stringsize, client);
+			Stream.write_byte(buf, sv_gamemode);
+		Stream.write_byte(buf, bot_count);
+		send_now(buf->mem, buf->size, *client);
+		//udp_send(writesocket, buffer, stringsize, client);
 		break;
 	case 4:
 		break;
@@ -681,131 +436,65 @@ int serverinfo_request(unsigned char *message, int length,
 	default:
 		break;
 	}
-
-	free(buffer);
-
-	return paketlength;
+	free(buf);
 }
 
-int joinroutine_unknown(unsigned char *message, int length,
-		struct sockaddr_in *client, int writesocket)
-{
-	int paketlength = length; //Just 2 char read (message[1])
-	if (length < 2)
-	{
-		printf("Invalid packet (joinroutine_unknown)!\n");
-		return length;
-	}
-	switch (message[1])
-	{
-	case 0x00:
-	{
-		paketlength = 2;
-
+int joinroutine_unknown(stream* packet, struct sockaddr_in *client){
+	CHECK_STREAM(packet, 1);
+	switch (Stream.read_byte(packet)){
+	case 0x00:{
 		int i;
-		for (i = 1; i <= MAX_CLIENTS - 1; i++)
-		{
-			if (player[i].used != 1)
-			{
+		for (i = 1; i < MAX_CLIENTS; i++){
+			if (player[i].used != 1){
 				player[i].used = 1;
 				player[i].ip = client->sin_addr;
 				player[i].port = client->sin_port;
 				player[i].joinstatus = 1;
-				player[i].client_number = 4;
-				player[i].server_number = 2;
+				player[i].client_number = 4; // wtf?
+				player[i].server_number = 2; // and wtf is this?
 				break;
 			}
 		}
-		int stringsize = 5 + u_strlen(pre_authcode);
-		unsigned char *buffer = malloc(stringsize);
-		if (buffer == NULL)
+		stream* buf = init_stream(NULL);
+		if (!buf)
 			error_exit("Memory error ( joinroutine_unknown() )");
 
-		int position = 0;
-		buffer[position] = 0x01;
-		position++;
-		buffer[position] = 0x00;
-		position++;
-		buffer[position] = 0xFC;
-		position++;
-		buffer[position] = 0x00;
-		position++;
-		buffer[position] = u_strlen(pre_authcode);
-		position++;
-		memcpy(buffer + position, pre_authcode, u_strlen(pre_authcode));
+		Stream.write_short(buf, 1);
+		Stream.write_short(buf, 0xfc);
+		Stream.write_str(buf, pre_authcode);
 
-		udp_send(writesocket, buffer, stringsize, client);
+		send_now(buf->mem, buf->size, *client);
+		//udp_send(writesocket, buffer, stringsize, client);
 
-		free(buffer);
+		free(buf);
 		break;
 	}
 	default:
-		printf("Unexpected join data (%d)\n", message[0]);
-		break;
+		printf("Unexpected join data\n");
 	}
-
-	return paketlength;
 }
 
-int specpos(unsigned char *message, int length, int id, int writesocket)
-{
-	int paketlength = 9;
-	if (paketlength > length)
-	{
-		printf("Invalid packet (specpos)!\n");
-		return length;
-	}
-	int x, y;
+int specpos(stream* packet, int id){
+	CHECK_STREAM(packet, 8);
+	int x = Stream.read_int(packet);
+	int y = Stream.read_int(packet);
 
-	x = (message[4] << 24) | (message[3] << 16) | (message[2] << 8)
-			| message[1];
-	y = (message[8] << 24) | (message[7] << 16) | (message[6] << 8)
-			| message[5];
-
-	switch (OnSpecmove(id, x, y, writesocket))
-	{
+	switch (OnSpecmove(id, x, y)){
 	case 0:
-	{
 		player[id].specposx = x;
 		player[id].specposy = y;
-		break;
 	}
-	case 1:
-	{
-		break;
-	}
-	}
-	return paketlength;
 }
 
-int chatmessage(unsigned char *message, int length, int id, int writesocket)
-{
-	int paketlength = 4;
+int chatmessage(stream* packet, int id){
+	CHECK_STREAM(packet, 4);
 	unsigned char team, unknown;
 	int paketsize;
 
-	if (paketlength > length)
-	{
-		printf("Invalid packet (chatmessage)!\n");
-		return length;
-	}
+	team = Stream.read_byte(packet);
+	Stream.read_str(packet);
 
-	int position = 0;
-	position++;
-	team = message[position];
-	position++;
-
-	paketsize = message[position];
-	if (paketsize > 255 || paketsize >= (length - position + 1))
-	{
-		printf("Message too big\n");
-		return length;
-	}
-	position++;
-	paketlength += paketsize;
-
-	unknown = message[position];
-	position++;
+	unknown = Stream.read_byte(packet);
 
 	unsigned char *string = malloc(paketsize);
 	if (string == NULL)
@@ -815,10 +504,10 @@ int chatmessage(unsigned char *message, int length, int id, int writesocket)
 	string[paketsize] = '\0';
 	position += paketsize;
 
-	switch (OnChatMessage(id, string, team, writesocket))
+	switch (OnChatMessage(id, string, team))
 	{
 	case 0:
-		SendChatMessage(id, string, team, writesocket);
+		SendChatMessage(id, string, team);
 		break;
 	case 1:
 		break;
@@ -832,8 +521,7 @@ int chatmessage(unsigned char *message, int length, int id, int writesocket)
 	return paketlength;
 }
 
-int joinroutine_known(unsigned char *message, int length, int id,
-		int writesocket)
+int joinroutine_known(stream* packet, int id)
 {
 	int paketlength = 2;
 	if (paketlength > length)
@@ -1082,7 +770,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			 */
 
 			if (stringsize != 0)
-				SendToPlayer(buffer, stringsize, id, 1, writesocket);
+				SendToPlayer(buffer, stringsize, id, 1);
 
 			free(encryption1);
 			free(maphash);
@@ -1170,7 +858,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			buffer[position] = 0; //CheckPlayerData()
 			position++;
 
-			SendToPlayer(buffer, stringsize, id, 1, writesocket);
+			SendToPlayer(buffer, stringsize, id, 1);
 			player[id].joinstatus = 3;
 		}
 		else
@@ -1284,7 +972,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			buffer[position] = 75; //K
 			position++;
 
-			SendToPlayer(buffer, stringsize, id, 1, writesocket);
+			SendToPlayer(buffer, stringsize, id, 1);
 			free(buffer);
 
 			//----------- PlayerData -----------
@@ -1470,7 +1158,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 				position++;
 			}
 
-			SendToPlayer(buffer, position, id, 1, writesocket);
+			SendToPlayer(buffer, position, id, 1);
 			free(buffer);
 
 			//----------- PlayerData -----------
@@ -1490,7 +1178,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			buffer[position] = 0;
 			position++;
 
-			SendToPlayer(buffer, stringsize, id, 1, writesocket);
+			SendToPlayer(buffer, stringsize, id, 1);
 			free(buffer);
 
 			//----------- HostageData -----------
@@ -1510,7 +1198,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			buffer[position] = 0;
 			position++;
 
-			SendToPlayer(buffer, stringsize, id, 1, writesocket);
+			SendToPlayer(buffer, stringsize, id, 1);
 			free(buffer);
 
 			//----------- ItemData -----------
@@ -1534,7 +1222,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			buffer[position] = 0;
 			position++;
 
-			SendToPlayer(buffer, stringsize, id, 1, writesocket);
+			SendToPlayer(buffer, stringsize, id, 1);
 			free(buffer);
 
 			//----------- EnityData -----------
@@ -1554,7 +1242,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			buffer[position] = 0;
 			position++;
 
-			SendToPlayer(buffer, stringsize, id, 1, writesocket);
+			SendToPlayer(buffer, stringsize, id, 1);
 			free(buffer);
 
 			//----------- DynamicObjectData -----------
@@ -1574,7 +1262,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			buffer[position] = 0;
 			position++;
 
-			SendToPlayer(buffer, stringsize, id, 1, writesocket);
+			SendToPlayer(buffer, stringsize, id, 1);
 			free(buffer);
 
 			//----------- ProjectileData -----------
@@ -1594,7 +1282,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			buffer[position] = 0;
 			position++;
 
-			SendToPlayer(buffer, stringsize, id, 1, writesocket);
+			SendToPlayer(buffer, stringsize, id, 1);
 			free(buffer);
 
 			//----------- DynamicObjectImageData -----------
@@ -1614,7 +1302,7 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			buffer[position] = 0;
 			position++;
 
-			SendToPlayer(buffer, stringsize, id, 1, writesocket);
+			SendToPlayer(buffer, stringsize, id, 1);
 			free(buffer);
 
 			//----------- Final ACK -----------
@@ -1640,13 +1328,13 @@ int joinroutine_known(unsigned char *message, int length, int id,
 			buffer[position] = 75; //K
 			position++;
 
-			SendToPlayer(buffer, stringsize, id, 1, writesocket);
+			SendToPlayer(buffer, stringsize, id, 1);
 			free(buffer);
 
 			player[id].joinstatus = 4;
 			free(mapname);
 
-			OnJoin(id, writesocket);
+			OnJoin(id);
 		}
 		else
 		{
@@ -1664,9 +1352,9 @@ int joinroutine_known(unsigned char *message, int length, int id,
 	return paketlength;
 }
 
-int leave(int id, int writesocket)
+int leave(int id)
 {
-	OnLeave(id, writesocket);
+	OnLeave(id);
 
 	free(player[id].name);
 	free(player[id].usgn);
@@ -1685,7 +1373,7 @@ int leave(int id, int writesocket)
 	return 2;
 }
 
-int reload(unsigned char *message, int length, int id, int writesocket)
+int reload(stream* packet, int id)
 {
 	int paketlength = 2;
 	if (length < paketlength)
@@ -1702,14 +1390,14 @@ int reload(unsigned char *message, int length, int id, int writesocket)
 
 	if (status == 1)
 	{
-		SendReloadMessage(id, 1, writesocket);
+		SendReloadMessage(id, 1);
 		player[id].reloading = player[id].actualweapon;
 		player[id].reloadtimer = mtime() + weapons[player[id].actualweapon].reloadtime;
 	}
 	return paketlength;
 }
 
-int spray(unsigned char *message, int length, int id, int writesocket)
+int spray(stream* packet, int id)
 {
 	// 28 0 xx yy c
 	//  0 1 23 45 6
@@ -1738,12 +1426,11 @@ int spray(unsigned char *message, int length, int id, int writesocket)
 	// Postprocessing if needed, then send back exact same data
 	// xx and yy are positions, not tiles.
 
-	SendSprayMessage(i, xx, yy, c, writesocket);
+	SendSprayMessage(i, xx, yy, c);
 	return 7;
 }
 
-int UsgnPacket(int packetid, unsigned char *message, int length,
-		int writesocket) //No check if really from usgn.de
+int UsgnPacket(int packetid, stream* packet) //No check if really from usgn.de
 {
 	int paketlength = 2;
 	switch (packetid)
@@ -1784,7 +1471,7 @@ int UsgnPacket(int packetid, unsigned char *message, int length,
 	return paketlength;
 }
 
-int drop(unsigned char *message, int length, int id, int writesocket)
+int drop(stream* packet, int id)
 {
 	int paketlength = 7;
 	if (length < paketlength)
@@ -1810,12 +1497,10 @@ int drop(unsigned char *message, int length, int id, int writesocket)
 	unknown3 = message[position];
 	position++;
 
-	switch (OnDrop(id, wpnid, ammo1, ammo2, unknown1, unknown2, unknown3,
-			writesocket))
+	switch (OnDrop(id, wpnid, ammo1, ammo2, unknown1, unknown2, unknown3))
 	{
 	case 0:
-		SendDropMessage(id, wpnid, ammo1, ammo2, unknown1, unknown2, unknown3,
-				writesocket);
+		SendDropMessage(id, wpnid, ammo1, ammo2, unknown1, unknown2, unknown3);
 		break;
 	default:
 		break;
@@ -1824,7 +1509,7 @@ int drop(unsigned char *message, int length, int id, int writesocket)
 	return paketlength;
 }
 
-int rcon_pw(unsigned char *message, int length, int id, int writesocket)
+int rcon_pw(stream* packet, int id)
 {
 	// 236 ln pw
 	// 0 1 ln
@@ -1853,12 +1538,12 @@ int rcon_pw(unsigned char *message, int length, int id, int writesocket)
 	{
 		printf("[Rcon_pw] Success\n");
 		player[id].rcon = 1;
-		//SendRconPwMessage(id, message, length, 1, writesocket);
+		//SendRconPwMessage(id, message, length, 1);
 	}
 	else
 	{
 		printf("[Rcon_pw] Bad attempt by %s.\n", player[id].name);
-		SendRconPwMessage(id, message, length, 0, writesocket);
+		SendRconPwMessage(id, message, length, 0);
 	}
 
 	return length;

@@ -10,14 +10,10 @@
 #define SENDTO_FUNCTIONS_H_
 
 #include "main.h"
-void SendToPlayer(unsigned char *message, int length, int id, int reliable,
-		int writesocket);
-void SendToAll(unsigned char *message, int length, int reliable,
-		int writesocket);
-void SendToTeam(unsigned char *message, int length, int reliable, int team,
-		int writesocket);
-void SendToAllOther(int id, unsigned char *message, int length, int reliable,
-		int writesocket);
+void SendToPlayer(unsigned char *message, int length, int id, int reliable);
+void SendToAll(unsigned char *message, int length, int reliable);
+void SendToTeam(unsigned char *message, int length, int reliable, int team);
+void SendToAllOther(int id, unsigned char *message, int length, int reliable);
 
 int check_sendqueue(int);
 
