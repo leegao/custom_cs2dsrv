@@ -155,6 +155,20 @@ struct{
 	//int (*push) (stream*, byte*, int); // Pushes onto the front of the stream, top is decreased
 	//byte* (*pop) (stream*, int); // Pops from the back of the stream, top is unchanged
 
+	byte (*read_byte) (stream*);
+	short (*read_short) (stream*);
+	int (*read_int) (stream*);
+	float (*read_float) (stream*);
+	byte* (*read_str) (stream*);
+	byte* (*read_line) (stream*);
+
+	int (*write_byte) (stream*, byte);
+	int (*write_short) (stream*, short);
+	int (*write_int) (stream*, int);
+	int (*write_float) (stream*, float);
+	int (*write_str) (stream*, byte*);
+	int (*write_line) (stream*, byte*);
+
 	int quanta; // atomic size of mem (not the size of the bytes)
 } Stream;
 

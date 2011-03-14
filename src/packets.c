@@ -2001,4 +2001,18 @@ void start_stream(){
 	Stream.peek = &s__peek__;
 	Stream.seek = &s__seek__;
 	Stream.trim = &s__trim__;
+
+	Stream.read_byte = &read_byte;
+	Stream.read_short = &read_short;
+	Stream.read_int = &read_int;
+	Stream.read_float = &read_float;
+	Stream.read_str = &read_str;
+	Stream.read_line = &read_line;
+
+	Stream.write_byte = &write_byte;
+	Stream.write_short = &write_short;
+	Stream.write_int = &write_int;
+	Stream.write_float = &write_float;
+	Stream.write_str = &write_str;
+	Stream.write_line = &write_line;
 }
