@@ -530,14 +530,14 @@ int joinroutine_known(stream* packet, int id){
 			int tempstatus = CheckPlayerData(password);
 			switch (tempstatus){
 			case 0x00:
-				Stream.write(buf, "\x252\2\0", 3);
+				Stream.write(buf, (byte*)"\252\2\0", 3);
 				Stream.write_byte(buf, id);
 				Stream.write_str(buf, sv_map);
 				Stream.write_str(buf, pre_authcode);
 				player[id].joinstatus = 2;
 				break;
 			default:
-				Stream.write(buf, "\x252\2", 2);
+				Stream.write(buf, (byte*)"\252\2", 2);
 				Stream.write_byte(buf, tempstatus);
 				player[id].joinstatus = 0;
 				break;
@@ -583,7 +583,7 @@ int joinroutine_known(stream* packet, int id){
 			free(pre_authcode_respond);
 			free(mhash);
 
-			SendToPlayer("\x252\4\0", 3, id, 1);
+			SendToPlayer((byte*)"\252\4\0", 3, id, 1);
 			player[id].joinstatus = 3;
 		} else {
 			printf("Unexpected join data (3) from %s; expected %d\n", player[id].name, player[id].joinstatus+1);
@@ -598,7 +598,7 @@ int joinroutine_known(stream* packet, int id){
 
 			stream* buf = init_stream(NULL);
 
-			Stream.write(buf, "\x252\6\0", 3);
+			Stream.write(buf, (byte*)"\252\6\0", 3);
 			Stream.write_str(buf, sv_map);
 			Stream.write_str(buf, sv_name);
 			byte wtf[] = {
@@ -630,7 +630,7 @@ int joinroutine_known(stream* packet, int id){
 
 			//----------- PlayerData -----------
 			buf = init_stream(NULL);
-			Stream.write(buf, "\x252\7\1", 3);
+			Stream.write(buf, (byte*)"\252\7\1", 3);
 			Stream.write_byte(buf, onlineplayer);
 
 			int i;
@@ -692,29 +692,29 @@ int joinroutine_known(stream* packet, int id){
 			free(buf);
 
 			//----------- PlayerData -----------
-			SendToPlayer("\x252\7\1\0", 4, id, 1);
+			SendToPlayer((byte*)"\252\7\1\0", 4, id, 1);
 
 			//----------- HostageData -----------
-			SendToPlayer("\x252\7\2\0", 4, id, 1);
+			SendToPlayer((byte*)"\252\7\2\0", 4, id, 1);
 
 			//----------- ItemData -----------
 			//fc 07 03 01(1 anzahl) 01(id) 00 4b(waffenid) 0f 00 12 00 (position) 01 (munition ?) 00 00 00
-			SendToPlayer("\x252\7\3\0", 4, id, 1);
+			SendToPlayer((byte*)"\252\7\3\0", 4, id, 1);
 
 			//----------- EnityData -----------
-			SendToPlayer("\x252\7\4\0", 4, id, 1);
+			SendToPlayer((byte*)"\252\7\4\0", 4, id, 1);
 
 			//----------- DynamicObjectData -----------
-			SendToPlayer("\x252\7\5\0", 4, id, 1);
+			SendToPlayer((byte*)"\252\7\5\0", 4, id, 1);
 
 			//----------- ProjectileData -----------
-			SendToPlayer("\x252\7\6\0", 4, id, 1);
+			SendToPlayer((byte*)"\252\7\6\0", 4, id, 1);
 
 			//----------- DynamicObjectImageData -----------
-			SendToPlayer("\x252\7\7\0", 4, id, 1);
+			SendToPlayer((byte*)"\252\7\7\0", 4, id, 1);
 
 			//----------- Final ACK -----------
-			SendToPlayer("\x252\7\x200\3\x65\x67\x75", 7, id, 1);
+			SendToPlayer((byte*)"\252\7\200\3\65\67\75", 7, id, 1);
 
 			player[id].joinstatus = 4;
 			free(mapname);
@@ -731,123 +731,78 @@ int joinroutine_known(stream* packet, int id){
 	}
 }
 
-int leave(int id)
-{
+int leave(stream* packet, int id){
 	OnLeave(id);
 
 	free(player[id].name);
-	free(player[id].usgn);
 	free(player[id].spraylogo);
 	free(player[id].win);
 
 	player[id].name = NULL;
-	player[id].usgn = NULL;
+	player[id].usgn = 0;
 	player[id].spraylogo = NULL;
 	player[id].win = NULL;
 
 	onlineplayer--;
 
 	ClearPlayer(id);
-
-	return 2;
 }
 
-int reload(stream* packet, int id)
-{
-	int paketlength = 2;
-	if (length < paketlength)
-	{
-		printf("Invalid packet (buy)!\n");
-		return length;
-	}
+int reload(stream* packet, int id){
+	CHECK_STREAM(packet, 1);
 
-	int position = 1;
-	int status;
+	int status = Stream.read_byte(packet);
 
-	status = message[position];
-	position++;
-
-	if (status == 1)
-	{
+	if (status == 1){
 		SendReloadMessage(id, 1);
 		player[id].reloading = player[id].actualweapon;
 		player[id].reloadtimer = mtime() + weapons[player[id].actualweapon].reloadtime;
 	}
-	return paketlength;
 }
 
 int spray(stream* packet, int id)
 {
 	// 28 0 xx yy c
 	//  0 1 23 45 6
-	struct
-	{
-		unsigned char hi;
-		unsigned char lo;
-	} x, y;
+	CHECK_STREAM(packet, 6);
+	Stream.read(packet, 1);
 
-	if (length < 7)
-	{
-		printf("Invalid packet (spray)!\n");
-		return length;
-	}
-
-	x.lo = message[2];
-	x.hi = message[3];
-
-	y.lo = message[4];
-	y.hi = message[5];
-
-	unsigned short xx = x.hi * 256 + x.lo, yy = y.hi * 256 + y.lo;
-	unsigned char c = message[6];
+	unsigned short x = Stream.read_short(packet), y = Stream.read_short(packet);
+	unsigned char c = Stream.read_byte(packet);
 	unsigned char i = (char) id;
 
 	// Postprocessing if needed, then send back exact same data
 	// xx and yy are positions, not tiles.
 
-	SendSprayMessage(i, xx, yy, c);
-	return 7;
+	SendSprayMessage(i, x, y, c);
 }
 
 int UsgnPacket(int packetid, stream* packet) //No check if really from usgn.de
 {
-	int paketlength = 2;
-	switch (packetid)
-	{
+	byte id = Stream.read_byte(packet);
+	switch (packetid){
 	case 27:
-		if (message[1] == 1)
-		{
+		if (id == 1){
 			printf("[USGN] Server successfully added to the serverlist..\n");
-		}
-		else
-		{
-			printf("[USGN] Server NOT added to the serverlist.. (Code: %d)\n", message[3]);
-		}
-		paketlength = 2;
+		}else{
+			printf("[USGN] Server NOT added to the serverlist.. (Code: .)\n");
+		} // 2
 		break;
 	case 28:
-		if (message[1] == 2)
-		{
+		if (id == 2){
 			printf("[USGN] Server successfully updated in the serverlist..\n");
-		}
-		else
-		{
-			printf("[USGN] Server NOT updated in the serverlist.. (Code: %d)\n", message[3]);
-		}
-		paketlength = 2;
+		}else{
+			printf("[USGN] Server NOT updated in the serverlist.. (Code: .)\n");
+		} // 2
 		break;
 	default:
 		printf("[USGN] Unknown Message recieved: ");
-		int i;
-		for (i = 0; i < length; i++)
-		{
+		int i, size = packet->size; byte* message = Stream.read(packet, packet->size);
+		for (i = 0; i < size; i++)
 			eprintf("%d-", message[i]);
-		}
 		eprintf("\n");
-		paketlength = length;
 		break;
 	}
-	return paketlength;
 }
 
 int drop(stream* packet, int id)

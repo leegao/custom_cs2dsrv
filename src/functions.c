@@ -62,8 +62,7 @@ void ClearPlayer(int id)
 	player[id].spraylogo = NULL;
 	free(player[id].win);
 	player[id].win = NULL;
-	free(player[id].usgn);
-	player[id].usgn = NULL;
+	player[id].usgn = 0;
 	player[id].version = 0;
 
 	player[id].team = 0;

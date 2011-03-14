@@ -72,7 +72,7 @@ struct PLAYER
 	unsigned char *spraylogo;
 	unsigned char *win;
 	unsigned short version;
-	unsigned short usgn;
+	unsigned int usgn; // OMFG, why was this a fucking pointer? this is just fucking ridiculous
 	unsigned char team;
 	unsigned char skin;
 	unsigned short deaths;
