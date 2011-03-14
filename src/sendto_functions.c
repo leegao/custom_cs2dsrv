@@ -34,16 +34,37 @@ void SendToPlayer(unsigned char *message, int length, int id, int reliable,
 	}
 	memcpy(buffer + 2, message, length);
 
-	struct {unsigned char* msg; int length; struct sockaddr_in addr;} *payload = malloc(sizeof(struct {unsigned char* a; int b; struct sockaddr_in c;}));
-	payload->addr = tempclient;
-	payload->length = length+2;
-	payload->msg = buffer;
-	push(&send_q, (void*)payload, mtime());
+//	sendstruct *payload = malloc(sizeof(sendstruct));
+//	payload->addr = tempclient;
+//	payload->length = length+2;
+//	payload->msg = buffer;
+//	push(&send_q, (void*)payload, mtime());
+
+	send_now(buffer, length+2, tempclient);
 
 	//udp_send(writesocket, buffer, length + 2, &tempclient);
-
-//	free(buffer); // do not free the buffer while its still in use
 }
+
+int send_now(byte* msg, int length, struct sockaddr_in addr){
+	sendstruct *payload = malloc(sizeof(sendstruct));
+	payload->addr = addr;
+	payload->length = length;
+	payload->msg = msg;
+	push(&send_q, (void*)payload, mtime());
+	return 1;
+}
+
+// send after moffset milliseconds
+int send_later(byte* msg, int length, struct sockaddr_in addr, int moffset){
+	sendstruct *payload = malloc(sizeof(sendstruct));
+	payload->addr = addr;
+	payload->length = length;
+	payload->msg = msg;
+	push(&send_q, (void*)payload, mtime()+moffset);
+	return 1;
+}
+
+
 
 void SendToAll(unsigned char *message, int length, int reliable,
 		int writesocket)
@@ -93,7 +114,7 @@ int check_sendqueue(int sock){ // returns the number of elements sent
 		struct {unsigned char* msg; int length; struct sockaddr_in addr;}* packet = pop(&send_q);
 		udp_send(sock, packet->msg, packet->length, &(packet->addr));
 		//free(packet->msg);
-		//free(packet);
+		free(packet);
 	}
 	return i; // started off at 0, so extra ++ is correct
 }

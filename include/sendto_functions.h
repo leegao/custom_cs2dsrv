@@ -46,4 +46,11 @@ pqnode* peek(pq*);
 
 pq send_q; // used for throttling (detection of flooding can be implemented via this as well)
 
+int send_now(byte* msg, int length, struct sockaddr_in addr);
+int send_later(byte* msg, int length, struct sockaddr_in addr, int moffset);
+
+typedef struct sendstruct{
+	unsigned char* msg; int length; struct sockaddr_in addr;
+}sendstruct;
+
 #endif /* SENDTO_FUNCTIONS_H_ */

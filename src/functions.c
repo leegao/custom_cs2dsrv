@@ -456,7 +456,8 @@ int UsgnRegister(int writesocket)
 	buffer[position] = 1;
 	position++;
 
-	udp_send(writesocket, buffer, 4, &tempclient);
+	//send_now(buffer, 4, tempclient);
+	udp_send(writesocket, buffer, 4, &tempclient); // DO NOT QUEUE
 	free(buffer);
 
 	printf("[USGN] Sent ADD request to %s...\n", inet_ntoa(tempclient.sin_addr));
@@ -485,7 +486,8 @@ int UsgnUpdate(int writesocket)
 	buffer[position] = 2;
 	position++;
 
-	udp_send(writesocket, buffer, 4, &tempclient);
+	send_now(buffer, 4, tempclient);
+	//udp_send(writesocket, buffer, 4, &tempclient);
 	free(buffer);
 
 	printf("[USGN] Sent UPDATE request to %s...\n", inet_ntoa(tempclient.sin_addr));

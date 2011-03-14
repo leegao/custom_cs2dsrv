@@ -71,11 +71,14 @@ int main(int argc, char *argv[]){
 	 FD_SET(readsocket, &descriptor);
 	 */
 	OnServerStart();
+
+	// moved since usgnregister requires a send queue
+	init_queue(&send_q);
 	ReadMap();
 	if (!no_usgn) //modify into optional offline mode
 	  UsgnRegister(sock);
 
-	init_queue(&send_q);
+
 	start_stream();
 
 	/**

@@ -587,6 +587,7 @@ int ping_serverlist(unsigned char *message, int length,
 	tempbuffer[1] = 0x00;
 	memcpy(tempbuffer + 2, message, paketlength - 2);
 
+	//send_now(tempbuffer, 5, *client);
 	udp_send(writesocket, tempbuffer, 5, client);
 	free(tempbuffer);
 	return paketlength;
@@ -670,6 +671,7 @@ int serverinfo_request(unsigned char *message, int length,
 		}
 		buffer[position] = bot_count;
 		position++;
+		//send_now(buffer, stringsize, *client);
 		udp_send(writesocket, buffer, stringsize, client);
 		break;
 	case 4:
