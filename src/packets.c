@@ -591,8 +591,7 @@ int joinroutine_known(stream* packet, int id){
 		break;
 	}
 	case 5: {
-		if (player[id].joinstatus == 3)
-		{
+		if (player[id].joinstatus == 3){
 			byte* mapname = Stream.read_str(packet);
 
 			//----------- ServerData -----------
@@ -671,266 +670,65 @@ int joinroutine_known(stream* packet, int id){
 			}
 
 			// Rest of the packet only concerns with the current player
-			if (1)
-			{
-				unsigned char *encodedname;
-				encodedname = GetEncodedString(player[id].name, u_strlen(
-						player[id].name));
-
-				int playersize = 25 + u_strlen(encodedname);
-				buffer = realloc(buffer, position + 1 + playersize); //+1 because e.g. buffer[10] are 11 chars
-				if (buffer == NULL)
-					error_exit("Memory error ( joinroutine_known() )\n");
-
-				buffer[position] = id;
-				position++;
-
-				buffer[position] = u_strlen(encodedname);
-				position++;
-				memcpy(buffer + position, encodedname, u_strlen(encodedname));
-				position += u_strlen(encodedname);
-				free(encodedname);
-
-				buffer[position] = 0; //Unknown
-				position++;
-				buffer[position] = player[id].team;
-				position++;
-				buffer[position] = 0; //Unknown
-				position++;
-				buffer[position] = 0; //Unknown
-				position++;
-				buffer[position] = 232; //Unknown
-				position++;
-				buffer[position] = 3; //Unknown
-				position++;
-				buffer[position] = 0; //Deaths
-				position++;
-				buffer[position] = 0; //Deaths
-				position++;
-				buffer[position] = 0; //X
-				position++;
-				buffer[position] = 0; //X
-				position++;
-				buffer[position] = 0; //Unknown
-				position++;
-				buffer[position] = 0; //Unknown
-				position++;
-				buffer[position] = 0; //Y
-				position++;
-				buffer[position] = 0; //Y
-				position++;
-				buffer[position] = 0; //Unknown
-				position++;
-				buffer[position] = 0; //Unknown
-				position++;
-				buffer[position] = 0; //Unknown
-				position++;
-				buffer[position] = 0; //Unknown
-				position++;
-				buffer[position] = 0; //Health
-				position++;
-				buffer[position] = 0; //Armor
-				position++;
-				buffer[position] = 0; //Unknown
-				position++;
-				buffer[position] = 0; //Aktuelle Waffe 50 = Knife
-				position++;
-				buffer[position] = 0; //Unknown
-				position++;
+			if (1){
+				byte* encodedname = GetEncodedString(player[id].name, u_strlen(player[id].name));
+				Stream.write_byte(buf, id);
+				Stream.write_str(buf, encodedname);
+				byte wtf[] = {
+						0,
+						player[i].team,
+						0,
+						0, // skins
+						232, 3, // score, in LE 1000 = 0
+						0, 0, // deaths
+						0, 0, 0, 0, // x
+						0, 0, 0, 0, // y
+						0, 0, // rot
+						0, 0, 0, 0, 0
+				};
+				Stream.write(buf, wtf, 23);
 			}
-
-			SendToPlayer(buffer, position, id, 1);
-			free(buffer);
+			SendToPlayer(buf->mem, buf->size, id, 1);
+			free(buf);
 
 			//----------- PlayerData -----------
-			stringsize = 4;
-			buffer = malloc(stringsize);
-			if (buffer == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-
-			position = 0;
-
-			buffer[position] = 252;
-			position++;
-			buffer[position] = 7;
-			position++;
-			buffer[position] = 1; //third payload
-			position++;
-			buffer[position] = 0;
-			position++;
-
-			SendToPlayer(buffer, stringsize, id, 1);
-			free(buffer);
+			SendToPlayer("\x252\7\1\0", 4, id, 1);
 
 			//----------- HostageData -----------
-			stringsize = 4;
-			buffer = malloc(stringsize);
-			if (buffer == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-
-			position = 0;
-
-			buffer[position] = 252;
-			position++;
-			buffer[position] = 7;
-			position++;
-			buffer[position] = 2; //third payload
-			position++;
-			buffer[position] = 0;
-			position++;
-
-			SendToPlayer(buffer, stringsize, id, 1);
-			free(buffer);
+			SendToPlayer("\x252\7\2\0", 4, id, 1);
 
 			//----------- ItemData -----------
-
-			/*
-			 fc 07 03 01(1 anzahl) 01(id) 00 4b(waffenid) 0f 00 12 00 (position) 01 (munition ?) 00 00 00
-			 */
-			stringsize = 4;
-			buffer = malloc(stringsize);
-			if (buffer == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-
-			position = 0;
-
-			buffer[position] = 252;
-			position++;
-			buffer[position] = 7;
-			position++;
-			buffer[position] = 3; //third payload
-			position++;
-			buffer[position] = 0;
-			position++;
-
-			SendToPlayer(buffer, stringsize, id, 1);
-			free(buffer);
+			//fc 07 03 01(1 anzahl) 01(id) 00 4b(waffenid) 0f 00 12 00 (position) 01 (munition ?) 00 00 00
+			SendToPlayer("\x252\7\3\0", 4, id, 1);
 
 			//----------- EnityData -----------
-			stringsize = 4;
-			buffer = malloc(stringsize);
-			if (buffer == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-
-			position = 0;
-
-			buffer[position] = 252;
-			position++;
-			buffer[position] = 7;
-			position++;
-			buffer[position] = 4; //third payload
-			position++;
-			buffer[position] = 0;
-			position++;
-
-			SendToPlayer(buffer, stringsize, id, 1);
-			free(buffer);
+			SendToPlayer("\x252\7\4\0", 4, id, 1);
 
 			//----------- DynamicObjectData -----------
-			stringsize = 4;
-			buffer = malloc(stringsize);
-			if (buffer == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-
-			position = 0;
-
-			buffer[position] = 252;
-			position++;
-			buffer[position] = 7;
-			position++;
-			buffer[position] = 5; //third payload
-			position++;
-			buffer[position] = 0;
-			position++;
-
-			SendToPlayer(buffer, stringsize, id, 1);
-			free(buffer);
+			SendToPlayer("\x252\7\5\0", 4, id, 1);
 
 			//----------- ProjectileData -----------
-			stringsize = 4;
-			buffer = malloc(stringsize);
-			if (buffer == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-
-			position = 0;
-
-			buffer[position] = 252;
-			position++;
-			buffer[position] = 7;
-			position++;
-			buffer[position] = 6; //third payload
-			position++;
-			buffer[position] = 0;
-			position++;
-
-			SendToPlayer(buffer, stringsize, id, 1);
-			free(buffer);
+			SendToPlayer("\x252\7\6\0", 4, id, 1);
 
 			//----------- DynamicObjectImageData -----------
-			stringsize = 4;
-			buffer = malloc(stringsize);
-			if (buffer == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-
-			position = 0;
-
-			buffer[position] = 252;
-			position++;
-			buffer[position] = 7;
-			position++;
-			buffer[position] = 7; //third payload
-			position++;
-			buffer[position] = 0;
-			position++;
-
-			SendToPlayer(buffer, stringsize, id, 1);
-			free(buffer);
+			SendToPlayer("\x252\7\7\0", 4, id, 1);
 
 			//----------- Final ACK -----------
-			stringsize = 7;
-			buffer = malloc(stringsize);
-			if (buffer == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-
-			position = 0;
-
-			buffer[position] = 252;
-			position++;
-			buffer[position] = 7;
-			position++;
-			buffer[position] = 200; //third payload
-			position++;
-			buffer[position] = 3; //u_strlen ACK
-			position++;
-			buffer[position] = 65; //A
-			position++;
-			buffer[position] = 67; //C
-			position++;
-			buffer[position] = 75; //K
-			position++;
-
-			SendToPlayer(buffer, stringsize, id, 1);
-			free(buffer);
+			SendToPlayer("\x252\7\x200\3\x65\x67\x75", 7, id, 1);
 
 			player[id].joinstatus = 4;
 			free(mapname);
 
 			OnJoin(id);
-		}
-		else
-		{
-			printf("Unexpected join data (%d) from %s; expected %d\n", message[1], player[id].name, player[id].joinstatus+1);
+		}else{
+			printf("Unexpected join data 4 from %s; expected %d\n", player[id].name, player[id].joinstatus+1);
 		}
 		break;
 	}
 	default:
-	{
-		printf("Unexpected join data (%d) from %s; expected %d\n", message[1], player[id].name, player[id].joinstatus+1);
-	}
+		printf("Unexpected join data (.) from %s; expected %d\n", player[id].name, player[id].joinstatus+1);
 		break;
 	}
-
-	return paketlength;
 }
 
 int leave(int id)
