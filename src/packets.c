@@ -347,6 +347,7 @@ int weaponchange(stream* packet, int id)
 	case 0:
 		SendWeaponChangeMessage(id, wpnid);
 	}
+	Stream.read_byte(packet); // TODO: profile this
 }
 
 /**
@@ -710,13 +711,13 @@ int joinroutine_known(stream* packet, int id, int sock){
 			//----------- DynamicObjectImageData -----------
 			SendToPlayer((byte*)"\xfc\7\7\0", 4, id, 1);
 
-			//----------- Final ACK -----------
-			SendToPlayer((byte*)"\xfc\7\200\3\65\67\75", 7, id, 1);
+			//----------- Final ACK ----------- c8 3 41 43 4b
+			SendToPlayer((byte*)"\xfc\7\xc8\3\x41\x43\x4b", 7, id, 1);
 
 			player[id].joinstatus = 4;
 			free(mapname);
 
-			OnJoin(id);
+			OnJoin(id);//exit(0);
 		}else{
 			printf("Unexpected join data 4 from %s; expected %d\n", player[id].name, player[id].joinstatus+1);
 		}

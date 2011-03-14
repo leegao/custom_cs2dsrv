@@ -160,7 +160,7 @@ int main(int argc, char *argv[]){
 							//unsigned char *message = malloc(tempsize);
 							//memcpy(message, buffer + position, tempsize);
 
-							just(packet->mem, packet->size);
+							//just(packet->mem, packet->size);
 
 							int rtn = 0;
 

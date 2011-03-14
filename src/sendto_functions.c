@@ -10,8 +10,8 @@
 
 void SendToPlayer(unsigned char *message, int length, int id, int reliable)
 {
-	printf("SENDQUEUE\t");
-	just(message, length);
+	//printf("SENDQUEUE\t");
+	//just(message, length);
 	struct sockaddr_in tempclient;
 	tempclient.sin_family = AF_INET;
 	tempclient.sin_port = player[id].port;
