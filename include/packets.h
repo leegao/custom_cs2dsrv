@@ -34,7 +34,7 @@ int respawnrequest(stream*, int id);
 int weaponchange(stream*, int id);
 int teamchange(stream*, int id);
 int ping_serverlist(stream*,
-		struct sockaddr_in *client);
+		struct sockaddr_in *client, int socket);
 int serverinfo_request(stream*,
 		struct sockaddr_in *client);
 int joinroutine_unknown(stream*,

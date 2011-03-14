@@ -217,7 +217,7 @@ int main(int argc, char *argv[]){
 										= rcon_pw(packet, id);
 								break;
 							case 240:
-								chatpacket(packet, id);
+								chatmessage(packet, id);
 								break;
 							case 249:
 								ping_ingame(packet, id);
@@ -229,7 +229,7 @@ int main(int argc, char *argv[]){
 								leave(packet,id);
 								break;
 							default:
-								SendpacketToPlayer(id, "Not implemented yet!",
+								SendMessageToPlayer(id, "Not implemented yet!",
 										1);
 								unknown(packet,  buffer, rtn);
 								break;
@@ -256,14 +256,16 @@ int main(int argc, char *argv[]){
 				{
 					int control = 1;
 					int position = 2;
+					stream *packet = init_stream(NULL);
+					Stream.write(packet, buffer+2, size);
 					while (control)
 					{
 						int tempsize = size - position;
 
-						unsigned char *packet = malloc(tempsize);
-						memcpy(packet, buffer + position, tempsize);
 
-						switch (packet[0])
+						//memcpy(packet, buffer + position, tempsize);
+
+						switch (Stream.read_byte(packet))
 						//payload
 						{
 						case 1:
@@ -282,7 +284,7 @@ int main(int argc, char *argv[]){
 							break;
 						case 250:
 							ping_serverlist(packet,
-									&newclient);
+									&newclient, sock);
 							break;
 						case 251:
 							serverinfo_request(packet,
@@ -293,24 +295,26 @@ int main(int argc, char *argv[]){
 									&newclient);
 							break;
 						default:
-							unknown(packet,  buffer, size);
+							printf("%d %d", size, packet->size);
+							unknown(packet,  buffer, packet->size);
 							break;
 						}
 
-						if (position == size)
+						if (!packet->size)
 						{
+
 							free(packet);
 							break;
 						}
 						/**
 						 * Security check (Buffer Overflow)
 						 */
-						else if (position > size)
-						{
-							printf("Error while reading packet: position(%d) > size(%d)\n", position, size);
-							free(packet);
-						}
-						free(packet);
+//						else if (position > size)
+//						{
+//							printf("Error while reading packet: position(%d) > size(%d)\n", position, size);
+//							free(packet);
+//						}
+						//free(packet);
 					}
 				}
 			}

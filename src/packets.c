@@ -760,8 +760,7 @@ int reload(stream* packet, int id){
 	}
 }
 
-int spray(stream* packet, int id)
-{
+int spray(stream* packet, int id){
 	// 28 0 xx yy c
 	//  0 1 23 45 6
 	CHECK_STREAM(packet, 6);
@@ -777,8 +776,7 @@ int spray(stream* packet, int id)
 	SendSprayMessage(i, x, y, c);
 }
 
-int UsgnPacket(int packetid, stream* packet) //No check if really from usgn.de
-{
+int UsgnPacket(int packetid, stream* packet){ //No check if really from usgn.de
 	byte id = Stream.read_byte(packet);
 	switch (packetid){
 	case 27:
@@ -805,82 +803,54 @@ int UsgnPacket(int packetid, stream* packet) //No check if really from usgn.de
 	}
 }
 
-int drop(stream* packet, int id)
-{
-	int paketlength = 7;
-	if (length < paketlength)
-	{
-		printf("Invalid packet (drop)!\n");
-		return length;
-	}
+int drop(stream* packet, int id){
+	CHECK_STREAM(packet, 6);
 
-	int position = 1;
 	unsigned char wpnid, unknown1, unknown2, unknown3;
 	unsigned short ammo1, ammo2;
 
-	wpnid = message[position];
-	position++;
-	ammo1 = message[position];
-	position++;
-	unknown1 = message[position];
-	position++;
-	ammo2 = message[position];
-	position++;
-	unknown2 = message[position];
-	position++;
-	unknown3 = message[position];
-	position++;
+	wpnid = Stream.read_byte(packet);
+	ammo1 = Stream.read_byte(packet);
+	unknown1 = Stream.read_byte(packet);
+	ammo2 = Stream.read_byte(packet);
+	unknown2 = Stream.read_byte(packet);
+	unknown3 = Stream.read_byte(packet);
 
-	switch (OnDrop(id, wpnid, ammo1, ammo2, unknown1, unknown2, unknown3))
-	{
+	switch (OnDrop(id, wpnid, ammo1, ammo2, unknown1, unknown2, unknown3)){
 	case 0:
 		SendDropMessage(id, wpnid, ammo1, ammo2, unknown1, unknown2, unknown3);
-		break;
-	default:
-		break;
 	}
-
-	return paketlength;
 }
 
-int rcon_pw(stream* packet, int id)
-{
+int rcon_pw(stream* packet, int id){
 	// 236 ln pw
 	// 0 1 ln
-
+	CHECK_STREAM(packet, 1);
 	unsigned char key[] = "mysecretremotecontrolpmysecret";
 
-	int expected = (int) (message[1]);
-	if (length < expected + 2)
-	{
-		printf("Invalid packet (rcon_pw)!\n");
-		return length;
-	}
-
-	char* pw = malloc(expected + 1);
+	byte* msg = Stream.read_str(packet);
+	int expected = strlen((char*)msg);
+	byte* pw = malloc(expected);
 
 	int i;
-	for (i = 0; i < expected; i++)
-	{
-		//eprintf("%c", message[i+2]- key[i]);
-		pw[i] = (unsigned char) (message[i + 2] - key[i]);
+	for (i = 0; i < expected; i++){
+		pw[i] = (byte) (msg[i] - key[i]);
 	}
 	pw[expected] = '\0';
 
 	// Check against actual rcon
-	if (strcmp(pw, (char *)sv_rcon) == 0)
-	{
+	if (!strcmp((char*)pw, (char*)sv_rcon)){
 		printf("[Rcon_pw] Success\n");
 		player[id].rcon = 1;
 		//SendRconPwMessage(id, message, length, 1);
-	}
-	else
-	{
+	}else{
 		printf("[Rcon_pw] Bad attempt by %s.\n", player[id].name);
-		SendRconPwMessage(id, message, length, 0);
+		stream* buf = init_stream(NULL);
+		Stream.write_byte(buf, 236);
+		Stream.write_str(buf, msg);
+		SendRconPwMessage(id, buf->mem, buf->size, 0);
+		free(buf);
 	}
-
-	return length;
 }
 
 

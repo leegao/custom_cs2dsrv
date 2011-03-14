@@ -8,8 +8,7 @@
 
 #include "sendto_functions.h"
 
-void SendToPlayer(unsigned char *message, int length, int id, int reliable,
-		int writesocket)
+void SendToPlayer(unsigned char *message, int length, int id, int reliable)
 {
 	struct sockaddr_in tempclient;
 	tempclient.sin_family = AF_INET;
@@ -66,21 +65,19 @@ int send_later(byte* msg, int length, struct sockaddr_in addr, int moffset){
 
 
 
-void SendToAll(unsigned char *message, int length, int reliable,
-		int writesocket)
+void SendToAll(unsigned char *message, int length, int reliable)
 {
 	int i;
 	for (i = 1; i <= sv_maxplayers; i++)
 	{
 		if (player[i].used == 1 && player[i].joinstatus >= 4)
 		{
-			SendToPlayer(message, length, i, reliable, writesocket);
+			SendToPlayer(message, length, i, reliable);
 		}
 	}
 }
 
-void SendToTeam(unsigned char *message, int length, int reliable, int team,
-		int writesocket)
+void SendToTeam(unsigned char *message, int length, int reliable, int team)
 {
 	int i;
 	for (i = 1; i <= sv_maxplayers; i++)
@@ -88,20 +85,19 @@ void SendToTeam(unsigned char *message, int length, int reliable, int team,
 		if (player[i].used == 1 && player[i].joinstatus >= 4 && player[i].team
 				== team)
 		{
-			SendToPlayer(message, length, i, reliable, writesocket);
+			SendToPlayer(message, length, i, reliable);
 		}
 	}
 }
 
-void SendToAllOther(int id, unsigned char *message, int length, int reliable,
-		int writesocket)
+void SendToAllOther(int id, unsigned char *message, int length, int reliable)
 {
 	int i;
 	for (i = 1; i <= sv_maxplayers; i++)
 	{
 		if (player[i].used == 1 && player[i].joinstatus >= 4 && i != id)
 		{
-			SendToPlayer(message, length, i, reliable, writesocket);
+			SendToPlayer(message, length, i, reliable);
 		}
 	}
 }
