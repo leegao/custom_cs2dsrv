@@ -116,7 +116,7 @@ int OnWeaponChangeAttempt(int id, int wpnid)
 		player[id].wpntable[wpnid].status = 1;
 	player[id].reloading = 0;
 
-	printf("%s switched to %s\n", player[id].name, weapons[wpnid].name);
+	//printf("%s switched to %s\n", player[id].name, weapons[wpnid].name);
 	return 0;
 }
 

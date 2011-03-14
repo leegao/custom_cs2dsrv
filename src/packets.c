@@ -153,12 +153,12 @@ int buy(stream* packet, int id){
 	CHECK_STREAM(packet, 2);
 	int wpnid = Stream.read_byte(packet);
 
-	switch (OnBuyAttempt(id, wpnid))
-	{
+	switch (OnBuyAttempt(id, wpnid)){
 	case 0:
 		OnBuy(id, wpnid);
 		break;
 	}
+	Stream.read_byte(packet); // TODO: profile last byte in buy()
 }
 
 /**

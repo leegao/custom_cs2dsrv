@@ -237,6 +237,7 @@ int main(int argc, char *argv[]){
 								leave(packet,id);
 								break;
 							default:
+								just(buffer, size);
 								SendMessageToPlayer(id, "Not implemented yet!",
 										1);
 								unknown(packet,  buffer, rtn);
