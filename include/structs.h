@@ -72,7 +72,7 @@ struct PLAYER
 	unsigned char *spraylogo;
 	unsigned char *win;
 	unsigned short version;
-	unsigned short *usgn;
+	unsigned short usgn;
 	unsigned char team;
 	unsigned char skin;
 	unsigned short deaths;

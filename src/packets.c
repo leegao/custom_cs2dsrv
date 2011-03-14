@@ -508,236 +508,39 @@ int chatmessage(stream* packet, int id){
 	free(msg);
 }
 
-int joinroutine_known(stream* packet, int id)
-{
-	int paketlength = 2;
-	if (paketlength > length)
-	{
-		printf("Invalid packet (joinroutine_known)!\n");
-		return length;
-	}
-	switch (message[1])
-	{
+int joinroutine_known(stream* packet, int id){
+	CHECK_STREAM(packet, 1);
+	switch (Stream.read_byte(packet)){
 	case 0:
-	{
-		paketlength = 2;
-		if (paketlength > length)
-		{
-			printf("Invalid packet (joinroutine_known)!\n");
-			return length;
-		}
 		break;
-	}
-	case 1:
-	{
-		if (player[id].joinstatus == 1)
-		{
-			paketlength = 16; // ???
-			if (paketlength > length)
-			{
-				printf("Invalid packet (joinroutine_known)!\n");
-				return length;
-			}
+	case 1:{
+		if (player[id].joinstatus){
+			player[id].name = Stream.read_str(packet);
+			byte* password = Stream.read_str(packet);
+			byte* encryption1 = Stream.read_str(packet);
+			player[id].version = Stream.read_short(packet);
+			player[id].usgn = Stream.read_int(packet); // it's a fucking int
+			player[id].spraylogo = Stream.read_str(packet);
+			byte* mhash = Stream.read_str(packet);
+			Stream.read_byte(packet); // we need to profile this
+			player[id].win = Stream.read_str(packet);
 
-			int position = 2;
-			//Playername
-			int stringsize = message[position];
-			if (stringsize > 255 || stringsize >= (length - position + 1))
-			{
-				printf("Playername too big\n");
-				return length;
-			}
-			paketlength += stringsize;
-			position++;
-
-			player[id].name = malloc(stringsize + 1);
-			if (player[id].name == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-			memcpy(player[id].name, message + position, stringsize);
-			player[id].name[stringsize] = '\0';
-			position += stringsize; //+1 because after it there is a null byte, so ignore it
-
-			//printf("Player %s connected..\n", player[id].name);
-
-			stringsize = message[position];
-			if (stringsize > 255 || stringsize >= (length - position + 1))
-			{
-				printf("Password too big\n");
-				return length;
-			}
-			paketlength += stringsize;
-			position++;
-
-			unsigned char *password = malloc(stringsize + 1);
-			if (password == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-			memcpy(password, message + position, stringsize);
-			password[stringsize] = '\0';
-			position += stringsize;
-
-			//printf("\tPassword: ");
-			/*
-			 int i;
-			 for (i = 0; i <= u_strlen(password); i++)
-			 {
-			 printf("%d-", password[i]);
-			 }
-			 printf("\n");
-			 */
-
-			//Encryption String
-			stringsize = message[position];
-			if (stringsize > 255 || stringsize >= (length - position + 1))
-			{
-				printf("Encryption too big\n");
-				return length;
-			}
-			paketlength += stringsize;
-			position++;
-
-			unsigned char *encryption1 = malloc(stringsize + 1);
-			if (encryption1 == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-			memcpy(encryption1, message + position, stringsize);
-			encryption1[stringsize] = '\0';
-			position += stringsize;
-
-			//printf("\tEncryptionstring: %s\n", encryption1);
-
-			//Player Version
-			player[id].version = message[position];
-			position++;
-			//printf("\tVersion: %d\n", player[id].version);
-			position++; //Null-byte
-
-
-			//USGN ID
-			player[id].usgn = malloc(sizeof(unsigned short));
-			if (player[id].usgn == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-			memcpy(player[id].usgn, message + position, 2); //sizeof(unsigned short) == 2
-			position += 4; //2 bytes + 2 null bytes
-			/*
-			 #else
-			 *player[id].usgn = endian_swap_short(player[id].usgn);
-			 #endif
-			 */
-			//printf("\tUSGN-ID: %u\n", *player[id].usgn);
-
-
-			//Spraylogo
-			stringsize = message[position];
-			if (stringsize > 255 || stringsize >= (length - position + 1))
-			{
-				printf("Spraylogoname too big\n");
-				return length;
-			};
-			paketlength += stringsize;
-			position++;
-
-			player[id].spraylogo = malloc(stringsize + 1);
-			if (player[id].spraylogo == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-			memcpy(player[id].spraylogo, message + position, stringsize);
-			player[id].spraylogo[stringsize] = '\0';
-			position += stringsize;
-
-			//printf("\tSpraylogo: %s\n", player[id].spraylogo);
-
-
-			//Map-Hash
-			stringsize = message[position];
-			if (stringsize > 255 || stringsize >= (length - position + 1))
-			{
-				printf("Map-Hash too big\n");
-				return length;
-			}
-			paketlength += stringsize;
-			position++;
-
-			unsigned char *maphash = malloc(stringsize + 1);
-			if (maphash == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-			memcpy(maphash, message + position, stringsize);
-			maphash[stringsize] = '\0';
-			position += stringsize;
-
-			//printf("\tMap-Hash: %s\n", maphash);
-
-			position++; //Nullbyte
-
-			//WIN
-			stringsize = message[position];
-			if (stringsize > 255 || stringsize >= (length - position + 1))
-			{
-				printf("WIN too big\n");
-				return length;
-			}
-			paketlength += stringsize;
-			position++;
-
-			player[id].win = malloc(stringsize + 1);
-			if (player[id].win == NULL)
-				error_exit("Memory error ( joinroutine_known() )\n");
-			memcpy(player[id].win, message + position, stringsize);
-			player[id].win[stringsize] = '\0';
-			position += stringsize;
-
-			//printf("\tWIN: %s (%d)\n", player[id].win, u_strlen(player[id].win));
-
-			unsigned char *buffer = NULL;
-			stringsize = 0;
+			stream* buf = init_stream(NULL);
 			int tempstatus = CheckPlayerData(password);
-			switch (tempstatus)
-			{
+			switch (tempstatus){
 			case 0x00:
-				stringsize = 6 + u_strlen(sv_map) + u_strlen(pre_authcode);
-				buffer = malloc(stringsize);
-				if (buffer == NULL)
-					error_exit("Memory error ( joinroutine_known() )\n");
-
-				position = 0;
-
-				buffer[position] = 252;
-				position++;
-				buffer[position] = 2;
-				position++;
-				buffer[position] = 0; //Normal
-				position++;
-				buffer[position] = id;
-				position++;
-				buffer[position] = u_strlen(sv_map);
-				position++;
-				memcpy(buffer + position, sv_map, u_strlen(sv_map));
-				position += u_strlen(sv_map);
-				buffer[position] = u_strlen(pre_authcode);
-				position++;
-				memcpy(buffer + position, pre_authcode, u_strlen(pre_authcode));
-				position += u_strlen(pre_authcode);
+				Stream.write(buf, "\x252\2\0", 3);
+				Stream.write_byte(buf, id);
+				Stream.write_str(buf, sv_map);
+				Stream.write_str(buf, pre_authcode);
 				player[id].joinstatus = 2;
 				break;
-
 			default:
-			{
-				stringsize = 3;
-				buffer = malloc(stringsize);
-				if (buffer == NULL)
-					error_exit("Memory error ( joinroutine_known() )\n");
-
-				position = 0;
-
-				buffer[position] = 252;
-				position++;
-				buffer[position] = 2;
-				position++;
-				buffer[position] = tempstatus; //Everyone is banned (just for testing)
-				position++;
+				Stream.write(buf, "\x252\2", 2);
+				Stream.write_byte(buf, tempstatus);
 				player[id].joinstatus = 0;
 				break;
 			}
-
-			}
-			//stringsize = 16 + u_strlen(sv_map);
 
 			/*
 			 0 - Normal
@@ -756,12 +559,12 @@ int joinroutine_known(stream* packet, int id)
 			 13++ - Failed to join
 			 */
 
-			if (stringsize != 0)
-				SendToPlayer(buffer, stringsize, id, 1);
+			if (!EMPTY_STREAM(buf))
+				SendToPlayer(buf->mem, buf->size, id, 1);
 
 			free(encryption1);
-			free(maphash);
-			free(buffer);
+			free(mhash);
+			free(buf);
 
 			onlineplayer++;
 		}
