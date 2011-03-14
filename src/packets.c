@@ -291,11 +291,11 @@ int posupdatewalk(unsigned char *message, int length, int id, int writesocket)
 	{
 	case 0:
 		SendPosUpdate(id, tempx, tempy, 0, writesocket);
-		player[id].x = tempx;
-		player[id].y = tempy;
+		*player[id].x = tempx;
+		*player[id].y = tempy;
 		break;
 	case 1:
-		SendPosUpdate(id, player[id].x, player[id].y, 0, writesocket);
+		SendPosUpdate(id, *player[id].x, *player[id].y, 0, writesocket);
 		break;
 	default:
 		break;
@@ -327,11 +327,11 @@ int posupdaterun(unsigned char *message, int length, int id, int writesocket)
 	{
 	case 0:
 		SendPosUpdate(id, tempx, tempy, 1, writesocket);
-		player[id].x = tempx;
-		player[id].y = tempy;
+		*player[id].x = tempx;
+		*player[id].y = tempy;
 		break;
 	case 1:
-		SendPosUpdate(id, player[id].x, player[id].y, 1, writesocket);
+		SendPosUpdate(id, *player[id].x, *player[id].y, 1, writesocket);
 		break;
 	default:
 		break;
@@ -371,11 +371,11 @@ int posrotupdatewalk(unsigned char *message, int length, int id,
 			//if(rotation < 0) rotation += 360;
 			SendPosRotUpdate(id, tempx, tempy, 0, rotation, writesocket);
 			memcpy(&player[id].rotation, &rotation, sizeof(float));
-			player[id].x = tempx;
-			player[id].y = tempy;
+			*player[id].x = tempx;
+			*player[id].y = tempy;
 			break;
 		case 1:
-			SendPosRotUpdate(id, player[id].x, player[id].y, 0,
+			SendPosRotUpdate(id, *player[id].x, *player[id].y, 0,
 					player[id].rotation, writesocket);
 			break;
 		default:
@@ -417,11 +417,11 @@ int posrotupdaterun(unsigned char *message, int length, int id, int writesocket)
 			//if(rotation < 0) rotation += 360;
 			SendPosRotUpdate(id, tempx, tempy, 1, rotation, writesocket);
 			memcpy(&player[id].rotation, &rotation, sizeof(float));
-			player[id].x = tempx;
-			player[id].y = tempy;
+			*player[id].x = tempx;
+			*player[id].y = tempy;
 			break;
 		case 1:
-			SendPosRotUpdate(id, player[id].x, player[id].y, 1,
+			SendPosRotUpdate(id, *player[id].x, *player[id].y, 1,
 					player[id].rotation, writesocket);
 			break;
 		default:
@@ -463,9 +463,9 @@ int respawnrequest(unsigned char *message, int length, int id, int writesocket)
 			printf("%s spawned!\n", player[id].name);
 			player[id].health = 100;
 			player[id].dead = 0;
-			player[id].x = (tspawnx[tmp] + 0.5) * 32;
-			player[id].y = (tspawny[tmp] + 0.5) * 32;
-			SendSpawnMessage(id, player[id].x, player[id].y, writesocket);
+			*player[id].x = (tspawnx[tmp] + 0.5) * 32;
+			*player[id].y = (tspawny[tmp] + 0.5) * 32;
+			SendSpawnMessage(id, *player[id].x, *player[id].y, writesocket);
 			break;
 		}
 		case 2:
@@ -474,9 +474,9 @@ int respawnrequest(unsigned char *message, int length, int id, int writesocket)
 			printf("%s spawned!\n", player[id].name);
 			player[id].health = 100;
 			player[id].dead = 0;
-			player[id].x = (ctspawnx[tmp] + 0.5) * 32;
-			player[id].y = (ctspawny[tmp] + 0.5) * 32;
-			SendSpawnMessage(id, player[id].x, player[id].y, writesocket);
+			*player[id].x = (ctspawnx[tmp] + 0.5) * 32;
+			*player[id].y = (ctspawny[tmp] + 0.5) * 32;
+			SendSpawnMessage(id, *player[id].x, *player[id].y, writesocket);
 			break;
 		}
 
@@ -1317,8 +1317,8 @@ int joinroutine_known(unsigned char *message, int length, int id,
 							+ 1000);
 					unsigned short *score = &tempscore;
 
-					unsigned short tempx = (player[i].x);
-					unsigned short tempy = (player[i].y);
+					unsigned short tempx = (*player[i].x);
+					unsigned short tempy = (*player[i].y);
 					unsigned short *x = &tempx;
 					unsigned short *y = &tempy;
 

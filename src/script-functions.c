@@ -228,8 +228,8 @@ int OnFire(int id, int writesocket)
 	int i;
 	int range = weapons[player[id].actualweapon].range;
 
-	int startx = player[id].x;
-	int starty = player[id].y;
+	int startx = *player[id].x;
+	int starty = *player[id].y;
 	int frames = fpsnow * player[id].latency / 1000;
 	if (frames > sv_lcbuffer)
 	{
@@ -280,10 +280,10 @@ int OnFire(int id, int writesocket)
 					&& player[b].dead == 0 && playershit[b] == 0
 					&& player[id].team != player[b].team)
 			{
-				if (sqrt((player[b].buffer_x[frames] - startx)
-						* (player[b].buffer_x[frames] - startx)
-						+ (player[b].buffer_y[frames] - starty)
-								* (player[b].buffer_y[frames] - starty)) <= 16)
+				if (sqrt((lcbuffer[frames][b-1][0] - startx)
+						* (lcbuffer[frames][b-1][0] - startx)
+						+ (lcbuffer[frames][b-1][1] - starty)
+								* (lcbuffer[frames][b-1][1] - starty)) <= 16)
 				/*if (sqrt((player[b].x - startx) * (player[b].x - startx)
 				 + (player[b].y - starty) * (player[b].y - starty))
 				 <= 16)*/
@@ -344,8 +344,8 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 	{
 		for (b = 0; b <= tspawncount; b++)
 		{
-			int playerx = player[id].x;
-			int playery = player[id].y;
+			int playerx = *player[id].x;
+			int playery = *player[id].y;
 			int tempx = tspawnx[b] * 32;
 			int tempy = tspawny[b] * 32;
 			//If player in buyzone (5*5)
@@ -362,8 +362,8 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 	{
 		for (b = 0; b <= ctspawncount; b++)
 		{
-			int playerx = player[id].x;
-			int playery = player[id].y;
+			int playerx = *player[id].x;
+			int playery = *player[id].y;
 			int tempx = ctspawnx[b] * 32;
 			int tempy = ctspawny[b] * 32;
 			//If player in buyzone (5*5)

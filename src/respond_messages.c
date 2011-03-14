@@ -604,9 +604,9 @@ void SendKillMessage(int id, int victim, int writesocket)
 	position++;
 	buffer[position] = player[id].actualweapon;
 	position++;
-	memcpy(buffer + position, &player[victim].x, 2);
+	memcpy(buffer + position, player[victim].x, 2);
 	position += 2;
-	memcpy(buffer + position, &player[victim].y, 2);
+	memcpy(buffer + position, player[victim].y, 2);
 	position += 2;
 	unsigned short unknown1 = 240;
 	memcpy(buffer + position, &unknown1, 2);
@@ -650,9 +650,9 @@ void SendKillMessage(int id, int victim, int writesocket)
 	position++;
 	buffer[position] = player[id].actualweapon;
 	position++;
-	memcpy(buffer + position, &player[victim].x, 2);
+	memcpy(buffer + position, player[victim].x, 2);
 	position += 2;
-	memcpy(buffer + position, &player[victim].y, 2);
+	memcpy(buffer + position, player[victim].y, 2);
 	position += 2;
 
 	SendToAllOther(victim, buffer, stringsize, 1, writesocket);
@@ -773,8 +773,8 @@ void SendDropMessage(int id, int wpnid, int ammo1, int ammo2, int unknown1,
 	unsigned char *buffer = malloc(stringsize);
 	if (buffer == NULL)
 		error_exit("Memory error ( SendDropMessage() )\n");
-	unsigned short tilex = (unsigned short) player[id].x / 32;
-	unsigned short tiley = (unsigned short) player[id].y / 32;
+	unsigned short tilex = (unsigned short) *player[id].x / 32;
+	unsigned short tiley = (unsigned short) *player[id].y / 32;
 
 	int position = 0;
 
