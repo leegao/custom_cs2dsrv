@@ -160,6 +160,8 @@ int main(int argc, char *argv[]){
 							//unsigned char *message = malloc(tempsize);
 							//memcpy(message, buffer + position, tempsize);
 
+							just(packet->mem, packet->size);
+
 							int rtn = 0;
 
 							switch ((rtn+Stream.read_byte(packet))){
@@ -229,7 +231,7 @@ int main(int argc, char *argv[]){
 								ping_ingame(packet, id);
 								break;
 							case 252:
-								joinroutine_known(packet, id);
+								joinroutine_known(packet, id, sock);
 								break;
 							case 253:
 								leave(packet,id);
@@ -254,7 +256,7 @@ int main(int argc, char *argv[]){
 //								printf("Error while reading packet: position(%d) > size(%d)\n", position, size);
 //								free(packet);
 //							}
-							free(packet);
+							//free(packet); // This is fucking moronic
 						}
 					}
 				}
@@ -271,7 +273,7 @@ int main(int argc, char *argv[]){
 						int tempsize = size - position;
 						int lol;
 
-						just(packet->mem, packet->size);
+						//just(packet->mem, packet->size);
 
 						//memcpy(packet, buffer + position, tempsize);
 
@@ -308,7 +310,7 @@ int main(int argc, char *argv[]){
 							//printf("%x: %d %d\n", lol, size, packet->size);
 							//for (i=0;i<size;i++)eprintf("%x ", buffer[i]);
 							//eprintf("\n");
-							unknown(packet,  buffer, packet->size);
+							unknown(packet,  buffer, lol);
 							break;
 						}
 

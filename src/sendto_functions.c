@@ -10,6 +10,8 @@
 
 void SendToPlayer(unsigned char *message, int length, int id, int reliable)
 {
+	printf("SENDQUEUE\t");
+	just(message, length);
 	struct sockaddr_in tempclient;
 	tempclient.sin_family = AF_INET;
 	tempclient.sin_port = player[id].port;
@@ -42,6 +44,42 @@ void SendToPlayer(unsigned char *message, int length, int id, int reliable)
 	send_now(buffer, length+2, tempclient);
 
 	//udp_send(writesocket, buffer, length + 2, &tempclient);
+}
+
+void SendToPlayer_imm(unsigned char *message, int length, int id, int reliable, int sock)
+{
+	struct sockaddr_in tempclient;
+	tempclient.sin_family = AF_INET;
+	tempclient.sin_port = player[id].port;
+	tempclient.sin_addr = player[id].ip;
+	unsigned char *buffer = malloc(length + 2);
+	if (buffer == NULL)
+		error_exit("Memory error ( SendToPlayer() )");
+
+	if (reliable == 1)
+	{
+		unsigned short *pNummer = &player[id].server_number;
+		memcpy(buffer, pNummer, sizeof(unsigned short));
+		player[id].server_number += 2;
+	}
+	else if (reliable == 0)
+	{
+		player[id].server_number--;
+		unsigned short *pNummer = &player[id].server_number;
+		memcpy(buffer, pNummer, sizeof(unsigned short));
+		player[id].server_number++;
+	}
+	memcpy(buffer + 2, message, length);
+
+//	sendstruct *payload = malloc(sizeof(sendstruct));
+//	payload->addr = tempclient;
+//	payload->length = length+2;
+//	payload->msg = buffer;
+//	push(&send_q, (void*)payload, mtime());
+
+	//send_now(buffer, length+2, tempclient);
+
+	udp_send(sock, buffer, length + 2, &tempclient);
 }
 
 int send_now(byte* msg, int length, struct sockaddr_in addr){

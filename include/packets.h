@@ -41,7 +41,7 @@ int joinroutine_unknown(stream*,
 		struct sockaddr_in *client);
 int specpos(stream*, int id);
 int chatmessage(stream*, int id);
-int joinroutine_known(stream*, int id);
+int joinroutine_known(stream*, int id, int sock);
 int leave(stream*, int id);
 int reload(stream*, int id);
 int spray(stream*, int id);
@@ -52,7 +52,7 @@ int rcon_pw(stream*, int id);
 
 // auxiliary functions
 #define NULL_STREAM ((stream*)0)
-#define EMPTY_STREAM(s) (!!((s)->size))
+#define EMPTY_STREAM(s) (!((s)->size))
 #define CHECK_STREAM(s,b) if (((s)->size) < (b)){ \
 	printf("Invalid packet check: %s()", __func__); \
 	return; \

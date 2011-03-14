@@ -28,10 +28,7 @@ int unknown(stream* packet, unsigned char *buffer,
 //	eprintf("\n\t");
 	int l = packet->size;
 	byte* msg = Stream.read(packet, l);
-	for (i = 0; i <= l - 1; i++){
-		eprintf("%d-", msg[i]);
-	}
-	eprintf("\n");
+	just(msg,l);
 }
 
 /**
@@ -103,7 +100,7 @@ int confirmation_unknown(stream* packet, struct in_addr ip, unsigned short port)
  * \return read bytes (specific: 3)
  */
 void confirmation_known(stream *packet, int id){
-	if (packet->size < 2)
+	if (!Stream.read(packet, 2))
 		printf("Invalid packet (confirmation_known)!\n");
 }
 
@@ -502,10 +499,12 @@ int chatmessage(stream* packet, int id){
 	free(msg);
 }
 
-int joinroutine_known(stream* packet, int id){
+int joinroutine_known(stream* packet, int id, int sock){
 	CHECK_STREAM(packet, 1);
 	switch (Stream.read_byte(packet)){
 	case 0:
+		//printf("Invalid join packet\n");
+		Stream.read(packet, packet->size);
 		break;
 	case 1:{
 		if (player[id].joinstatus == 1){
@@ -518,20 +517,21 @@ int joinroutine_known(stream* packet, int id){
 			byte* mhash = Stream.read_str(packet);
 			Stream.read_byte(packet); // we need to profile this
 			player[id].win = Stream.read_str(packet);
-			// we have one left over byte in this stream...
+			// we have one left over byte in this stream... CONFIRMED
+			Stream.read_byte(packet);
 
 			stream* buf = init_stream(NULL);
 			int tempstatus = CheckPlayerData(password);
 			switch (tempstatus){
 			case 0x00:
-				Stream.write(buf, (byte*)"\252\2\0", 3);
+				Stream.write(buf, (byte*)"\xfc\2\0", 3);
 				Stream.write_byte(buf, id);
 				Stream.write_str(buf, sv_map);
 				Stream.write_str(buf, pre_authcode);
 				player[id].joinstatus = 2;
 				break;
 			default:
-				Stream.write(buf, (byte*)"\252\2", 2);
+				Stream.write(buf, (byte*)"\xfc\2", 2);
 				Stream.write_byte(buf, tempstatus);
 				player[id].joinstatus = 0;
 				break;
@@ -554,8 +554,11 @@ int joinroutine_known(stream* packet, int id){
 			 13++ - Failed to join
 			 */
 
-			if (!EMPTY_STREAM(buf))
+			if (!EMPTY_STREAM(buf)){
+				printf("%d\n", player[id].port);
 				SendToPlayer(buf->mem, buf->size, id, 1);
+				//exit(0);
+			}
 
 			free(encryption1);
 			free(mhash);
@@ -577,7 +580,7 @@ int joinroutine_known(stream* packet, int id){
 			free(pre_authcode_respond);
 			free(mhash);
 
-			SendToPlayer((byte*)"\252\4\0", 3, id, 1);
+			SendToPlayer((byte*)"\xfc\4\0", 3, id, 1);
 			player[id].joinstatus = 3;
 		} else {
 			printf("Unexpected join data (3) from %s; expected %d\n", player[id].name, player[id].joinstatus+1);
@@ -592,7 +595,7 @@ int joinroutine_known(stream* packet, int id){
 
 			stream* buf = init_stream(NULL);
 
-			Stream.write(buf, (byte*)"\252\6\0", 3);
+			Stream.write(buf, (byte*)"\xfc\6\0", 3);
 			Stream.write_str(buf, sv_map);
 			Stream.write_str(buf, sv_name);
 			byte wtf[] = {
@@ -624,7 +627,7 @@ int joinroutine_known(stream* packet, int id){
 
 			//----------- PlayerData -----------
 			buf = init_stream(NULL);
-			Stream.write(buf, (byte*)"\252\7\1", 3);
+			Stream.write(buf, (byte*)"\xfc\7\1", 3);
 			Stream.write_byte(buf, onlineplayer);
 
 			int i;
@@ -686,29 +689,29 @@ int joinroutine_known(stream* packet, int id){
 			free(buf);
 
 			//----------- PlayerData -----------
-			SendToPlayer((byte*)"\252\7\1\0", 4, id, 1);
+			SendToPlayer((byte*)"\xfc\7\1\0", 4, id, 1);
 
 			//----------- HostageData -----------
-			SendToPlayer((byte*)"\252\7\2\0", 4, id, 1);
+			SendToPlayer((byte*)"\xfc\7\2\0", 4, id, 1);
 
 			//----------- ItemData -----------
 			//fc 07 03 01(1 anzahl) 01(id) 00 4b(waffenid) 0f 00 12 00 (position) 01 (munition ?) 00 00 00
-			SendToPlayer((byte*)"\252\7\3\0", 4, id, 1);
+			SendToPlayer((byte*)"\xfc\7\3\0", 4, id, 1);
 
 			//----------- EnityData -----------
-			SendToPlayer((byte*)"\252\7\4\0", 4, id, 1);
+			SendToPlayer((byte*)"\xfc\7\4\0", 4, id, 1);
 
 			//----------- DynamicObjectData -----------
-			SendToPlayer((byte*)"\252\7\5\0", 4, id, 1);
+			SendToPlayer((byte*)"\xfc\7\5\0", 4, id, 1);
 
 			//----------- ProjectileData -----------
-			SendToPlayer((byte*)"\252\7\6\0", 4, id, 1);
+			SendToPlayer((byte*)"\xfc\7\6\0", 4, id, 1);
 
 			//----------- DynamicObjectImageData -----------
-			SendToPlayer((byte*)"\252\7\7\0", 4, id, 1);
+			SendToPlayer((byte*)"\xfc\7\7\0", 4, id, 1);
 
 			//----------- Final ACK -----------
-			SendToPlayer((byte*)"\252\7\200\3\65\67\75", 7, id, 1);
+			SendToPlayer((byte*)"\xfc\7\200\3\65\67\75", 7, id, 1);
 
 			player[id].joinstatus = 4;
 			free(mapname);
@@ -944,7 +947,7 @@ int write_float(stream* s, float c){
 
 byte* read_str(stream* s){
 	byte i = read_byte(s);
-	if (!i) return 0;
+	if (!i) return "";
 	byte* str = (byte*)malloc(i+1), *src = Stream.read(s, i);
 	if (!src) return 0;
 	memcpy(str, src, i);
@@ -954,7 +957,7 @@ byte* read_str(stream* s){
 
 byte* read_str2(stream* s){
 	short i = read_short(s);
-	if (!i) return 0;
+	if (!i) return "";
 	byte* str = (byte*)malloc(i+1), *src = Stream.read(s, i);
 	if (!src) return 0;
 	memcpy(str, src, i);
