@@ -522,8 +522,7 @@ int OnBuy(int id, int wpnid)
 					if (player[id].wpntable[i].status > 0 && weapons[i].slot == weapons[wpnid].slot)
 					{
 						RemovePlayerWeapon(id, i);
-						SendDropMessage(id, i, player[id].wpntable[i].ammo1,
-							player[id].wpntable[i].ammo2, 0, 0, 0);
+						SendDropMessage(id, i, player[id].wpntable[i].ammo1, player[id].wpntable[i].ammo2);
 						break;
 					}
 				}
@@ -664,8 +663,7 @@ int OnMoveAttempt(int id, unsigned short x, unsigned short y, int status)
  0 - OK
  1 - Don't drop
  */
-int OnDrop(int id, unsigned char wpnid, unsigned short ammo1, unsigned short ammo2,
-		unsigned char unknown1, unsigned char unknown2, unsigned char unknown3)
+int OnDrop(int id, unsigned char wpnid, unsigned short ammo1, unsigned short ammo2)
 {
 	if ((player[id].wpntable[wpnid].status > 0) &&
 		(player[id].wpntable[wpnid].ammo1 == ammo1) &&
