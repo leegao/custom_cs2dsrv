@@ -3,7 +3,7 @@
  * For more information take a look at the Readme
  * Copyright (c) by the authors of this file
  *
- * Author/s of this file: Jermuk
+ * Author/s of this file: Jermuk, Lee
  */
 
 #include "packets.h"

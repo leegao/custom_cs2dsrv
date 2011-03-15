@@ -169,9 +169,7 @@ int main(int argc, char *argv[]){
 								confirmation_known(packet,id);
 								break;
 							case 3:
-								connection_setup_known(packet,
-										newclient.sin_addr, newclient.sin_port,
-										id);
+								connection_setup_known(packet, newclient.sin_addr, newclient.sin_port, id);
 								break;
 							case 7:
 								fire(packet, id);
@@ -214,15 +212,13 @@ int main(int argc, char *argv[]){
 								spray(packet, id);
 								break;
 							case 32:
-								rtn
-										= specpos(packet, id);
+								specpos(packet, id);
 								break;
 							case 39:
 								respawnrequest(packet, id);
 								break;
 							case 236:
-								rtn
-										= rcon_pw(packet, id);
+								rcon_pw(packet, id);
 								break;
 							case 240:
 								chatmessage(packet, id);
@@ -238,14 +234,12 @@ int main(int argc, char *argv[]){
 								break;
 							default:
 								just(buffer, size);
-								SendMessageToPlayer(id, "Not implemented yet!",
-										1);
+								SendMessageToPlayer(id, "Not implemented yet!", 1);
 								unknown(packet,  buffer, rtn);
 								break;
 							}
 
-							if (EMPTY_STREAM(packet))
-							{
+							if (EMPTY_STREAM(packet)){
 								free(packet);
 								break;
 							}
