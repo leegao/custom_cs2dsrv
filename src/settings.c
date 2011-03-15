@@ -16,6 +16,7 @@ int no_usgn = 0;
 
 unsigned char pre_authcode[] = "5TWs3Obv7";
 char startweapons[] = { 50 };
+unsigned short lcbuffer[LC_BUFFER_SIZE][MAX_CLIENTS][2];
 int fpsnow = 0;
 int dropped_weapons_count = 0;
 

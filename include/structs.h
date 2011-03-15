@@ -10,8 +10,8 @@
 #define STRUCTS_H_INCLUDED
 
 #include "main.h"
-#define MAX_CLIENTS 64
-#define BUFFER_SIZE 100
+#define MAX_CLIENTS 32
+
 struct WEAPON
 {
 	short weapondamage, weapondamage_z1, weapondamage_z2;
@@ -77,8 +77,7 @@ struct PLAYER
 	unsigned char skin;
 	unsigned short deaths;
 	short score;
-	unsigned short x, y;
-	unsigned short buffer_x[BUFFER_SIZE + 1], buffer_y[BUFFER_SIZE + 1];
+	unsigned short *x, *y;
 	unsigned char health, armor;
 	unsigned char actualweapon; //id of used weapon
 	struct PLAYER_WEAPON wpntable[0xff];

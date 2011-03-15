@@ -13,7 +13,7 @@
 
 /* --- Server Settings --- */
 #define MAX_BUF 1024
-#define MAX_CLIENTS 64
+#define MAX_CLIENTS 32
 #define TIMEOUT 10
 #define SETTINGS_PATH "server.cfg"
 
@@ -50,6 +50,8 @@ extern int fpsnow;
 #define STARTWEAPONS_COUNT 1
 extern char startweapons[];
 
+#define LC_BUFFER_SIZE 150
+extern unsigned short lcbuffer[LC_BUFFER_SIZE][MAX_CLIENTS][2];
 
 void ReadServerCfg(const char*);
 

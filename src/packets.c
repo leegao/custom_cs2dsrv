@@ -197,11 +197,11 @@ int posupdatewalk(stream* packet, int id)
 	{
 	case 0:
 		SendPosUpdate(id, tempx, tempy, 0);
-		player[id].x = tempx;
-		player[id].y = tempy;
+		*player[id].x = tempx;
+		*player[id].y = tempy;
 		break;
 	case 1:
-		SendPosUpdate(id, player[id].x, player[id].y, 0);
+		SendPosUpdate(id, *player[id].x, *player[id].y, 0);
 	}
 }
 /**
@@ -220,11 +220,11 @@ int posupdaterun(stream* packet, int id){
 	switch (OnMoveAttempt(id, tempx, tempy, 0)){
 	case 0:
 		SendPosUpdate(id, tempx, tempy, 1);
-		player[id].x = tempx;
-		player[id].y = tempy;
+		*player[id].x = tempx;
+		*player[id].y = tempy;
 		break;
 	case 1:
-		SendPosUpdate(id, player[id].x, player[id].y, 1);
+		SendPosUpdate(id, *player[id].x, *player[id].y, 1);
 	}
 }
 /**
@@ -250,11 +250,12 @@ int posrotupdatewalk(stream* packet, int id)
 			//if(rotation < 0) rotation += 360;
 			SendPosRotUpdate(id, tempx, tempy, 0, rotation);
 			player[id].rotation = rotation;
-			player[id].x = tempx;
-			player[id].y = tempy;
+			*player[id].x = tempx;
+			*player[id].y = tempy;
 			break;
 		case 1:
-			SendPosRotUpdate(id, player[id].x, player[id].y, 0, player[id].rotation); // no change?
+			SendPosRotUpdate(id, *player[id].x, *player[id].y, 0, player[id].rotation); // no change?
+
 		}
 	}
 }
@@ -279,11 +280,11 @@ int posrotupdaterun(stream* packet, int id){
 		case 0:
 			SendPosRotUpdate(id, tempx, tempy, 1, rotation);
 			player[id].rotation = rotation;
-			player[id].x = tempx;
-			player[id].y = tempy;
+			*player[id].x = tempx;
+			*player[id].y = tempy;
 			break;
 		case 1:
-			SendPosRotUpdate(id, player[id].x, player[id].y, 1, player[id].rotation);
+			SendPosRotUpdate(id, *player[id].x, *player[id].y, 1, player[id].rotation);
 		}
 	}
 }
@@ -312,18 +313,18 @@ int respawnrequest(stream* packet, int id)
 			printf("%s spawned as a terrorist.\n", player[id].name);
 			player[id].health = 100;
 			player[id].dead = 0;
-			player[id].x = (tspawnx[tmp] + 0.5) * 32;
-			player[id].y = (tspawny[tmp] + 0.5) * 32;
-			SendSpawnMessage(id, player[id].x, player[id].y);
+			*player[id].x = (tspawnx[tmp] + 0.5) * 32;
+			*player[id].y = (tspawny[tmp] + 0.5) * 32;
+			SendSpawnMessage(id, *player[id].x, *player[id].y);
 			break;
 		case 2:
 			tmp = rand() % ctspawncount;
 			printf("%s spawned as a counter-terrorist.\n", player[id].name);
 			player[id].health = 100;
 			player[id].dead = 0;
-			player[id].x = (ctspawnx[tmp] + 0.5) * 32;
-			player[id].y = (ctspawny[tmp] + 0.5) * 32;
-			SendSpawnMessage(id, player[id].x, player[id].y);
+			*player[id].x = (ctspawnx[tmp] + 0.5) * 32;
+			*player[id].y = (ctspawny[tmp] + 0.5) * 32;
+			SendSpawnMessage(id, *player[id].x, *player[id].y);
 			break;
 		}
 		break;
@@ -502,6 +503,7 @@ int chatmessage(stream* packet, int id){
 
 int joinroutine_known(stream* packet, int id, int sock){
 	CHECK_STREAM(packet, 1);
+
 	switch (Stream.read_byte(packet)){
 	case 0:
 		//printf("Invalid join packet\n");
@@ -632,18 +634,20 @@ int joinroutine_known(stream* packet, int id, int sock){
 			Stream.write_byte(buf, onlineplayer);
 
 			int i;
+
 			for (i = 1; i <= sv_maxplayers; i++){
 				if (player[i].used == 1 && player[i].joinstatus >= 1 && i != id){
 					unsigned char *encodedname = GetEncodedString(player[i].name, u_strlen(player[i].name));
 					unsigned short deaths = player[i].deaths;
 					unsigned short score = (unsigned) (player[i].deaths + 1000);
 
-					unsigned short x = (player[i].x);
-					unsigned short y = (player[i].y);
+					unsigned short x = *(player[i].x);
+					unsigned short y = *(player[i].y);
 					float rot = player[i].rotation;
 
 					Stream.write_byte(buf, i);
 					Stream.write_str(buf, encodedname);
+
 					free(encodedname);
 
 					byte wtf2[] = {

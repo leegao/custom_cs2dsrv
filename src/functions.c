@@ -9,25 +9,6 @@
 #include "functions.h"
 
 /**
- * \fn void UpdateBuffer(void)
- * \brief update old player locations
- */
-void UpdateBuffer(void)
-{
-	int id, i;
-	for (id = 1; id < (MAX_CLIENTS); id++)
-	{
-		for (i = sv_lcbuffer; i >= 1; i--)
-		{
-			player[id].buffer_x[i] = player[id].buffer_x[i - 1];
-			player[id].buffer_y[i] = player[id].buffer_y[i - 1];
-		}
-		player[id].buffer_x[0] = player[id].x;
-		player[id].buffer_y[0] = player[id].y;
-	}
-}
-
-/**
  * \fn int IsPlayerKnown(struct in_addr ip, u_short port)
  * \brief checks if a player is already known
  * \param ip client's ip
@@ -69,8 +50,8 @@ void ClearPlayer(int id)
 	player[id].deaths = 0;
 	player[id].score = 0;
 
-	player[id].x = 0;
-	player[id].y = 0;
+	player[id].x = &lcbuffer[0][id-1][0];
+	player[id].y = &lcbuffer[0][id-1][1];
 
 	player[id].health = 0;
 	player[id].armor = 0;
@@ -89,10 +70,10 @@ void ClearPlayer(int id)
 		player[id].wpntable[i].ammo1 = 0;
 		player[id].wpntable[i].ammo2 = 0;
 	}
-	for (i = 0; i <= sv_lcbuffer; i++)
+	for (i = 0; i < LC_BUFFER_SIZE; i++)
 	{
-		player[id].buffer_x[i] = 0;
-		player[id].buffer_y[i] = 0;
+		lcbuffer[i][id-1][0] = 0;
+		lcbuffer[i][id-1][1] = 0;
 	}
 	player[id].rotation = 0;
 
@@ -113,7 +94,7 @@ void ClearPlayer(int id)
 void ClearAllPlayer(void)
 {
 	int i;
-	for (i = 1; i <= sv_maxplayers; i++)
+	for (i = 1; i <= MAX_CLIENTS; i++)
 	{
 		ClearPlayer(i);
 	}
