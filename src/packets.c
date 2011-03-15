@@ -913,6 +913,7 @@ void init_optable(){
 	memset(known_table, 0, 0x400);
 	memset(unknown_table, 0, 0x400);
 
+	// TODO: fill out the rest of the packets in here.
 #define K(i,a) known_table[(i)] = (known_handler)&(a)
 	K(1, confirmation_known);
 	K(3, connection_setup_known);

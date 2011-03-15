@@ -139,103 +139,23 @@ int main(int argc, char *argv[]){
 			if (size < 3) {
 				perror("Invalid packet! (size < 3)\n");
 			} else {
-				int id = IsPlayerKnown(newclient.sin_addr, newclient.sin_port); /// Function returns id or -1 if unknown
+				int id = IsPlayerKnown(newclient.sin_addr, newclient.sin_port); /// Function returns id or 0 if unknown
+
+				stream *packet = init_stream(NULL);
+				Stream.write(packet, buffer+2, size-2);
+
 				if (id){///When the player is known execute other commands as when the player is unknown
 					if (ValidatePacket(buffer,id)){ ///Checks and raise the packet numbering if necessary
 						PaketConfirmation(buffer,id); ///If the numbering is even, send a confirmation
 						player[id].lastpacket = mtime();
-						int control = 1;
-						stream* packet = init_stream(NULL);
-						Stream.write(packet, buffer+2, size-2);
-
-						/**
-						 * This while construct splits the recieved UDP-message
-						 * into cs2d-messages.
-						 * Every packet function returns the count of read bytes.
-						 */
-						while (control){
+						while (1){
 							int pid = Stream.read_byte(packet);
 							known_handler h = known_table[pid];
 							if (!h){
 								printf("Unhandled packet originating from %s (id:%d)\n", player[id].name, id);
 								unknown(packet, pid);
-							} else {
+							} else
 								h(packet, id);
-							}
-//							switch ((rtn = Stream.read_byte(packet))){
-//							case 1:
-//								confirmation_known(packet,id);
-//								break;
-//							case 3:
-//								connection_setup_known(packet, id);
-//								break;
-//							case 7:
-//								fire(packet, id);
-//								break;
-//							case 8:
-//								advanced_fire(packet, id);
-//								break;
-//							case 9:
-//								weaponchange(packet, id);
-//								break;
-//							case 10:
-//								posupdaterun(packet, id);
-//								break;
-//							case 11:
-//								posupdatewalk(packet, id);
-//								break;
-//							case 12:
-//								rotupdate(packet, id);
-//								break;
-//							case 13:
-//								posrotupdaterun(packet, id);
-//								break;
-//							case 14:
-//								posrotupdatewalk(packet, id);
-//								break;
-//							case 16:
-//								reload(packet, id);
-//								break;
-//							case 20:
-//								teamchange(packet, id);
-//								break;
-//							case 23:
-//								buy(packet, id);
-//								break;
-//							case 24:
-//								drop(packet, id);
-//								break;
-//							case 28:
-//								// Spray 28 - 0 - x x - y y - color
-//								spray(packet, id);
-//								break;
-//							case 32:
-//								specpos(packet, id);
-//								break;
-//							case 39:
-//								respawnrequest(packet, id);
-//								break;
-//							case 236:
-//								rcon_pw(packet, id);
-//								break;
-//							case 240:
-//								chatmessage(packet, id);
-//								break;
-//							case 249:
-//								ping_ingame(packet, id);
-//								break;
-//							case 252:
-//								joinroutine_known(packet, id);
-//								break;
-//							case 253:
-//								leave(packet,id);
-//								break;
-//							default:
-//								SendMessageToPlayer(id, "Not implemented.", 1);
-//								unknown(packet, rtn);
-//								break;
-//							}
-
 							if (EMPTY_STREAM(packet)){
 								free(packet);
 								break;
@@ -243,59 +163,18 @@ int main(int argc, char *argv[]){
 						}
 					}
 				}else{
-					stream *packet = init_stream(NULL);
-					Stream.write(packet, buffer+2, size-2);
-
 					while (1){
 						int pid = Stream.read_byte(packet);
 						unknown_handler h = unknown_table[pid];
-						if (!h){
-							//printf("Unhandled packet originating from %s (id:%d)\n", player[id].name, id);
+						if (!h)
 							unknown(packet, pid);
-						} else {
+						else
 							h(packet, &newclient);
-						}
-
-//						switch (lol=Stream.read_byte(packet)){
-//						case 1:
-//							confirmation_unknown(packet, &newclient);
-//							break;
-//						case 3:
-//							connection_setup_unknown(packet, &newclient);
-//							break;
-//						case 27:
-//							usgn_add(packet, &newclient);
-//							break;
-//						case 28:
-//							usgn_update(packet, &newclient);
-//							break;
-//						case 250:
-//							ping_serverlist(packet, &newclient);
-//							break;
-//						case 251:
-//							serverinfo_request(packet, &newclient);
-//							break;
-//						case 252:
-//							joinroutine_unknown(packet, &newclient);
-//							break;
-//						default:
-//							unknown(packet, lol);
-//							break;
-//						}
 
 						if (!packet->size){
 							free(packet);
 							break;
 						}
-						/**
-						 * Security check (Buffer Overflow)
-						 */
-//						else if (position > size)
-//						{
-//							printf("Error while reading packet: position(%d) > size(%d)\n", position, size);
-//							free(packet);
-//						}
-						//free(packet);
 					}
 				}
 			}
