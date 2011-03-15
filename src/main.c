@@ -126,7 +126,7 @@ int main(int argc, char *argv[]){
 
 		memmove(&lcbuffer[1], lcbuffer, sizeof(short)*(LC_BUFFER_SIZE - 1)*(MAX_CLIENTS)*2); //update lc position buffers
 		CheckForTimeout(sock);
-		//ExecuteFunctionsWithTime(&checktime, sock); // refactor into scheduler
+		ExecuteFunctionsWithTime(&checktime, sock); // refactor into scheduler
 		CheckAllPlayerForReload(sock);
 
 		FD_ZERO(&descriptor);
