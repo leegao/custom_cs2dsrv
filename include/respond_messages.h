@@ -32,8 +32,7 @@ void SendSprayMessage(char id, unsigned short xx, unsigned short yy, char c);
 void SendKillMessage(int id, int victim);
 void SendPingList(int writesocket);
 void SendBuyFailedMessage(int id, int status);
-void SendDropMessage(int id, int wpnid, int ammo1, int ammo2, int unknown1,
-		int unknown2, int unknown3);
+void SendDropMessage(int id, int wpnid, int ammo1, int ammo2);
 void SendRconPwMessage(int id, const unsigned char* message, int len,
 		unsigned char success);
 #endif // RESPOND_MESSAGES_H_INCLUDED

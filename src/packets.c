@@ -830,19 +830,17 @@ int usgn_update(stream* packet, struct sockaddr_in *newclient){
 int drop(stream* packet, int id){
 	CHECK_STREAM(packet, 6);
 
-	unsigned char wpnid, unknown1, unknown2, unknown3;
+	unsigned char wpnid, unknown3;
 	unsigned short ammo1, ammo2;
 
 	wpnid = Stream.read_byte(packet);
-	ammo1 = Stream.read_byte(packet);
-	unknown1 = Stream.read_byte(packet);
-	ammo2 = Stream.read_byte(packet);
-	unknown2 = Stream.read_byte(packet);
+	ammo1 = Stream.read_short(packet);
+	ammo2 = Stream.read_short(packet);
 	unknown3 = Stream.read_byte(packet);
 
-	switch (OnDrop(id, wpnid, ammo1, ammo2, unknown1, unknown2, unknown3)){
+	switch (OnDrop(id, wpnid, ammo1, ammo2)){
 	case 0:
-		SendDropMessage(id, wpnid, ammo1, ammo2, unknown1, unknown2, unknown3);
+		SendDropMessage(id, wpnid, ammo1, ammo2);
 	}
 	return 1;
 }

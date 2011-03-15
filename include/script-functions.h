@@ -29,7 +29,5 @@ int OnChatMessage(int id, unsigned char *message, int team);
 int OnTeamChangeAttempt(int id, unsigned char team, unsigned char skin);
 int OnTeamChange(int id, unsigned char team, unsigned char skin);
 int OnMoveAttempt(int id, unsigned short x, unsigned short y, int status);
-int OnDrop(int id, unsigned char wpnid, unsigned short ammo1,
-		unsigned short ammo2, unsigned char unknown1, unsigned char unknown2,
-		unsigned char unknown3);
+int OnDrop(int id, unsigned char wpnid, unsigned short ammo1, unsigned short ammo2);
 #endif

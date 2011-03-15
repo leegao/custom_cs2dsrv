@@ -158,7 +158,7 @@ void SendKillMessage(int id, int victim)
 	stream* buf = init_stream(NULL);
 	byte buffer[] = {19,victim,id,
 					player[id].actualweapon,
-					SHORT(player[victim].x),SHORT(player[victim].y),
+					SHORT(*player[victim].x),SHORT(*player[victim].y),
 					240,0,1,SHORT(length),'k',166}; // 166 acts like a string separator, rest of this line is like wtf
 	Stream.write(buf, buffer, 15);
 	Stream.write(buf, player[id].name, sNameLength);
@@ -172,7 +172,7 @@ void SendKillMessage(int id, int victim)
 	free(buf->mem);
 	free(buf);
 
-	byte buffer2[] = {19,victim,id,player[id].actualweapon,SHORT(player[victim].x),SHORT(player[victim].y)};
+	byte buffer2[] = {19,victim,id,player[id].actualweapon,SHORT(*player[victim].x),SHORT(*player[victim].y)};
 	SendToAllOther(victim, buffer2, 8, 1);
 }
 
@@ -212,86 +212,17 @@ void SendBuyFailedMessage(int id, int status){
 	SendToPlayer(buffer, 6, id, 1);
 }
 
-void SendDropMessage(int id, int wpnid, int ammo1, int ammo2, int unknown1,
-		int unknown2, int unknown3)
-{
-	/*
-	 int stringsize = 7;
-	 unsigned char *buffer = malloc(stringsize);
-	 if (buffer == NULL)
-	 error_exit("Memory error ( SendDropMessage() )\n");
-
-	 int position = 0;
-	 buffer[position] = 24;
-	 position++;
-	 buffer[position] = wpnid;
-	 position++;
-	 buffer[position] = (unsigned char) ammo1;
-	 position++;
-	 buffer[position] = 0;
-	 position++;
-	 buffer[position] = (unsigned char) ammo2;
-	 position++;
-	 buffer[position] = 0;
-	 position++;
-	 buffer[position] = 0;
-	 position++;
-	 SendToPlayer(buffer, stringsize, id, 1);
-	 free(buffer);
-	 buffer = NULL;
-	 */
-
-	int stringsize = 19;
-	unsigned char *buffer = malloc(stringsize);
-	if (buffer == NULL)
-		error_exit("Memory error ( SendDropMessage() )\n");
+void SendDropMessage(int id, int wpnid, int ammo1, int ammo2){
 	unsigned short tilex = (unsigned short) *player[id].x / 32;
 	unsigned short tiley = (unsigned short) *player[id].y / 32;
 
-	int position = 0;
-
-	buffer[position] = 24;
-	position++;
-	buffer[position] = id;
-	position++;
-	buffer[position] = wpnid;
-	position++;
-	buffer[position] = (unsigned char) ammo1;
-	position++;
-	buffer[position] = unknown1;
-	position++;
-	buffer[position] = (unsigned char) ammo2;
-	position++;
-	buffer[position] = unknown2;
-	position++;
-	memcpy(buffer + position, &tilex, 2);
-	position += 2;
-	memcpy(buffer + position, &tiley, 2);
-	position += 2;
-	buffer[position] = 0;
-	position++;
-	buffer[position] = 0;
-	position++;
-	buffer[position] = 0;
-	position++;
-	buffer[position] = 1;
-	position++;
-	buffer[position] = 0;
-	position++;
-	buffer[position] = 0;
-	position++;
-	buffer[position] = 0;
-	position++;
-	buffer[position] = 50;
-	position++;
-
-	SendToAll(buffer, stringsize, 1);
-
-	free(buffer);
+	// Check that ammo1 and ammo2 aren't shorts since ammo can go over 0xff. Confirmed
+	byte buffer[] = {24,id,wpnid,SHORT(ammo1),SHORT(ammo2),
+					SHORT(tilex), SHORT(tiley),0,0,0,1,0,0,0,50};
+	SendToAll(buffer, 19, 1);
 }
 
-void SendRconPwMessage(int id, const unsigned char* message, int len,
-		unsigned char success)
+void SendRconPwMessage(int id, const unsigned char* message, int len, unsigned char success)
 {
 	int stringsize = len + 1;
 	unsigned char *buffer = malloc(stringsize * sizeof(char));
@@ -299,6 +230,10 @@ void SendRconPwMessage(int id, const unsigned char* message, int len,
 		error_exit("Memory error ( SendRconPwMessage() )\n");
 	memcpy(buffer, (void*) message, len);
 	buffer[stringsize] = success;
-	SendToPlayer(buffer, stringsize, id, 1); //
+	SendToPlayer(buffer, stringsize, id, 1);
 	free(buffer);
 }
+
+#undef SHORT
+#undef INT
+#undef FLOAT
