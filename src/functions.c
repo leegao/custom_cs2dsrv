@@ -6,26 +6,7 @@
  * Author/s of this file: Jermuk, FloooD
  */
 
-#include "../include/functions.h"
-
-/**
- * \fn void UpdateBuffer(void)
- * \brief update old player locations
- */
-void UpdateBuffer(void)
-{
-	int id, i;
-	for (id = 1; id < (MAX_CLIENTS); id++)
-	{
-			for (i = sv_lcbuffer; i >= 1; i--)
-			{
-				player[id].buffer_x[i] = player[id].buffer_x[i - 1];
-				player[id].buffer_y[i] = player[id].buffer_y[i - 1];
-			}
-			player[id].buffer_x[0] = player[id].x;
-			player[id].buffer_y[0] = player[id].y;
-	}
-}
+#include "functions.h"
 
 /**
  * \fn int IsPlayerKnown(struct in_addr ip, u_short port)
@@ -34,18 +15,14 @@ void UpdateBuffer(void)
  * \param port client's port
  * \return the playerid or 0 if not found
  */
-int IsPlayerKnown(struct in_addr ip, u_short port)
-{
+int IsPlayerKnown(struct in_addr ip, u_short port){
 	int i;
-	for (i = 1; i <= sv_maxplayers; i++)
-	{
-		if (!strcmp(inet_ntoa(ip), inet_ntoa(player[i].ip)) && port
-				== player[i].port)
-		{
+	for (i = 1; i <= sv_maxplayers; i++){
+		if (!strcmp(inet_ntoa(ip), inet_ntoa(player[i].ip)) && port == player[i].port){
 			return i;
 		}
 	}
-	return -1;
+	return 0; // false is 0
 }
 
 /**
@@ -55,11 +32,10 @@ int IsPlayerKnown(struct in_addr ip, u_short port)
 void ClearPlayer(int id)
 {
 	player[id].used = 0;
-	player[id].client_nummer = 0;
-	player[id].server_nummer = 0;
-	player[id].lastpaket = 0;
+	player[id].client_number = 0;
+	player[id].server_number = 0;
+	player[id].lastpacket = 0;
 	player[id].joinstatus = 0;
-	player[id].rcon = 0;
 
 	free(player[id].name);
 	player[id].name = NULL;
@@ -67,16 +43,15 @@ void ClearPlayer(int id)
 	player[id].spraylogo = NULL;
 	free(player[id].win);
 	player[id].win = NULL;
-	free(player[id].usgn);
-	player[id].usgn = NULL;
+	player[id].usgn = 0;
 	player[id].version = 0;
 
 	player[id].team = 0;
 	player[id].deaths = 0;
 	player[id].score = 0;
 
-	player[id].x = 0;
-	player[id].y = 0;
+	player[id].x = &lcbuffer[0][id-1][0];
+	player[id].y = &lcbuffer[0][id-1][1];
 
 	player[id].health = 0;
 	player[id].armor = 0;
@@ -86,16 +61,19 @@ void ClearPlayer(int id)
 	player[id].reloadtimer = 0;
 	player[id].zoomtimer = 0;
 	player[id].firetimer = 0;
+	player[id].rcon = 0;
 
 	int i;
-	for (i = 0; i <= 9; i++)
+	for (i = 0; i <= 0xFF; i++)
 	{
-		player[id].slot[i].id = 0;
+		player[id].wpntable[i].status = 0;
+		player[id].wpntable[i].ammo1 = 0;
+		player[id].wpntable[i].ammo2 = 0;
 	}
-	for (i = 0; i <= sv_lcbuffer; i++)
+	for (i = 0; i < LC_BUFFER_SIZE; i++)
 	{
-		player[id].buffer_x[i] = 0;
-		player[id].buffer_y[i] = 0;
+		lcbuffer[i][id-1][0] = 0;
+		lcbuffer[i][id-1][1] = 0;
 	}
 	player[id].rotation = 0;
 
@@ -103,7 +81,6 @@ void ClearPlayer(int id)
 
 	player[id].start = 0;
 	player[id].money = mp_startmoney;
-	player[id].zoommode = 0;
 
 	/* Address*/
 	player[id].port = 0;
@@ -117,7 +94,7 @@ void ClearPlayer(int id)
 void ClearAllPlayer(void)
 {
 	int i;
-	for (i = 1; i <= sv_maxplayers; i++)
+	for (i = 1; i <= MAX_CLIENTS; i++)
 	{
 		ClearPlayer(i);
 	}
@@ -135,7 +112,7 @@ void CheckForTimeout(int writesocket)
 		if (player[i].used == 1 && PlayerTimeout(i))
 		{
 			printf("Client %d timed out!\n", i);
-			SendLeaveMessage(i, writesocket);
+			SendLeaveMessage(i);
 			ClearPlayer(i);
 		}
 	}
@@ -145,23 +122,14 @@ void CheckForTimeout(int writesocket)
  * \brief adds an specific weapon to a player
  * \param id player-id
  * \param wpnid weapon-id
- * \return the slot-id or 0 if not found
+ * \return the weapon-id or 0 if not found
  */
 int GivePlayerWeapon(int id, int wpnid)
 {
-	int i;
-	for (i = 0; i <= 9; i++)
-	{
-		if (player[id].slot[i].id == 0)
-		{
-			player[id].slot[i].id = wpnid;
-			player[id].slot[i].slot = weapons[wpnid].slot;
-			player[id].slot[i].ammo1 = weapons[wpnid].ammo1;
-			player[id].slot[i].ammo2 = weapons[wpnid].ammo2;
-			return i;
-		}
-	}
-	return 0;
+	player[id].wpntable[wpnid].status = 1;
+	player[id].wpntable[wpnid].ammo1 = weapons[wpnid].ammo1;
+	player[id].wpntable[wpnid].ammo2 = weapons[wpnid].ammo2;
+	return wpnid;
 }
 /**
  * \fn void RemovePlayerWeapon(int id, int wpnid)
@@ -171,18 +139,9 @@ int GivePlayerWeapon(int id, int wpnid)
  */
 void RemovePlayerWeapon(int id, int wpnid)
 {
-	int i;
-	for (i = 0; i <= 9; i++)
-	{
-		if (player[id].slot[i].id == wpnid)
-		{
-			player[id].slot[i].id = 0;
-			player[id].slot[i].slot = 0;
-			player[id].slot[i].ammo1 = 0;
-			player[id].slot[i].ammo2 = 0;
-			break;
-		}
-	}
+	player[id].wpntable[wpnid].status = 0;
+	player[id].wpntable[wpnid].ammo1 = 0;
+	player[id].wpntable[wpnid].ammo2 = 0;
 }
 /**
  * \fn void RemoveAllPlayerWeapon(int id)
@@ -191,16 +150,12 @@ void RemovePlayerWeapon(int id, int wpnid)
  */
 void RemoveAllPlayerWeapon(int id)
 {
-	int i;
-	for (i = 0; i <= 9; i++)
+	int wpnid;
+	for (wpnid = 0; wpnid <= 0xFF; wpnid++)
 	{
-		player[id].slot[i].id = 0;
-		player[id].slot[i].slot = 0;
-		player[id].slot[i].ammo1 = 0;
-		player[id].slot[i].ammo2 = 0;
-		player[id].slot[i].special = 0;
-		player[id].zoommode = 0;
-
+		player[id].wpntable[wpnid].status = 0;
+		player[id].wpntable[wpnid].ammo1 = 0;
+		player[id].wpntable[wpnid].ammo2 = 0;
 	}
 }
 
@@ -217,8 +172,8 @@ int PlayerTimeout(int id)
 
 	int actualtime = mtime();
 
-	if (((player[id].lastpaket + TIMEOUT*1000) < actualtime) && player[id].lastpaket
-			!= 0)
+	if (((player[id].lastpacket + TIMEOUT * 1000) < actualtime)
+			&& player[id].lastpacket != 0)
 	{
 		return 1;
 	}
@@ -299,34 +254,17 @@ unsigned int endian_swap_int(unsigned int *x)
  * \param id player-id
  * \return 0 if invalid; 1 if valid
  */
-int ValidatePaket(unsigned char *message, int id)
-{
-	/*
-	unsigned short *pTempNummer = malloc(2);
-	pTempNummer[0] = message[0];
-	pTempNummer[1] = message[1];
-	*/
-	unsigned short *pTempNummer = (unsigned short *)message;
-	if (*pTempNummer % 2 != 0)
-	{
-		if (((*pTempNummer) + 2) < player[id].client_nummer || (*pTempNummer)
-				> (player[id].client_nummer + 2))
-		{
-			printf("Invalid paket! (Bad index: %d; expected: %d)\n", *pTempNummer, player[id].client_nummer);
-			//free(pTempNummer);
+int ValidatePacket(unsigned char *message, int id){
+	unsigned short cid = *(unsigned short *)message; // first two bytes in little endian = short (cid is in LE so we're good)
+	if (cid&1) // checks the LSBit, alternative  -> if (cid&1), not sure what the rationale of this is.
+		// TODO: this breaks if the player loses connection for a while, etc
+		if (cid < player[id].client_number - 2 || cid > player[id].client_number + 2){ // makes sure that cid is within 4 of the last time
+			printf("Invalid packet! Client ID is not synchronized wtih the server.");
 			return 0;
 		}
-	}
-	if (*pTempNummer - 1 > player[id].client_nummer)
-	{
-		player[id].client_nummer = *pTempNummer;
-	}
-	/*
-	 unsigned short *pNummer = &player[id].client_nummer;
-	 pNummer[0] = buffer[0];
-	 pNummer[1] = buffer[1];
-	 */
-	//free(pTempNummer);
+
+	if (cid - 1 > player[id].client_number)
+		player[id].client_number = cid;
 	return 1;
 }
 /**
@@ -335,14 +273,14 @@ int ValidatePaket(unsigned char *message, int id)
  * \param *message pointer to the message
  * \param id player-id
  */
-void PaketConfirmation(unsigned char *message, int id, int writesocket)
+void PaketConfirmation(unsigned char *message, int id)
 {
-	unsigned short *pTempNummer = (unsigned short *)message;
+	unsigned short *pTempNummer = (unsigned short *) message;
 	/*
-	unsigned short *pTempNummer = malloc(sizeof(unsigned short));
-	pTempNummer[0] = message[0];
-	pTempNummer[1] = message[1];
-	*/
+	 unsigned short *pTempNummer = malloc(sizeof(unsigned short));
+	 pTempNummer[0] = message[0];
+	 pTempNummer[1] = message[1];
+	 */
 	if (*pTempNummer % 2 == 0)
 	{
 		int stringsize = 3;
@@ -350,7 +288,7 @@ void PaketConfirmation(unsigned char *message, int id, int writesocket)
 		buffer[0] = 0x01;
 		memcpy(buffer + 1, pTempNummer, 2);
 
-		SendToPlayer(buffer, stringsize, id, 0, writesocket);
+		SendToPlayer(buffer, stringsize, id, 0);
 
 		free(buffer);
 	}
@@ -442,20 +380,19 @@ void CheckAllPlayerForReload(int writesocket)
 		{
 			if (player[i].reloadtimer <= mtime())
 			{
-				SendReloadMessage(i, 2, writesocket);
-				if (player[i].slot[player[i].reloading].ammo2
-						-= player[i].slot[player[i].reloading].ammo1 > 0)
+				if ((player[i].wpntable[player[i].reloading].ammo2 -=
+					weapons[player[i].reloading].ammo1 -
+					player[i].wpntable[player[i].reloading].ammo1) < 0)
 				{
-					player[i].slot[player[i].reloading].ammo2
-							-= player[i].slot[player[i].reloading].ammo1;
-					player[i].slot[player[i].reloading].ammo1
-							= weapons[player[i].slot[player[i].reloading].id].ammo1;
+					player[i].wpntable[player[i].reloading].ammo1 =
+						weapons[player[i].reloading].ammo1 + player[i].wpntable[player[i].reloading].ammo2;
+					player[i].wpntable[player[i].reloading].ammo2 = 0;
 				}
-				else
+				else //normal
 				{
-					player[i].slot[player[i].reloading].ammo1
-							= player[i].slot[player[i].reloading].ammo2;
+					player[i].wpntable[player[i].reloading].ammo1 = weapons[player[i].reloading].ammo1;
 				}
+				SendReloadMessage(i, 2);
 				player[i].reloading = 0;
 			}
 		}
@@ -499,7 +436,8 @@ int UsgnRegister(int writesocket)
 	buffer[position] = 1;
 	position++;
 
-	udp_send(writesocket, buffer, 4, &tempclient);
+	//send_now(buffer, 4, tempclient);
+	udp_send(writesocket, buffer, 4, &tempclient); // DO NOT QUEUE
 	free(buffer);
 
 	printf("[USGN] Sent ADD request to %s...\n", inet_ntoa(tempclient.sin_addr));
@@ -528,7 +466,8 @@ int UsgnUpdate(int writesocket)
 	buffer[position] = 2;
 	position++;
 
-	udp_send(writesocket, buffer, 4, &tempclient);
+	send_now(buffer, 4, tempclient);
+	//udp_send(writesocket, buffer, 4, &tempclient);
 	free(buffer);
 
 	printf("[USGN] Sent UPDATE request to %s...\n", inet_ntoa(tempclient.sin_addr));
@@ -544,8 +483,7 @@ void ExecuteFunctionsWithTime(time_t *checktime, int writesocket)
 		if (actualtime % 5 == 0) //execute every 5 seconds
 		{
 			SendPingList(writesocket);
-			SendMessageToAll("This is an alpha version! Don't play at it!", 1,
-					writesocket); //Do not remove or change this until server reaches beta status
+			SendMessageToAll("This is an alpha version! Don't play at it!", 1); //Do not remove or change this until server reaches beta status
 			PingAllPlayer(writesocket);
 		}
 		else if (actualtime % 50 == 0)

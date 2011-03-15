@@ -9,20 +9,20 @@
 #ifndef SETTINGS_H_INCLUDED
 #define SETTINGS_H_INCLUDED
 
-#include "../include/main.h"
-
-#define MAX_BUF 1024
+#include "main.h"
 
 /* --- Server Settings --- */
-#define MAX_CLIENTS 64
+#define MAX_BUF 1024
+#define MAX_CLIENTS 32
 #define TIMEOUT 10
 #define SETTINGS_PATH "server.cfg"
 
+extern char* cfg_file;
+extern int no_usgn;
 extern unsigned char pre_authcode[];
 
 extern unsigned char *sv_name;
 extern unsigned char *sv_map;
-extern unsigned char *sv_rcon;
 extern unsigned int sv_hostport;
 extern unsigned short sv_fps;
 extern unsigned short sv_lcbuffer;
@@ -32,6 +32,7 @@ extern unsigned short sv_gamemode;
 extern unsigned short sv_friendlyfire;
 extern unsigned short sv_usgnonly;
 extern unsigned char *sv_password;
+extern unsigned char *sv_rcon;
 extern unsigned short bot_count;
 
 extern unsigned short mp_roundtime;
@@ -49,6 +50,9 @@ extern int fpsnow;
 #define STARTWEAPONS_COUNT 1
 extern char startweapons[];
 
-void ReadCfg();
+#define LC_BUFFER_SIZE 150
+extern unsigned short lcbuffer[LC_BUFFER_SIZE][MAX_CLIENTS][2];
+
+void ReadServerCfg(const char*);
 
 #endif // SETTINGS_H_INCLUDED

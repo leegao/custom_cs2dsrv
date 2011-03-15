@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+bin
+>>>>>>> lee_experimental
 html
 Debug
 .settings
@@ -5,7 +9,15 @@ Debug
 .project
 doxygen.Doxyfile
 *.txt
+<<<<<<< HEAD
 *.exe
 *.pyd
 *.map
 *.cfg
+=======
+Release/src
+*.map
+*.cfg
+notices
+TODO
+>>>>>>> lee_experimental

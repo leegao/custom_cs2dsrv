@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#define NS_PER_S 1000000000
 #include <stdarg.h> //log.h
 #include <math.h> //aim
 #define PI 3.14159265
@@ -42,10 +43,11 @@
 #include "functions.h"
 #include "sendto_functions.h"
 #include "respond_messages.h"
-#include "pakets.h"
+#include "packets.h"
 #include "script-functions.h"
 #include "map.h"
 
 int main();
+void just(byte*, int);
 
 #endif // MAIN_H_INCLUDED

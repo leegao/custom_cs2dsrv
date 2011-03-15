@@ -10,7 +10,6 @@
 #define FUNCTIONS_H_INCLUDED
 
 #include "main.h"
-void UpdateBuffer(void);
 int IsPlayerKnown(struct in_addr ip, u_short port);
 void ClearPlayer(int id);
 void ClearAllPlayer(void);
@@ -22,8 +21,8 @@ int PlayerTimeout(int id);
 unsigned short GetServerStatus(void);
 unsigned short endian_swap_short(unsigned short *x);
 unsigned int endian_swap_int(unsigned int *x);
-int ValidatePaket(unsigned char *message, int id);
-void PaketConfirmation(unsigned char *message, int id, int writesocket);
+int ValidatePacket(unsigned char *message, int id);
+void PaketConfirmation(unsigned char *message, int id);
 int CheckPlayerData(unsigned char *password);
 unsigned char *GetEncodedString(unsigned char *string, int length);
 void CheckAllPlayerForReload(int writesocket);

@@ -38,7 +38,6 @@ void myprintf2(char *string, ...);
 #define eprintf(...) myprintf2(__VA_ARGS__)
 
 #endif // LOG_H_INCLUDED
-
 /*
  if(player[i].used == 1 && player[i].joinstatus >= 4 && i != id)
  {
@@ -70,8 +69,8 @@ void myprintf2(char *string, ...);
  angle3 = atan2(xPoint2 - player[id].x, yPoint2 - player[id].y) * 180 / PI;
  printf("(Debug2) %lf: %lf, %lf\n", temprot, angle2, angle3);
 
- xP = xM + r*cos(ß)
- yP = yM + r*sin(ß)
+ xP = xM + r*cos(ÃŸ)
+ yP = yM + r*sin(ÃŸ)
 
  if((temprot <= angle2 && temprot >= angle3) || (temprot >= angle2 && temprot <= angle3))
  {

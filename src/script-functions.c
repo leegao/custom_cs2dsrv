@@ -6,42 +6,42 @@
  * Author/s of this file: Jermuk, FloooD
  */
 
-#include "../include/script-functions.h"
+#include "script-functions.h"
 
 /*
- int OnJoin(int id, int writesocket)
+ int OnJoin(int id)
  id - Who joins
  Return Values:
  0 - OK
  */
-int OnJoin(int id, int writesocket)
+int OnJoin(int id)
 {
-	SendJoinMessage(id, writesocket);
-	printf("%s (#%d) has joined the game!\n\tUsing ip %s:%d and usgn-id #%d!\n", player[id].name, id, inet_ntoa(player[id].ip), player[id].port, *player[id].usgn);
+	SendJoinMessage(id);
+	printf("%s (#%d) has joined the game!\n\tUsing ip %s:%d and usgn-id #%d!\n", player[id].name, id, inet_ntoa(player[id].ip), player[id].port, player[id].usgn);
 	return 0;
 }
 
 /*
- int OnLeave(int id, int writesocket)
+ int OnLeave(int id)
  id - Who leaves
  Return Values:
  0 - OK
  */
-int OnLeave(int id, int writesocket)
+int OnLeave(int id)
 {
-	SendLeaveMessage(id, writesocket);
+	SendLeaveMessage(id);
 	printf("%s has left the game!\n", player[id].name);
 	return 0;
 }
 
 /*
- int OnSpecmove(int id, int newx, int newy, int writesocket)
+ int OnSpecmove(int id, int newx, int newy)
  Return Values:
  0 - OK
  1 - Don't save it
  */
 
-int OnSpecmove(int id, int newx, int newy, int writesocket)
+int OnSpecmove(int id, int newx, int newy)
 {
 	return 0;
 }
@@ -73,17 +73,19 @@ int OnExit()
 }
 
 /*
- int OnRespawnRequest(int id, int writesocket)
+ int OnRespawnRequest(int id)
  Return Values:
  0 - Respawn
  1 - Don't Respawn
  */
-int OnRespawnRequest(int id, int writesocket)
+int OnRespawnRequest(int id)
 {
 	if (player[id].dead == 1)
 	{
-		if(player[id].money + mp_dmspawnmoney > 65000) player[id].money = 65000;
-		else player[id].money += mp_dmspawnmoney;
+		if (player[id].money + mp_dmspawnmoney > 65000)
+			player[id].money = 65000;
+		else
+			player[id].money += mp_dmspawnmoney;
 		return 0;
 	}
 	else
@@ -91,61 +93,49 @@ int OnRespawnRequest(int id, int writesocket)
 }
 
 /*
- int OnRespawn(int id, int writesocket)
+ int OnRespawn(int id)
  Return Values:
  0 - OK
  */
-int OnRespawn(int id, int writesocket)
+int OnRespawn(int id)
 {
 	return 0;
 }
 
 /*
- int OnRespawn(int id, int writesocket)
+ int OnRespawn(int id)
  Return Values:
  0 - OK
  */
-int OnWeaponChangeAttempt(int id, int wpnid, int writesocket)
+int OnWeaponChangeAttempt(int id, int wpnid)
 {
-	int i;
-	for (i = 0; i <= 9; i++)
-	{
-		if (player[id].slot[i].id == wpnid)
-		{
-			player[id].actualweapon = i;
-			if (weapons[wpnid].special == 4 || weapons[wpnid].special == 5)
-			{
-				player[id].zoommode = 0;
-			}
-			player[id].reloading = 0;
+	if (player[id].wpntable[wpnid].status <= 0)
+		return 1;
+	player[id].actualweapon = wpnid;
+	if (weapons[wpnid].special == 4 || weapons[wpnid].special == 5)
+		player[id].wpntable[wpnid].status = 1;
+	player[id].reloading = 0;
 
-			//printf("%s switched to %s\n", player[id].name, weapons[player[id].slot[player[id].actualweapon].id].name);
-			return 0;
-		}
-	}
-	return 1;
+	//printf("%s switched to %s\n", player[id].name, weapons[wpnid].name);
+	return 0;
 }
 
 /*
- int OnAdvancedFire(int id, int status, int writesocket)
+ int OnAdvancedFire(int id, int status)
  Return Values:
  0 - OK
  1 - Not OK
  */
-int OnAdvancedFire(int id, int status, int writesocket)
+int OnAdvancedFire(int id, int status)
 {
-	int wpnid = player[id].slot[player[id].actualweapon].id;
+	int wpnid = player[id].actualweapon;
 
-	int temptime = mtime();
-	if (temptime < player[id].zoomtimer)
+	if (mtime() < player[id].zoomtimer)
 	{
 		printf("Zoomtimer error!\n");
 		return 1;
 	}
-	else
-	{
-		player[id].zoomtimer = mtime() + 500;
-	}
+	player[id].zoomtimer = mtime() + 500;
 
 	switch (weapons[wpnid].special)
 	{
@@ -157,44 +147,44 @@ int OnAdvancedFire(int id, int status, int writesocket)
 	{
 		if (status <= 1)
 		{
-			player[id].zoommode = status;
+			player[id].wpntable[wpnid].status = status + 1;
 			break;
 		}
 		return 1;
 	}
 	case 3:
 	{
-		player[id].zoommode = 1;
-		OnFire(id, writesocket);
-		player[id].zoommode = 0;
+		player[id].wpntable[wpnid].status = 2;
+		OnFire(id);
+		player[id].wpntable[wpnid].status = 1;
 		break;
 	}
 	case 4:
 	{
 		if (status <= 1)
 		{
-			player[id].zoommode = status;
+			player[id].wpntable[wpnid].status = status + 1;
 			break;
 		}
 		return 1;
 	}
 	case 5:
 	{
-		if (status <= 2 && player[id].zoommode + 1 == status)
+		if (status <= 2 && player[id].wpntable[wpnid].status == status)
 		{
-			player[id].zoommode = status;
+			player[id].wpntable[wpnid].status = status + 1;
 			break;
 		}
-		else if (player[id].zoommode == 2)
+		else if (player[id].wpntable[wpnid].status == 3)
 		{
-			player[id].zoommode = 0;
+			player[id].wpntable[wpnid].status = 1;
 			break;
 		}
 		return 1;
 	}
 	default:
 	{
-		SendMessageToPlayer(id, "Not implemented yet!", 1, writesocket);
+		SendMessageToPlayer(id, "Not implemented yet!", 1);
 		return 1;
 	}
 
@@ -203,15 +193,15 @@ int OnAdvancedFire(int id, int status, int writesocket)
 	return 0;
 }
 /*
- int OnFire(int id, int writesocket)
+ int OnFire(int id)
  Return Values:
  0 - OK
  1 - Not OK
  */
-int OnFire(int id, int writesocket)
+int OnFire(int id)
 {
 	//printf("%s tried to shoot!\n", player[id].name);
-	short *ammo1 = &player[id].slot[player[id].actualweapon].ammo1;
+	short *ammo1 = &player[id].wpntable[player[id].actualweapon].ammo1;
 	if (*ammo1 <= 0 && *ammo1 != -1)
 	{
 		printf("Not enough ammo!\n");
@@ -224,23 +214,22 @@ int OnFire(int id, int writesocket)
 			*ammo1 = *ammo1 - 1;
 		}
 	}
-	int temptime = mtime();
-	if (temptime < player[id].firetimer)
+	if (mtime() < player[id].firetimer)
 	{
-		printf("Firetimer error!\n");
+		printf("Firetimer error!%u %u\n", mtime(), player[id].firetimer);
 		return 1;
 	}
 	else
 	{
 		player[id].firetimer = mtime()
-				+ weapons[player[id].slot[player[id].actualweapon].id].freq;
+				+ weapons[player[id].actualweapon].freq;
 	}
 
 	int i;
-	int range = weapons[player[id].slot[player[id].actualweapon].id].range;
+	int range = weapons[player[id].actualweapon].range;
 
-	int startx = player[id].x;
-	int starty = player[id].y;
+	int startx = *player[id].x;
+	int starty = *player[id].y;
 	int frames = fpsnow * player[id].latency / 1000;
 	if (frames > sv_lcbuffer)
 	{
@@ -278,7 +267,7 @@ int OnFire(int id, int writesocket)
 
 		if (tilex <= 0 || tiley <= 0)
 			break;
-		int tilemode = map[tilex][tiley].mode;
+		int tilemode = map.tiles[tilex][tiley].mode;
 		if (tilemode == 1 || tilemode == 3 || tilemode == 4)
 		{
 			break;
@@ -291,14 +280,15 @@ int OnFire(int id, int writesocket)
 					&& player[b].dead == 0 && playershit[b] == 0
 					&& player[id].team != player[b].team)
 			{
-				if (sqrt((player[b].buffer_x[frames] - startx)*(player[b].buffer_x[frames] - startx)
-						+ (player[b].buffer_y[frames] - starty)*(player[b].buffer_y[frames] - starty))
-						<= 16)
+				if (sqrt((lcbuffer[frames][b-1][0] - startx)
+						* (lcbuffer[frames][b-1][0] - startx)
+						+ (lcbuffer[frames][b-1][1] - starty)
+								* (lcbuffer[frames][b-1][1] - starty)) <= 16)
 				/*if (sqrt((player[b].x - startx) * (player[b].x - startx)
-						+ (player[b].y - starty) * (player[b].y - starty))
-						<= 16)*/
+				 + (player[b].y - starty) * (player[b].y - starty))
+				 <= 16)*/
 				{
-					OnHit(id, b, writesocket);
+					OnHit(id, b);
 					playershit[b] = 1;
 				}
 			}
@@ -307,23 +297,23 @@ int OnFire(int id, int writesocket)
 	return 0;
 }
 /*
- int OnHit(int hitter, int victim, int writesocket)
+ int OnHit(int hitter, int victim)
  Return Values:
  0 - OK
  */
-int OnHit(int hitter, int victim, int writesocket)
+int OnHit(int hitter, int victim)
 {
-	int wpnid = player[hitter].slot[player[hitter].actualweapon].id;
+	int wpnid = player[hitter].actualweapon;
 	int damage;
-	switch (player[hitter].zoommode)
+	switch (player[hitter].wpntable[wpnid].status)
 	{
-	case 0:
+	case 1:
 		damage = weapons[wpnid].weapondamage;
 		break;
-	case 1:
+	case 2:
 		damage = weapons[wpnid].weapondamage_z1;
 		break;
-	case 2:
+	case 3:
 		damage = weapons[wpnid].weapondamage_z2;
 		break;
 	default:
@@ -333,105 +323,106 @@ int OnHit(int hitter, int victim, int writesocket)
 	if (player[victim].health - damage > 0)
 	{
 		player[victim].health -= damage;
-		SendHitMessage(victim, hitter, player[victim].health, writesocket);
+		SendHitMessage(victim, hitter, player[victim].health);
 		//printf("%s hitted %s with %s\n", player[hitter].name, player[victim].name, weapons[wpnid].name);
 	}
 	else
 	{
-		OnKill(hitter, victim, wpnid, writesocket);
+		OnKill(hitter, victim, wpnid);
 	}
 
 	return 0;
 }
 
-int OnBuyAttempt(int id, int wpnid, int writesocket)
+int OnBuyAttempt(int id, int wpnid)
 {
-	int i;
-	for (i = 0; i <= 99; i++)
+	//order of checks: buyzone, buytime, money, unbuyable, already have
+
+	//buyzone check
+	int b;
+	if (player[id].team == 1)
 	{
-		if (weapons[wpnid].name != NULL) //test if weapon available
+		for (b = 0; b <= tspawncount; b++)
 		{
-			if (player[id].money - weapons[wpnid].price >= 0)
+			int playerx = *player[id].x;
+			int playery = *player[id].y;
+			int tempx = tspawnx[b] * 32;
+			int tempy = tspawny[b] * 32;
+			//If player in buyzone (5*5)
+			if (playerx >= tempx - 64 && playerx <= tempx + 64
+					&& playery >= tempy - 64 && playery
+					<= tempy + 64)
 			{
-				if (weapons[wpnid].team == 0 || weapons[wpnid].team
-						== player[id].team) //Check if he is in the right team to buy this weapon
-				{
-					if (player[id].team == 1)
-					{
-						//Check if in buyzone
-						int b;
-						for (b = 0; b <= tspawncount; b++)
-						{
-							int playerx = player[id].x;
-							int playery = player[id].y;
-							int tempx = tspawnx[b] * 32;
-							int tempy = tspawny[b] * 32;
-							//If player in buyzone (5*5)
-							if (playerx >= tempx - 64 && playerx <= tempx + 64
-									&& playery >= tempy - 64 && playery
-									<= tempy + 64)
-							{
-								int g;
-								for (g = 0; g <= 99; g++)
-								{
-									if (player[id].slot[g].id != wpnid)
-									{
-										return 0;
-									}
-								}
-								SendBuyFailedMessage(id, 251, writesocket); //You have it already
-								return 1;
-							}
-						}
-						SendBuyFailedMessage(id, 255, writesocket);
-						return 1;
-					}
-					else if (player[id].team == 2)
-					{
-						int b;
-						for (b = 0; b <= ctspawncount; b++)
-						{
-							int playerx = player[id].x;
-							int playery = player[id].y;
-							int tempx = ctspawnx[b] * 32;
-							int tempy = ctspawny[b] * 32;
-							//If player in buyzone (5*5)
-							if (playerx >= tempx - 64 && playerx <= tempx + 64
-									&& playery >= tempy - 64 && playery
-									<= tempy + 64)
-							{
-								int g;
-								for (g = 0; g <= 99; g++)
-								{
-									if (player[id].slot[g].id != wpnid)
-									{
-										return 0;
-									}
-								}
-								SendBuyFailedMessage(id, 251, writesocket); //You have it already
-								return 1;
-							}
-						}
-						SendBuyFailedMessage(id, 255, writesocket); //Not in a buyzone
-						return 1;
-					}
-				}
-				else
-				{
-					SendBuyFailedMessage(id, 252, writesocket); //you cant buy this item
-					return 1;
-				}
-			}
-			else
-			{
-				SendBuyFailedMessage(id, 253, writesocket); //not enough money
-				return 1;
+				b = 0;
+				break;
 			}
 		}
 	}
-	//if nothing found
-	SendBuyFailedMessage(id, 244, writesocket);
-	/*
+	else if (player[id].team == 2)
+	{
+		for (b = 0; b <= ctspawncount; b++)
+		{
+			int playerx = *player[id].x;
+			int playery = *player[id].y;
+			int tempx = ctspawnx[b] * 32;
+			int tempy = ctspawny[b] * 32;
+			//If player in buyzone (5*5)
+			if (playerx >= tempx - 64 && playerx <= tempx + 64
+					&& playery >= tempy - 64 && playery
+					<= tempy + 64)
+			{
+				b = 0;
+				break;
+			}
+		}
+	}
+
+	if (b > 0)
+	{
+		SendBuyFailedMessage(id, 255);
+		return 1;
+	}
+	////
+	
+	//TODO: buytime check
+	//will be implemented with standard gamemode.
+	////
+
+	//money check
+	if (wpnid != 57 && wpnid != 58 && player[id].money < weapons[wpnid].price)
+	{
+		SendBuyFailedMessage(id, 253);
+		return 1;
+	}
+	////
+
+	//unbuyable or doesn't exist or wrong team check
+	if (weapons[wpnid].name == NULL || weapons[wpnid].team == 3)
+	{
+		SendBuyFailedMessage(id, 244);
+		return 1;
+	}
+	
+
+	if (weapons[wpnid].team != 0 && weapons[wpnid].team != player[id].team)
+	{
+		SendBuyFailedMessage(id, 252);
+		return 1;
+	}
+	////
+
+	//already equipped check
+	if (player[id].wpntable[wpnid].status > 0)
+	{
+		SendBuyFailedMessage(id, 251);
+		return 1;
+	}
+	////
+
+	//passed all the checks
+	return 0;
+
+	/* SendBuyFailedMessage param 2:
 	 * 242 nothing
 	 * 243 Grenade rebuying is not allowed at this server
 	 * 244 it's not allowed to buy that weapon at this server
@@ -447,18 +438,108 @@ int OnBuyAttempt(int id, int wpnid, int writesocket)
 	 * 254 buytime passed;
 	 * 255 you are not in a buyzone
 	 */
-	return 1;
 }
 
-int OnBuy(int id, int wpnid, int writesocket)
+int OnBuy(int id, int wpnid)
 {
-	player[id].money -= weapons[wpnid].price;
-	player[id].actualweapon = GivePlayerWeapon(id, wpnid); //Return slot
-	printf("%s bought %s!\n", player[id].name, weapons[wpnid].name);
+	int i;
+	switch (wpnid)
+	{
+	case 57: //armor
+	case 58: //armor
+	{
+		if (player[id].armor < weapons[wpnid].price / 10)
+		{
+			if (player[id].money > weapons[wpnid].price)
+			{
+				player[id].money -= weapons[wpnid].price - player[id].armor * 10;
+				player[id].armor = weapons[wpnid].price / 10;
+			}
+			else
+			{
+				SendBuyFailedMessage(id, 253);
+				return 1;
+			}
+		}
+		else
+		{
+			SendBuyFailedMessage(id, 251);
+			return 1;
+		}
+		break;
+	}
+	case 61: //primary ammo
+	{
+		int bought = 0;
+		for (i = 0; i <= 0xFF; i++)
+		{
+			if (weapons[i].slot == 1 && player[id].wpntable[i].status > 0 &&
+				player[id].wpntable[i].ammo2 < weapons[i].ammo2) //if player has non-full weapon in slot 1
+			{
+				player[id].wpntable[i].ammo2 = weapons[i].ammo2;
+				bought = 1;
+			}
+		}
+		if (bought == 0)
+		{
+			SendBuyFailedMessage(id, 248);
+			return 1;
+		}
+		else
+			player[id].money -= weapons[wpnid].price;
+		break;
+	}
+	case 62: //secondary ammo
+	{
+		int bought = 0;
+		for (i = 0; i <= 6; i++)
+		{
+			if (player[id].wpntable[i].status > 0 &&
+				player[id].wpntable[i].ammo2 < weapons[i].ammo2) //if player has non-full pistol
+			{
+				player[id].wpntable[i].ammo2 = weapons[i].ammo2;
+				bought = 1;
+			}
+		}
+		if (bought == 0)
+		{
+			SendBuyFailedMessage(id, 248);
+			return 1;
+		}
+		else
+			player[id].money -= weapons[wpnid].price;
+		break;
+	}
+	default:
+	{
+		player[id].money -= weapons[wpnid].price;
+		if (weapons[wpnid].slot > 0)
+		{
+			if (weapons[wpnid].slot < 3) //dont increase # of weapons only for slot 1 or 2
+			{
+				for (i = 0; i <= 0xFF; i++)
+				{
+					if (player[id].wpntable[i].status > 0 && weapons[i].slot == weapons[wpnid].slot)
+					{
+						RemovePlayerWeapon(id, i);
+						SendDropMessage(id, i, player[id].wpntable[i].ammo1,
+							player[id].wpntable[i].ammo2, 0, 0, 0);
+						break;
+					}
+				}
+			}
+			player[id].actualweapon = wpnid;
+		}
+		GivePlayerWeapon(id, wpnid);
+		break;
+	}
+	}
+	//printf("%s bought %s!\n", player[id].name, weapons[wpnid].name);
+	SendBuyMessage(id, wpnid);
 	return 0;
 }
 
-int OnKill(int hitter, int victim, int wpnid, int writesocket)
+int OnKill(int hitter, int victim, int wpnid)
 {
 	player[victim].health = 0;
 	player[victim].dead = 1;
@@ -470,18 +551,18 @@ int OnKill(int hitter, int victim, int wpnid, int writesocket)
 	else
 		player[hitter].money += 300;
 	RemoveAllPlayerWeapon(victim);
-	SendHitMessage(victim, hitter, player[victim].health, writesocket);
-	SendKillMessage(hitter, victim, writesocket);
+	SendHitMessage(victim, hitter, player[victim].health);
+	SendKillMessage(hitter, victim);
 	printf("%s killed %s with %s\n", player[hitter].name, player[victim].name, weapons[wpnid].name);
 	return 0;
 }
 /*
- int OnChatMessage(int id, unsigned char *message, int team, int writesocket)
+ int OnChatMessage(int id, unsigned char *message, int team)
  Return Values:
  0 - OK
  1 - don't send it
  */
-int OnChatMessage(int id, unsigned char *message, int team, int writesocket)
+int OnChatMessage(int id, unsigned char *message, int team)
 {
 	if (u_strlen(message) >= 4 && strncmp((char *) message, "!log", 4) == 0)
 	{
@@ -499,8 +580,8 @@ int OnChatMessage(int id, unsigned char *message, int team, int writesocket)
 			== 0)
 	{
 		char buffer[30]; //Resulting stringlength unknown: Text = 24 chars
-		sprintf(buffer, "Actually server FPS: %d", fpsnow);
-		SendMessageToPlayer(id, buffer, 1, writesocket);
+		sprintf(buffer, "Current server FPS: %d", fpsnow);
+		SendMessageToPlayer(id, buffer, 1);
 		return 1;
 	}
 
@@ -516,24 +597,22 @@ int OnChatMessage(int id, unsigned char *message, int team, int writesocket)
 }
 
 /*
- int OnTeamChangeAttempt(int id, unsigned char team, unsigned char skin, int writesocket)
+ int OnTeamChangeAttempt(int id, unsigned char team, unsigned char skin)
  Return Values:
  0 - OK
  1 - Don't join
  */
-int OnTeamChangeAttempt(int id, unsigned char team, unsigned char skin,
-		int writesocket)
+int OnTeamChangeAttempt(int id, unsigned char team, unsigned char skin)
 {
 	return 0;
 }
 
 /*
- int OnTeamChange(int id, unsigned char team, unsigned char skin, int writesocket)
+ int OnTeamChange(int id, unsigned char team, unsigned char skin)
  Return Values:
  0 - OK
  */
-int OnTeamChange(int id, unsigned char team, unsigned char skin,
-		int writesocket)
+int OnTeamChange(int id, unsigned char team, unsigned char skin)
 {
 	if (skin != 5)
 	{
@@ -552,25 +631,24 @@ int OnTeamChange(int id, unsigned char team, unsigned char skin,
 			printf("%s joined a unknown team\n", player[id].name);
 			break;
 		}
-		SendHitMessage(id, id, 0, writesocket);
+		SendHitMessage(id, id, 0);
 		player[id].dead = 1;
 		RemoveAllPlayerWeapon(id);
 	}
 	if (team <= 2)
 	{
-		SendTeamChangeMessage(id, team, skin, writesocket);
+		SendTeamChangeMessage(id, team, skin);
 	}
 	return 0;
 }
 
 /*
- int OnMoveAttempt(int id, unsigned short x, unsigned short y, int status, int writesocket)
+ int OnMoveAttempt(int id, unsigned short x, unsigned short y, int status)
  Return Values:
  0 - OK
  1 - Don't move
  */
-int OnMoveAttempt(int id, unsigned short x, unsigned short y, int status,
-		int writesocket)
+int OnMoveAttempt(int id, unsigned short x, unsigned short y, int status)
 {
 	/*
 	 int newx = (int)ceil((x)/32);
@@ -578,4 +656,23 @@ int OnMoveAttempt(int id, unsigned short x, unsigned short y, int status,
 	 printf("(Debug) Tilemode: %d\n", map[newx][newy].mode);
 	 */
 	return 0;
+}
+
+/*
+ int OnDrop(int id, unsigned char wpnid, unsigned short ammo1, unsigned short ammo2, unsigned char unknown1)
+ Return Values:
+ 0 - OK
+ 1 - Don't drop
+ */
+int OnDrop(int id, unsigned char wpnid, unsigned short ammo1, unsigned short ammo2,
+		unsigned char unknown1, unsigned char unknown2, unsigned char unknown3)
+{
+	if ((player[id].wpntable[wpnid].status > 0) &&
+		(player[id].wpntable[wpnid].ammo1 == ammo1) &&
+		(player[id].wpntable[wpnid].ammo2 == ammo2))
+	{
+		RemovePlayerWeapon(id, wpnid);
+		return 0;
+	}
+	return 1;
 }

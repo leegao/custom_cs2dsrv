@@ -6,19 +6,58 @@
  * Author/s of this file: Jermuk, FloooD
  */
 
-#include "../include/main.h"
+#include <main.h>
+#include <getopt.h>
+#include "settings.h"
+
+void just(byte* str, int l){
+	printf(""); int i;
+	for (i=0;i<l;i++)eprintf("%x ", str[i]);
+	eprintf("\n");
+}
+
+void parse_opts(int argc, char *argv[]){
+	static struct option long_options[] = {
+		{"cfg", required_argument, 0, 'c'},
+		{"name", required_argument, 0, 0},
+		{"nousgn", no_argument, 0, 1},
+		{0, 0, 0, 0}
+	};
+
+	while (1){
+		int option_index = 0;
+		int c = getopt_long (argc, argv, "c:", long_options, &option_index);
+		if (c<0) return;
+		switch (c){
+		case 'c':
+			cfg_file = optarg;
+			break;
+		case 0:
+			sv_name = (unsigned char*)optarg;
+			break;
+		case 1:
+			no_usgn = 1;
+			break;
+		default:
+			return;
+		}
+	}
+}
 
 /**
  * \fn int main()
  * \brief initialize sockets and if a message was recieved, give it to the right function.
  * \return EXIT_SUCCESS or EXIT_FAILURE
  */
-int main()
-{
+int main(int argc, char *argv[]){
+	// Parses the commandline arguments
+	parse_opts(argc, argv); // IE: ./server -cserver.cfg --name "My Server"
+
 	/**
 	 * Initalize variables, weapons, players and sockets
 	 */
-	int readsocket;
+
+	int sock;
 	struct sockaddr_in newclient;
 	unsigned char buffer[MAX_BUF];
 	int size;
@@ -26,10 +65,10 @@ int main()
 
 	ClearAllPlayer();
 	WeaponInit();
-	ReadCfg();
+	ReadServerCfg(cfg_file ? cfg_file:"server.cfg"); // Reads the server.cfg file (We can also check argv for --cfg or -c flag
 
-	readsocket = create_socket();
-	bind_socket(&readsocket, INADDR_ANY, sv_hostport);
+	sock = create_socket();
+	bind_socket(&sock, INADDR_ANY, sv_hostport);
 	atexit(cleanup);
 
 	//struct in_addr usgnip = GetIp("usgn.de");
@@ -38,61 +77,77 @@ int main()
 	 FD_SET(readsocket, &descriptor);
 	 */
 	OnServerStart();
+
+	// moved since usgnregister requires a send queue
+	init_queue(&send_q);
 	ReadMap();
-	UsgnRegister(readsocket);
+	if (!no_usgn) //modify into optional offline mode
+	  UsgnRegister(sock);
+
+
+	start_stream();
 
 	/**
 	 * \var needed for ExecuteFunctionsWithTime()
 	 */
 	time_t checktime;
 	time(&checktime);
+#ifdef _WIN32
 
-	int mstime = mtime();
-	int timecounter = mtime();
-	int tickcounter = 0;
-	const int fps = 1000 / sv_fps;
+#else
+	const int inc = NS_PER_S / sv_fps;
+	int frame = 0;
+	int previous = 0;
+
+	struct timespec current, next;
+	clock_gettime(CLOCK_MONOTONIC, &next);
+#endif
 
 	struct timeval timeout;
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 0; //1ms = 1000
 	while (1)
 	{
-		if ((timecounter + 1000 - (int) mtime()) <= 0)
-		{
-			fpsnow = (int) tickcounter;
-			tickcounter = 0;
-			timecounter = mtime();
-		}
-		tickcounter++;
 
-		UpdateBuffer();
-		CheckForTimeout(readsocket);
-		ExecuteFunctionsWithTime(&checktime, readsocket);
-		CheckAllPlayerForReload(readsocket);
+#ifdef _WIN32
+#else
+		frame++;
+		next.tv_nsec += inc;
+		while (next.tv_nsec > NS_PER_S)
+		{
+			next.tv_nsec -= NS_PER_S;
+			next.tv_sec++;
+
+			fpsnow = frame - previous;
+			previous = frame;
+			//printf("current fps: %d\n", fpsnow); //debugging
+		}
+#endif
+
+		memmove(&lcbuffer[1], lcbuffer, sizeof(short)*(LC_BUFFER_SIZE - 1)*(MAX_CLIENTS)*2); //update lc position buffers
+		CheckForTimeout(sock);
+		//ExecuteFunctionsWithTime(&checktime, sock); // refactor into scheduler
+		CheckAllPlayerForReload(sock);
 
 		FD_ZERO(&descriptor);
-		FD_SET(readsocket, &descriptor);
-		select(readsocket + 1, &descriptor, NULL, NULL, &timeout);
+		FD_SET(sock, &descriptor);
+		select(sock + 1, &descriptor, NULL, NULL, &timeout);
 
-		if (FD_ISSET(readsocket, &descriptor))
-		{
-			size = udp_recieve(readsocket, buffer, MAX_BUF, &newclient);
+		if (FD_ISSET(sock, &descriptor)){
+			size = udp_recieve(sock, buffer, MAX_BUF, &newclient);
 
-			if (size < 3)
-			{
-				printf("Invalid paket! (size < 3)\n");
-			}
-			else
-			{
+			if (size < 3) {
+				perror("Invalid packet! (size < 3)\n");
+			} else {
 				int id = IsPlayerKnown(newclient.sin_addr, newclient.sin_port); /// Function returns id or -1 if unknown
-				if (id != -1)///When the player is known execute other commands as when the player is unknown
-				{
-					if (ValidatePaket(buffer, id)) ///Checks and raise the packet numbering if necessary
-					{
-						PaketConfirmation(buffer, id, readsocket); ///If the numbering is even, send a confirmation
-						player[id].lastpaket = mtime();
+				if (id){///When the player is known execute other commands as when the player is unknown
+					if (ValidatePacket(buffer,id)){ ///Checks and raise the packet numbering if necessary
+						PaketConfirmation(buffer,id); ///If the numbering is even, send a confirmation
+						player[id].lastpacket = mtime();
 						int control = 1;
-						int position = 2;
+						stream* packet = init_stream(NULL);
+						Stream.write(packet, buffer+2, size-2);
+
 						/**
 						 * This while construct splits the recieved UDP-message
 						 * into cs2d-messages.
@@ -100,199 +155,199 @@ int main()
 						 */
 						while (control)
 						{
-							int tempsize = size - position;
+							//int tempsize = size - position;
 
-							unsigned char *message = malloc(tempsize);
-							memcpy(message, buffer + position, tempsize);
+							//unsigned char *message = malloc(tempsize);
+							//memcpy(message, buffer + position, tempsize);
+
+							//just(packet->mem, packet->size);
+
 							int rtn = 0;
 
-							switch (message[0])
-							//payload
-							{
+							switch ((rtn+Stream.read_byte(packet))){
 							case 1:
-								rtn = confirmation_known(message, tempsize, id,
-										readsocket);
+								confirmation_known(packet,id);
 								break;
 							case 3:
-								rtn = connection_setup_known(message, tempsize,
-										newclient.sin_addr, newclient.sin_port,
-										id);
+								connection_setup_known(packet, newclient.sin_addr, newclient.sin_port, id);
 								break;
 							case 7:
-								rtn = fire(message, tempsize, id, readsocket);
+								fire(packet, id);
 								break;
 							case 8:
-								rtn = advanced_fire(message, tempsize, id,
-										readsocket);
+								advanced_fire(packet, id);
 								break;
 							case 9:
-								rtn = weaponchange(message, tempsize, id,
-										readsocket);
+								weaponchange(packet, id);
 								break;
 							case 10:
-								rtn = posupdaterun(message, tempsize, id,
-										readsocket);
+								posupdaterun(packet, id);
 								break;
 							case 11:
-								rtn = posupdatewalk(message, tempsize, id,
-										readsocket);
+								posupdatewalk(packet, id);
 								break;
 							case 12:
-								rtn = rotupdate(message, tempsize, id,
-										readsocket);
+								rotupdate(packet, id);
 								break;
 							case 13:
-								rtn = posrotupdaterun(message, tempsize, id,
-										readsocket);
+								posrotupdaterun(packet, id);
 								break;
 							case 14:
-								rtn = posrotupdatewalk(message, tempsize, id,
-										readsocket);
+								posrotupdatewalk(packet, id);
 								break;
 							case 16:
-								rtn = reload(message, tempsize, id, readsocket);
+								reload(packet, id);
 								break;
 							case 20:
-								rtn = teamchange(message, tempsize, id,
-										readsocket);
+								teamchange(packet, id);
 								break;
 							case 23:
-								rtn = buy(message, tempsize, id, readsocket);
+								buy(packet, id);
+								break;
+							case 24:
+								drop(packet, id);
 								break;
 							case 28:
 								// Spray 28 - 0 - x x - y y - color
-								rtn = spray(message, tempsize, id, readsocket);
+								spray(packet, id);
 								break;
 							case 32:
-								rtn
-										= specpos(message, tempsize, id,
-												readsocket);
+								specpos(packet, id);
 								break;
 							case 39:
-								rtn = respawnrequest(message, tempsize, id,
-										readsocket);
+								respawnrequest(packet, id);
 								break;
 							case 236:
-								rtn = rcon_pw(message, tempsize, id, readsocket);
+								rcon_pw(packet, id);
 								break;
 							case 240:
-								rtn = chatmessage(message, tempsize, id,
-										readsocket);
+								chatmessage(packet, id);
 								break;
 							case 249:
-								rtn = ping_ingame(message, tempsize, id,
-										readsocket);
+								ping_ingame(packet, id);
 								break;
 							case 252:
-								rtn = joinroutine_known(message, tempsize, id,
-										readsocket);
+								joinroutine_known(packet, id, sock);
 								break;
 							case 253:
-								rtn = leave(id, readsocket);
+								leave(packet,id);
 								break;
 							default:
-								SendMessageToPlayer(id, "Not implemented yet!",
-										1, readsocket);
-								unknown(message, tempsize, buffer, size,
-										position);
-								rtn = tempsize;
+								just(buffer, size);
+								SendMessageToPlayer(id, "Not implemented yet!", 1);
+								unknown(packet,  buffer, rtn);
 								break;
 							}
 
-							position = position + rtn;
-							if (position == size)
-							{
-								free(message);
+							if (EMPTY_STREAM(packet)){
+								free(packet);
 								break;
 							}
 							/**
 							 * Security check (Buffer Overflow)
 							 */
-							else if (position > size)
-							{
-								printf("Error while reading packet: position(%d) > size(%d)\n", position, size);
-								free(message);
-							}
-							free(message);
+//							else if (position > size)
+//							{
+//								printf("Error while reading packet: position(%d) > size(%d)\n", position, size);
+//								free(packet);
+//							}
+							//free(packet); // This is fucking moronic
 						}
 					}
 				}
 				else
 				{
-					int control = 1;
+					int control = 1,i;
 					int position = 2;
+
+					stream *packet = init_stream(NULL);
+					Stream.write(packet, buffer+2, size-2);
+
 					while (control)
 					{
 						int tempsize = size - position;
+						int lol;
 
-						unsigned char *message = malloc(tempsize);
-						memcpy(message, buffer + position, tempsize);
-						int rtn = 0;
+						//just(packet->mem, packet->size);
 
-						switch (message[0])
+						//memcpy(packet, buffer + position, tempsize);
+
+						switch (lol=(Stream.read_byte(packet)))
 						//payload
 						{
 						case 1:
-							rtn = confirmation_unknown(message, tempsize,
+							confirmation_unknown(packet,
 									newclient.sin_addr, newclient.sin_port);
 							break;
 						case 3:
-							rtn = connection_setup_unknown(message, tempsize,
+							connection_setup_unknown(packet,
 									newclient.sin_addr, newclient.sin_port);
 							break;
 						case 27:
-							rtn = UsgnPacket(27, message, tempsize, readsocket);
+							UsgnPacket(27, packet);
 							break;
 						case 28:
-							rtn = UsgnPacket(28, message, tempsize, readsocket);
+							UsgnPacket(28, packet);
 							break;
 						case 250:
-							rtn = ping_serverlist(message, tempsize,
-									&newclient, readsocket);
+							ping_serverlist(packet,
+									&newclient, sock);
 							break;
 						case 251:
-							rtn = serverinfo_request(message, tempsize,
-									&newclient, readsocket);
+							serverinfo_request(packet,
+									&newclient, sock);
 							break;
 						case 252:
-							rtn = joinroutine_unknown(message, tempsize,
-									&newclient, readsocket);
+							joinroutine_unknown(packet,
+									&newclient);
 							break;
 						default:
-							unknown(message, tempsize, buffer, size, position);
-							rtn = tempsize;
+							//printf("%x: %d %d\n", lol, size, packet->size);
+							//for (i=0;i<size;i++)eprintf("%x ", buffer[i]);
+							//eprintf("\n");
+							unknown(packet,  buffer, lol);
 							break;
 						}
 
-						position = position + rtn;
-						if (position == size)
+						if (!packet->size)
 						{
-							free(message);
+
+							free(packet);
 							break;
 						}
 						/**
 						 * Security check (Buffer Overflow)
 						 */
-						else if (position > size)
-						{
-							printf("Error while reading packet: position(%d) > size(%d)\n", position, size);
-							free(message);
-						}
-						free(message);
+//						else if (position > size)
+//						{
+//							printf("Error while reading packet: position(%d) > size(%d)\n", position, size);
+//							free(packet);
+//						}
+						//free(packet);
 					}
 				}
 			}
+		}
 
-		}
-		else
-		{
+		check_sendqueue(sock);
+
 #ifdef _WIN32
-			Sleep(fps + mstime - mtime());
+		Sleep(1000 / sv_fps); //who cares about windows :D
 #else
-			sleep(fps + mstime - mtime());
-#endif
+		clock_gettime(CLOCK_MONOTONIC, &current);
+		if (((current.tv_sec == next.tv_sec)
+				&& (current.tv_nsec < next.tv_nsec))
+				|| (current.tv_sec < next.tv_sec))
+		{
+			clock_nanosleep(CLOCK_MONOTONIC,
+				TIMER_ABSTIME, &next, NULL);
 		}
-		mstime = mtime();
+		else //THIS IS LAGGGGGGGGGGGGGGGGGGGGG
+		{
+			next.tv_nsec = current.tv_nsec +
+				(current.tv_sec - next.tv_sec) * NS_PER_S;
+		}
+#endif
 	}
 	return EXIT_SUCCESS;
 }

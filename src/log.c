@@ -6,7 +6,7 @@
  * Author/s of this file: Jermuk
  */
 
-#include "../include/log.h"
+#include "log.h"
 
 /**
  * \fn void myprintf(char *string, ...)
@@ -26,7 +26,8 @@ void myprintf(char *string, ...)
 	{
 		time(&rawtime);
 		timeinfo = localtime(&rawtime);
-		fprintf(logfile, "[%d:%d:%d] ", timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+		fprintf(logfile, "[%d:%d:%d] ", timeinfo->tm_hour, timeinfo->tm_min,
+				timeinfo->tm_sec);
 		fprintf(stdout, "[%d:%d:%d] ", timeinfo->tm_hour, timeinfo->tm_min,
 				timeinfo->tm_sec);
 
@@ -47,7 +48,7 @@ void myprintf(char *string, ...)
 	struct tm * timeinfo;
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	fprintf(stdout, "[%d:%d:%d] ", timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+	fprintf(stdout, "[%02d:%02d:%02d] ", timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
 
 	va_list argzeiger;
 	va_start(argzeiger,string);

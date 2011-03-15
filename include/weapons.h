@@ -16,6 +16,6 @@ void AddWeapon(short id, char name[], short wpndmg, short wpndmg_z1,
 		short special, short team);
 void WeaponInit();
 
-struct WEAPON weapons[100];
+struct WEAPON weapons[0x100];
 
 #endif // WEAPONS_H_INCLUDED

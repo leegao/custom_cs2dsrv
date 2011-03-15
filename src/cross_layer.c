@@ -6,7 +6,7 @@
  * Author/s of this file: Jermuk
  */
 
-#include "../include/cross_layer.h"
+#include "cross_layer.h"
 /**
  * \fn int create_socket(void)
  * \brief creates a socket
@@ -115,6 +115,18 @@ void socket_error_exit(char *message)
 	exit(EXIT_FAILURE);
 }
 
+void socket_error(char *message)
+{
+#ifdef _WIN32
+	printf(" [SOCKET ERROR] %s: %d\n", message, WSAGetLastError());
+	//debug(stderr);
+#else
+	printf(" [SOCKET ERROR] %s: %s\n", message, strerror(errno));
+	//debug(stderr);
+#endif
+
+}
+
 /**
  * \fn cleanup(void)
  * \brief clean the socket
@@ -167,27 +179,16 @@ void udp_send(int socket, unsigned char *data, int length,
 {
 	int rc;
 
-	//printf("Try to send message to %s:%d...\n", inet_ntoa(client->sin_addr), client->sin_port);
 	rc = sendto(socket, (char*) data, length, 0, (struct sockaddr *) client,
 			sizeof(*client));
-	/*
-	 int i;
-	 for(i = 0; i <= length; i++)
-	 {
-	 printf("%d-", data[i]);
-	 }
-	 printf("\n");
-	 */
 
 #ifdef _WIN32
 	if (rc == SOCKET_ERROR)
-		socket_error_exit("sendto() failed");
+		socket_error("sendto() failed");
 #else
 	if (rc < 0)
-	socket_error_exit("sendto() failed");
+	socket_error("sendto() failed");
 #endif
-	//else
-	//printf("Message sent!\n");
 }
 
 /**
