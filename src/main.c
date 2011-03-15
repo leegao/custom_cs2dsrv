@@ -153,23 +153,15 @@ int main(int argc, char *argv[]){
 						 * into cs2d-messages.
 						 * Every packet function returns the count of read bytes.
 						 */
-						while (control)
-						{
-							//int tempsize = size - position;
-
-							//unsigned char *message = malloc(tempsize);
-							//memcpy(message, buffer + position, tempsize);
-
-							//just(packet->mem, packet->size);
-
+						while (control){
 							int rtn = 0;
 
-							switch ((rtn+Stream.read_byte(packet))){
+							switch ((rtn = Stream.read_byte(packet))){
 							case 1:
 								confirmation_known(packet,id);
 								break;
 							case 3:
-								connection_setup_known(packet, newclient.sin_addr, newclient.sin_port, id);
+								connection_setup_known(packet, id);
 								break;
 							case 7:
 								fire(packet, id);
@@ -227,15 +219,14 @@ int main(int argc, char *argv[]){
 								ping_ingame(packet, id);
 								break;
 							case 252:
-								joinroutine_known(packet, id, sock);
+								joinroutine_known(packet, id);
 								break;
 							case 253:
 								leave(packet,id);
 								break;
 							default:
-								just(buffer, size);
-								SendMessageToPlayer(id, "Not implemented yet!", 1);
-								unknown(packet,  buffer, rtn);
+								SendMessageToPlayer(id, "Not implemented.", 1);
+								unknown(packet, rtn);
 								break;
 							}
 
@@ -254,64 +245,41 @@ int main(int argc, char *argv[]){
 							//free(packet); // This is fucking moronic
 						}
 					}
-				}
-				else
-				{
-					int control = 1,i;
-					int position = 2;
-
+				}else{
 					stream *packet = init_stream(NULL);
 					Stream.write(packet, buffer+2, size-2);
 
-					while (control)
-					{
-						int tempsize = size - position;
+					while (1){
 						int lol;
 
-						//just(packet->mem, packet->size);
-
-						//memcpy(packet, buffer + position, tempsize);
-
-						switch (lol=(Stream.read_byte(packet)))
-						//payload
-						{
+						switch (lol=Stream.read_byte(packet)){
 						case 1:
-							confirmation_unknown(packet,
-									newclient.sin_addr, newclient.sin_port);
+							confirmation_unknown(packet, &newclient);
 							break;
 						case 3:
-							connection_setup_unknown(packet,
-									newclient.sin_addr, newclient.sin_port);
+							connection_setup_unknown(packet, &newclient);
 							break;
 						case 27:
-							UsgnPacket(27, packet);
+							usgn_add(packet, &newclient);
 							break;
 						case 28:
-							UsgnPacket(28, packet);
+							usgn_update(packet, &newclient);
 							break;
 						case 250:
-							ping_serverlist(packet,
-									&newclient, sock);
+							ping_serverlist(packet, &newclient);
 							break;
 						case 251:
-							serverinfo_request(packet,
-									&newclient, sock);
+							serverinfo_request(packet, &newclient);
 							break;
 						case 252:
-							joinroutine_unknown(packet,
-									&newclient);
+							joinroutine_unknown(packet, &newclient);
 							break;
 						default:
-							//printf("%x: %d %d\n", lol, size, packet->size);
-							//for (i=0;i<size;i++)eprintf("%x ", buffer[i]);
-							//eprintf("\n");
-							unknown(packet,  buffer, lol);
+							unknown(packet, lol);
 							break;
 						}
 
-						if (!packet->size)
-						{
-
+						if (!packet->size){
 							free(packet);
 							break;
 						}
