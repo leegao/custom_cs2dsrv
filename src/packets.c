@@ -827,33 +827,6 @@ int usgn_update(stream* packet, struct sockaddr_in *newclient){
 	return 1;
 }
 
-//int UsgnPacket(int packetid, stream* packet){ //No check if really from usgn.de
-//	byte id = Stream.read_byte(packet);
-//	switch (packetid){
-//	case 27:
-//		if (id == 1){
-//			printf("[USGN] Server successfully added to the serverlist..\n");
-//		}else{
-//			printf("[USGN] Server NOT added to the serverlist.. (Code: .)\n");
-//		} // 2
-//		break;
-//	case 28:
-//		if (id == 2){
-//			printf("[USGN] Server successfully updated in the serverlist..\n");
-//		}else{
-//			printf("[USGN] Server NOT updated in the serverlist.. (Code: .)\n");
-//		} // 2
-//		break;
-//	default:
-//		printf("[USGN] Unknown Message recieved: ");
-//		int i, size = packet->size; byte* message = Stream.read(packet, packet->size);
-//		for (i = 0; i < size; i++)
-//			eprintf("%d-", message[i]);
-//		eprintf("\n");
-//		break;
-//	}
-//}
-
 int drop(stream* packet, int id){
 	CHECK_STREAM(packet, 6);
 
@@ -926,9 +899,16 @@ void init_optable(){
 	K(13, posrotupdaterun);
 	K(14, posrotupdatewalk);
 	K(16, reload);
+	//K(17, hit);
+	//K(19, killmsg);
 	K(20, teamchange);
+	//K(21, spawn_msg); <- client?
+	//K(22, round_start);
 	K(23, buy);
 	K(24, drop);
+	//K(25, pickup);
+	//K(27, projectile);
+
 	K(28, spray);
 	K(32, specpos);
 	K(39, respawnrequest);

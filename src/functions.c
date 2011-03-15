@@ -259,7 +259,7 @@ int ValidatePacket(unsigned char *message, int id){
 	if (cid&1) // checks the LSBit, alternative  -> if (cid&1), not sure what the rationale of this is.
 		// TODO: this breaks if the player loses connection for a while, etc
 		if (cid < player[id].client_number - 2 || cid > player[id].client_number + 2){ // makes sure that cid is within 4 of the last time
-			printf("Invalid packet! Client ID is not synchronized wtih the server.");
+			printf("Invalid packet! Client ID is not synchronized with the server.");
 			return 0;
 		}
 

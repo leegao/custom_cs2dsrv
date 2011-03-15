@@ -145,6 +145,7 @@ int main(int argc, char *argv[]){
 				Stream.write(packet, buffer+2, size-2);
 
 				if (id){///When the player is known execute other commands as when the player is unknown
+					//TODO: ValidatePacket fails if client dropped
 					if (ValidatePacket(buffer,id)){ ///Checks and raise the packet numbering if necessary
 						PaketConfirmation(buffer,id); ///If the numbering is even, send a confirmation
 						player[id].lastpacket = mtime();
