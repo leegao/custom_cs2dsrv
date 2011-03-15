@@ -1044,6 +1044,15 @@ byte* read_str2(stream* s){
 	return str;
 }
 
+int write_str2(stream* s, byte* str){
+	int n = strlen((char*)str);
+	byte* str_ = (byte*)malloc(n+2);
+	memcpy(str_+2, str, n);
+	*str_++ = (n++)&0xff;
+	*str_-- = ((n++)-1)/0xff;
+	return Stream.write(s, str_, n);
+}
+
 int write_str(stream* s, byte* str){
 	int n = strlen((char*)str)+1;
 	byte* str_ = (byte*)malloc(n--);
@@ -1094,4 +1103,5 @@ void start_stream(){
 	Stream.write_line = &write_line;
 
 	Stream.read_str2 = &read_str2;
+	Stream.write_str2 = &write_str2;
 }

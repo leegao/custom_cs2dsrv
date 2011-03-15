@@ -484,7 +484,7 @@ void ExecuteFunctionsWithTime(time_t *checktime, int writesocket)
 		{
 			SendPingList(writesocket);
 			SendMessageToAll("This is an alpha version! Don't play at it!", 1); //Do not remove or change this until server reaches beta status
-			PingAllPlayer(writesocket);
+			PingAllPlayer();
 		}
 		else if (actualtime % 50 == 0)
 		{

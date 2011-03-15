@@ -26,7 +26,7 @@ void SendJoinMessage(int id);
 void SendLeaveMessage(int id);
 void SendChatMessage(int id, unsigned char *message, int team);
 void SendTeamChangeMessage(int id, unsigned char team, unsigned char skin);
-void PingAllPlayer(int writesocket);
+void PingAllPlayer();
 void SendReloadMessage(int id, int status);
 void SendSprayMessage(char id, unsigned short xx, unsigned short yy, char c);
 void SendKillMessage(int id, int victim);
