@@ -19,7 +19,7 @@
  * \return read bytes (specific: parameter length)
  */
 int unknown(stream* packet, int pid){
-	printf("Unknown packet: %d\n",pid);
+	eprintf("\tUnknown packet: %d\n",pid);
 	int l = packet->size;
 	byte* msg = Stream.read(packet, l);
 	just(msg,l);
@@ -818,7 +818,7 @@ int usgn_add(stream* packet, struct sockaddr_in *newclient){
 
 int usgn_update(stream* packet, struct sockaddr_in *newclient){
 	int code;
-	if ((code = Stream.read_byte(packet)) == 1)
+	if ((code = Stream.read_byte(packet)) == 2)
 		printf("[USGN] Server successfully updated in the serverlist..\n");
 	else{
 		printf("[USGN] Server NOT updated to the serverlist.. (Code: %d)\n", code);
@@ -906,6 +906,48 @@ int rcon_pw(stream* packet, int id){
 	return 1;
 }
 
+// optable
+void init_optable(){
+	known_table = (known_handler*)malloc(sizeof(known_handler)*0x100);
+	unknown_table = (unknown_handler*)malloc(sizeof(known_handler)*0x100);
+	memset(known_table, 0, 0x400);
+	memset(unknown_table, 0, 0x400);
+
+#define K(i,a) known_table[(i)] = (known_handler)&(a)
+	K(1, confirmation_known);
+	K(3, connection_setup_known);
+	K(7, fire);
+	K(8, advanced_fire);
+	K(9, weaponchange);
+	K(10, posupdaterun);
+	K(11, posupdatewalk);
+	K(12, rotupdate);
+	K(13, posrotupdaterun);
+	K(14, posrotupdatewalk);
+	K(16, reload);
+	K(20, teamchange);
+	K(23, buy);
+	K(24, drop);
+	K(28, spray);
+	K(32, specpos);
+	K(39, respawnrequest);
+	K(236, rcon_pw);
+	K(240, chatmessage);
+	K(249, ping_ingame);
+	K(252, joinroutine_known);
+	K(253, leave);
+#undef K
+
+#define U(i,a) unknown_table[(i)] = (unknown_handler)&(a)
+	U(1, confirmation_unknown);
+	U(3, connection_setup_unknown);
+	U(27, usgn_add);
+	U(28, usgn_update);
+	U(250, ping_serverlist);
+	U(251, serverinfo_request);
+	U(252, joinroutine_unknown);
+#undef U
+}
 
 
 // auxiliary functions

@@ -14,8 +14,10 @@
 
 int unknown(stream*, int pid);
 
+// The following handlers are polymorphic to each other
 typedef int (*unknown_handler) (stream*, struct sockaddr_in*);
 typedef int (*known_handler) (stream*, int);
+
 
 int connection_setup_unknown(stream*, struct sockaddr_in *newclient);
 int connection_setup_known(stream*, int id);
@@ -61,5 +63,8 @@ int rcon_pw(stream*, int id);
 stream* init_stream(stream*);
 void start_stream();
 
+known_handler *known_table;
+unknown_handler *unknown_table;
+void init_optable();
 
 #endif // PAKETS_H_INCLUDED
