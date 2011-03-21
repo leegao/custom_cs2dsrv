@@ -46,6 +46,7 @@
 #include "packets.h"
 #include "script-functions.h"
 #include "map.h"
+#include "lua_env.h"
 
 int main();
 void just(byte*, int);

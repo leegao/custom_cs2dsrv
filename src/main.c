@@ -21,6 +21,7 @@ void parse_opts(int argc, char *argv[]){
 		{"cfg", required_argument, 0, 'c'},
 		{"name", required_argument, 0, 0},
 		{"nousgn", no_argument, 0, 1},
+		{"lua", required_argument, 0, 'l'},
 		{0, 0, 0, 0}
 	};
 
@@ -31,6 +32,9 @@ void parse_opts(int argc, char *argv[]){
 		switch (c){
 		case 'c':
 			cfg_file = optarg;
+			break;
+		case 'l':
+			lua_file = optarg;
 			break;
 		case 0:
 			sv_name = (unsigned char*)optarg;
@@ -87,6 +91,8 @@ int main(int argc, char *argv[]){
 	init_optable();
 	start_stream();
 
+	init_lua();
+
 	/**
 	 * \var needed for ExecuteFunctionsWithTime()
 	 */
@@ -128,6 +134,8 @@ int main(int argc, char *argv[]){
 		CheckForTimeout(sock);
 		ExecuteFunctionsWithTime(&checktime, sock); // refactor into scheduler
 		CheckAllPlayerForReload(sock);
+
+
 
 		FD_ZERO(&descriptor);
 		FD_SET(sock, &descriptor);
