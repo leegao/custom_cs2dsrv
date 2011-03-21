@@ -11,6 +11,20 @@
 
 #include "main.h"
 
+void* hook_map, *hook_type;
+struct ll{
+	char* data;
+	struct ll* next;
+};
+
+struct ll_c{
+	char* name;
+	int typ;
+	struct ll* root;
+};
+
+void init_hooks();
+
 int OnJoin(int id);
 int OnLeave(int id);
 int OnSpecmove(int id, int newx, int newy);

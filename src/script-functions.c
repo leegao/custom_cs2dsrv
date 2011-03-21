@@ -8,16 +8,53 @@
 
 #include "script-functions.h"
 
+void init_hooks(){
+	hook_map = hashmap_new();
+	int i = 0;
+#define add(type) struct ll *type##_value = malloc(2*sizeof(int)); \
+	struct ll_c *type##_c = malloc(3*sizeof(int));\
+	type##_c->typ = i++;\
+	type##_c->name = #type;\
+	type##_c->root = type##_value;\
+	hashmap_put(hook_map, #type, type##_c); \
+
+	add(join); // 0
+	add(leave); // 1
+#undef add
+}
+
+int invoke_hook(char* type, ...){
+	struct ll_c* fn;
+	int err = hashmap_get(hook_map, type, (void**)(&fn));
+	if (err != MAP_OK){
+		printf("[Lua] Cannot invoke hook %s\n", type);
+		return 0;
+	}
+	va_list args;
+	va_start(args, type);
+	printf("%d\n", fn->typ);
+	switch (fn->typ){
+	case 0:{ // join(id)
+		int id = va_arg(args, int);
+		printf("%s: id: %d\n", type, id);
+		break;
+	}
+	}
+
+	va_end(args);
+	return 0;
+}
+
 /*
  int OnJoin(int id)
  id - Who joins
  Return Values:
  0 - OK
  */
-int OnJoin(int id)
-{
+int OnJoin(int id){
 	SendJoinMessage(id);
 	printf("%s (#%d) has joined the game!\n\tUsing ip %s:%d and usgn-id #%d!\n", player[id].name, id, inet_ntoa(player[id].ip), player[id].port, player[id].usgn);
+	invoke_hook("join", id);
 	return 0;
 }
 

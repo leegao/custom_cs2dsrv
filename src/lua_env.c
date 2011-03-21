@@ -11,6 +11,7 @@
 
 static const char *progname = "[Lua]";
 
+
 static int traceback (lua_State *L) {
   if (!lua_isstring(L, 1))  /* 'message' not a string? */
     return 1;  /* keep it intact */
@@ -169,11 +170,12 @@ int init_lua(){
 	luaL_openlibs(l);
 	lua_gc(l, LUA_GCRESTART, 0);
 
-
 	/* You can do what you want here. Note: Remember to update the libraries used (see above) */
 	/* if you add to your program and use new Lua libraries. */
 	/* In the lines below, I load and run the Lua code contained in the file */
 	int err = luaL_dofile(l, lua_file ? lua_file : "server.lua");
+
+	_G = l;
 
 	if (err){
 		printf("[Lua] Cannot open file %s\n", lua_file ? lua_file : "server.lua");
@@ -183,7 +185,6 @@ int init_lua(){
 	//lua_close(l);
 
 	//dotty(l);
-
 	return 0;
 }
 

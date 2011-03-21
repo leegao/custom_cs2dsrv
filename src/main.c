@@ -92,6 +92,7 @@ int main(int argc, char *argv[]){
 	start_stream();
 
 	init_lua();
+	init_hooks();
 
 	/**
 	 * \var needed for ExecuteFunctionsWithTime()

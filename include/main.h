@@ -47,6 +47,7 @@
 #include "script-functions.h"
 #include "map.h"
 #include "lua_env.h"
+#include "hashmap.h"
 
 int main();
 void just(byte*, int);

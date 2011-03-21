@@ -10,4 +10,6 @@
 
 #include "settings.h"
 
+void *_G;
+
 #endif /* LUA_ENV_H_ */
