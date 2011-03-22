@@ -200,135 +200,84 @@ int OnAdvancedFire(int id, int status)
  */
 int OnFire(int id)
 {
-	//printf("%s tried to shoot!\n", player[id].name);
-	short *ammo1 = &player[id].wpntable[player[id].actualweapon].ammo1;
-	if (*ammo1 <= 0 && *ammo1 != -1)
-	{
-		printf("Not enough ammo!\n");
-		return 1;
+	unsigned char wpn = player[id].actualweapon;
+
+	if (weapons[wpn].slot == 0) return 0;
+
+	short *ammo1 = &player[id].wpntable[wpn].ammo1;
+	if (*ammo1 != -1) {
+		if (*ammo1 <= 0) {
+			printf("Not enough ammo!\n");
+			return 1;
+		} else
+			--(*ammo1);
 	}
-	else
-	{
-		if (*ammo1 != -1)
-		{
-			*ammo1 = *ammo1 - 1;
-		}
-	}
-	if (mtime() < player[id].firetimer)
-	{
+
+	/*if (mtime() < player[id].firetimer) {
 		printf("Firetimer error!%u %u\n", mtime(), player[id].firetimer);
 		return 1;
-	}
-	else
-	{
-		player[id].firetimer = mtime()
-				+ weapons[player[id].actualweapon].freq;
-	}
+	} else
+		player[id].firetimer = mtime() + weapons[wpn].freq;*/
+	
+	short dmg;
 
-	int i;
-	int range = weapons[player[id].actualweapon].range;
-
-	int startx = *player[id].x;
-	int starty = *player[id].y;
-	int frames = fpsnow * player[id].latency / 1000;
-	if (frames > sv_lcbuffer)
-	{
-		frames = sv_lcbuffer;
-	}
-	float rotx;
-	float roty;
-	float temprot = player[id].rotation;
-
-	short playershit[MAX_CLIENTS] =
-	{ 0 };
-
-	if (temprot < 0)
-	{
-		temprot = 360 - (temprot * -1);
-	}
-	temprot = 360 - temprot;
-
-	temprot += 90;
-	if (temprot > 360)
-	{
-		temprot = temprot - 360;
-	}
-
-	rotx = cos((temprot) * PI / 180);
-	roty = sin((temprot) * PI / 180);
-
-	for (i = 1; i <= range; i++)
-	{
-		startx += i * rotx;
-		starty -= i * roty;
-
-		int tilex = (int) (startx) / 32;
-		int tiley = (int) (starty) / 32;
-
-		if (tilex <= 0 || tiley <= 0)
-			break;
-		int tilemode = map.tiles[tilex][tiley].mode;
-		if (tilemode == 1 || tilemode == 3 || tilemode == 4)
-		{
-			break;
-		}
-
-		int b;
-		for (b = 1; b <= sv_maxplayers; b++)
-		{
-			if (player[b].used == 1 && player[b].joinstatus >= 4 && b != id
-					&& player[b].dead == 0 && playershit[b] == 0
-					&& player[id].team != player[b].team)
-			{
-				if (sqrt((lcbuffer[frames][b-1][0] - startx)
-						* (lcbuffer[frames][b-1][0] - startx)
-						+ (lcbuffer[frames][b-1][1] - starty)
-								* (lcbuffer[frames][b-1][1] - starty)) <= 16)
-				/*if (sqrt((player[b].x - startx) * (player[b].x - startx)
-				 + (player[b].y - starty) * (player[b].y - starty))
-				 <= 16)*/
-				{
-					OnHit(id, b);
-					playershit[b] = 1;
-				}
+	switch (weapons[wpn].special) { //lmao 76543210
+		case 7: //TODO: grenades
+			return 0;
+		case 6: //shotgun
+			dmg == weapons[wpn].weapondamage;
+			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
+			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
+			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
+			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
+			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
+			return 0;
+		case 5:
+		case 4:
+		case 3: //scoped or melee weapons
+			if (player[id].wpntable[wpn].status == 2) {
+				dmg = weapons[wpn].weapondamage_z1;
+				break;
+			} else if (player[id].wpntable[wpn].status == 3) {
+				dmg = weapons[wpn].weapondamage_z2;
+				break;
 			}
-		}
+		case 2: //burst weapon
+			if (player[id].wpntable[wpn].status == 2) {
+				dmg = 0.64 * weapons[wpn].weapondamage;
+				simulate_bullet(id, wpn, dmg, player[id].rotation - 6 + 12 * (float)rand() / RAND_MAX);
+				simulate_bullet(id, wpn, dmg, player[id].rotation + 6 + 8 * (float)rand() / RAND_MAX);
+				simulate_bullet(id, wpn, dmg, player[id].rotation - 6 - 8 * (float)rand() / RAND_MAX);
+				return 0;
+			}
+		case 1: //silencer does nothing
+		case 0: //regular
+			dmg = weapons[wpn].weapondamage;
+			break;
+		default:
+			return 1;
 	}
+
+	simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * weapons[wpn].accuracy);
 	return 0;
 }
 /*
- int OnHit(int hitter, int victim)
+ int OnHit(int hitter, int victim, unsigned char wpn, short dmg)
  Return Values:
  0 - OK
  */
-int OnHit(int hitter, int victim)
+int OnHit(int hitter, int victim, unsigned char wpn, short dmg)
 {
-	int wpnid = player[hitter].actualweapon;
-	int damage;
-	switch (player[hitter].wpntable[wpnid].status)
-	{
-	case 1:
-		damage = weapons[wpnid].weapondamage;
-		break;
-	case 2:
-		damage = weapons[wpnid].weapondamage_z1;
-		break;
-	case 3:
-		damage = weapons[wpnid].weapondamage_z2;
-		break;
-	default:
-		damage = weapons[wpnid].weapondamage;
-		break;
-	}
-	if (player[victim].health - damage > 0)
-	{
-		player[victim].health -= damage;
-		SendHitMessage(victim, hitter, player[victim].health);
-		//printf("%s hitted %s with %s\n", player[hitter].name, player[victim].name, weapons[wpnid].name);
-	}
-	else
-	{
-		OnKill(hitter, victim, wpnid);
+	short newarmor = (short)player[victim].armor - dmg;
+	if (newarmor < 0) newarmor = 0;
+	short newhealth = (short)player[victim].health - dmg + ((short)player[victim].armor - newarmor) * 3 / 10;
+
+	if (newhealth > 0) {
+		player[victim].health = newhealth;
+		player[victim].armor = newarmor;
+		SendHitMessage(victim, hitter, player[victim].health, player[victim].armor);
+	} else {
+		OnKill(hitter, victim, wpn);
 	}
 
 	return 0;
@@ -550,7 +499,7 @@ int OnKill(int hitter, int victim, int wpnid)
 	else
 		player[hitter].money += 300;
 	RemoveAllPlayerWeapon(victim);
-	SendHitMessage(victim, hitter, player[victim].health);
+	SendHitMessage(victim, hitter, player[victim].health, player[victim].armor);
 	SendKillMessage(hitter, victim);
 	printf("%s killed %s with %s\n", player[hitter].name, player[victim].name, weapons[wpnid].name);
 	return 0;
@@ -630,7 +579,7 @@ int OnTeamChange(int id, unsigned char team, unsigned char skin)
 			printf("%s joined a unknown team\n", player[id].name);
 			break;
 		}
-		SendHitMessage(id, id, 0);
+		SendHitMessage(id, id, 0, 0);
 		player[id].dead = 1;
 		RemoveAllPlayerWeapon(id);
 	}
