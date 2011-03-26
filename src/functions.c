@@ -497,3 +497,108 @@ size_t u_strlen(unsigned char* buffer)
 {
 	return strlen((char*) buffer);
 }
+
+/**
+ * \fn int line_seg_sqr(float ex, float ey, float sqx, float sqy, float sqhlen, float *ox, float *oy)
+ * \brief finds first collision between a line segment and a square.
+ * 		origin is defined as line segment's starting point.
+ * \param ex x coordinate of line segment's ending point
+ * \param ey y coordinate of line segment's ending point
+ * \param sqx x coordinate of square's center
+ * \param sqy y coordinate of square's center
+ * \param sqhlen half of length of square's side
+ * \param *ox where to store x coordinate of intersection
+ * \param *oy where to store y coordinate of intersection
+ * \return 0 - no collision; 1 - collision at *ox, *oy
+ */
+int line_seg_sqr(float ex, float ey, float sqx, float sqy, float sqhlen, float *ox, float *oy)
+{
+	if (!ox) {float x; ox = &x;}
+	if (!oy) {float y; oy = &y;}
+	if (fabsf(sqx) <= sqhlen && fabsf(sqy) <= sqhlen) {
+		if (fabsf(ex - sqx) <= sqhlen && fabsf(ey - sqy) <= sqhlen) {
+			*ox = ex; *oy = ey;
+			return 1;
+		} else
+			sqhlen *= -1;
+	}
+	if (ey != 0) {
+		*oy = (ey > 0) ? sqy - sqhlen: sqy + sqhlen;
+		if (((ey >= *oy && *oy >= 0) || (ey <= *oy && *oy <= 0))
+			&& (fabsf((*ox = (*oy) * ex / ey) - sqx) <= fabsf(sqhlen)))
+				return 1;
+	}
+	if (ex != 0) {
+		*ox = (ex > 0) ? sqx - sqhlen: sqx + sqhlen;
+		if (((ex >= *ox && *ox >= 0) || (ex <= *ox && *ox <= 0))
+			&& (fabsf((*oy = (*ox) * ey / ex) - sqy) <= fabsf(sqhlen)))
+				return 1;
+	}
+	return (*ox = *oy = 0);
+}
+/**
+ * \fn void simulate_bullet(int id, unsigned char wpn, short dmg, float rot)
+ * \brief simulates a bullet
+ * \param id id of player who fired the bullet
+ * \param wpn wpn from which the bullet was fired
+ * \param dmg damage of the bullet
+ * \param rot angle of the bullet
+ */
+void simulate_bullet(int id, unsigned char wpn, short dmg, float rot)
+{
+	float start_x = (float)(*player[id].x);
+	float start_y = (float)(*player[id].y);
+	float range_x = 3.0 * (float)weapons[wpn].range * sinf(rot * 0.0174532925);
+	float range_y = -3.0 * (float)weapons[wpn].range * cosf(rot * 0.0174532925);
+	int tile_x = ((int)start_x) / 32;
+	int tile_y = ((int)start_y) / 32;
+	int temp_x, temp_y;
+	int tilemode;
+	
+	int inc_x = 0;
+	if (rot < 0)
+		inc_x = -1;
+	else if (rot > 0 && rot != 180)
+		inc_x = 1;
+		
+	int inc_y = 0;
+	if (fabsf(rot) > 90)
+		inc_y = 1;
+	else if (fabsf(rot) < 90)
+		inc_y = -1;
+
+	while (1) {
+		if (tile_x < 0 || tile_y < 0)
+			break;
+		tilemode = map.tiles[tile_x][tile_y].mode;
+		if (tilemode == 1 || tilemode == 3 || tilemode == 4)
+		{
+			float temp_rx = range_x;
+			float temp_ry = range_y;
+			line_seg_sqr(temp_rx, temp_ry , 32 * (temp_x) + 16 - start_x, 32 * (temp_y) + 16 - start_y, 16, &range_x, &range_y);
+			break;
+		}
+		temp_x = tile_x;
+		temp_y = tile_y;
+		
+		if (0!=inc_x && 1==line_seg_sqr(range_x, range_y, 32 * (temp_x + inc_x) + 16 - start_x, 32 * (temp_y) + 16 - start_y, 16, NULL, NULL))
+			tile_x = temp_x + inc_x;
+		if (0!=inc_y && 1==line_seg_sqr(range_x, range_y, 32 * (temp_x) + 16 - start_x, 32 * (temp_y + inc_y) + 16 - start_y, 16, NULL, NULL))
+			tile_y = temp_y + inc_y;
+		if (tile_x == temp_x && tile_y == temp_y)
+			break;
+	}
+
+	int frames = (int)player[id].latency * fpsnow / 1000;
+	if (frames > sv_lcbuffer) frames = sv_lcbuffer;
+	int i;
+	for (i = 1; i <= sv_maxplayers; i++) {
+		if (player[i].dead == 0
+		&& player[i].joinstatus >= 4
+		&& player[i].used == 1
+		&& i != id
+		&& (player[i].team != player[id].team || sv_friendlyfire == 1))
+			if (line_seg_sqr(range_x, range_y, lcbuffer[frames][i - 1][0] - start_x, lcbuffer[frames][i - 1][1] - start_y, 12, NULL, NULL))
+				OnHit(id, i, wpn, dmg);
+	}
+}

@@ -36,7 +36,7 @@ int OnRespawn(int id);
 int OnWeaponChangeAttempt(int id, int wpnid);
 int OnAdvancedFire(int id, int status);
 int OnFire(int id);
-int OnHit(int hitter, int victim);
+int OnHit(int hitter, int victim, unsigned char wpn, short dmg);
 int OnBuyAttempt(int id, int wpnid);
 int OnBuy(int id, int wpnid);
 int OnKill(int hitter, int victim, int wpnid);

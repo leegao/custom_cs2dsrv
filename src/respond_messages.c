@@ -45,8 +45,8 @@ void SendBuyMessage(int id, int wpnid){
 		SendWeaponChangeMessage(id, wpnid);
 }
 
-void SendHitMessage(int id, int victim, int health){
-	byte buffer[] = {17,id,victim,health,0};
+void SendHitMessage(int id, int victim, int health, int armor){
+	byte buffer[] = {17,id,victim,health,armor};
 	SendToAll(buffer, 5, 1);
 }
 

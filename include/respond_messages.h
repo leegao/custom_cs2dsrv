@@ -14,7 +14,7 @@ void SendSpawnMessage(int id, unsigned short x, unsigned short y);
 void SendAdvancedFireMessage(int id, int status);
 void SendFireMessage(int id);
 void SendBuyMessage(int id, int wpnid);
-void SendHitMessage(int id, int victim, int health);
+void SendHitMessage(int id, int victim, int health, int armor);
 void SendWeaponChangeMessage(int id, int wpnid);
 void SendPosUpdate(int id, unsigned short x, unsigned short y, int status);
 void SendPosRotUpdate(int id, unsigned short x, unsigned short y, int status,
