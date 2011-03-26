@@ -49,6 +49,10 @@
 #include "lua_env.h"
 #include "hashmap.h"
 
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
 int main();
 void just(byte*, int);
 

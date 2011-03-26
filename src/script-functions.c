@@ -11,38 +11,114 @@
 void init_hooks(){
 	hook_map = hashmap_new();
 	int i = 0;
-#define add(type) struct ll *type##_value = malloc(2*sizeof(int)); \
+#define add(type) /*struct ll *type##_value = malloc(2*sizeof(int));*/ \
 	struct ll_c *type##_c = malloc(3*sizeof(int));\
 	type##_c->typ = i++;\
 	type##_c->name = #type;\
-	type##_c->root = type##_value;\
+	type##_c->root = NULL;\
 	hashmap_put(hook_map, #type, type##_c); \
 
-	add(join); // 0
-	add(leave); // 1
+	add(join);
+	add(leave);
 #undef add
+
+	lua_pushcfunction(_G, addhook);
+	lua_setfield(_G, LUA_GLOBALSINDEX, "addhook");
 }
 
-int invoke_hook(char* type, ...){
+int addhook(lua_State* l){
+	int n = lua_gettop(l); // we need at least 2
+	if (n<2){
+		lua_pushstring(l, "addhook() requires two strings.");
+		lua_error(l);
+	}
+	const char* type = lua_tostring(l, 1);
+	const char* data = lua_tostring(l, 2);
+
+	struct ll_c* fn;
+	int err = hashmap_get(hook_map, (char*)type, (void**)(&fn));
+	if (err != MAP_OK){
+		lua_pushfstring(l, "Invalid hook %s.", type);
+		lua_error(l);
+	}
+
+	struct ll* root = fn->root;
+
+	if(!root) root = (fn->root = (struct ll*)malloc(sizeof(struct ll)));
+	else{
+		while (root->next)
+			root = root->next;
+		root = (root->next = (struct ll*)malloc(sizeof(struct ll)));
+	}
+
+	root->data = (char*)data;
+	root->next = NULL;
+
+	return 0;
+}
+
+// Fmt - s i f b
+int invoke_traverse(struct ll* list, char* fmt, ...){
+	if (!list) return 0;
+
+	va_list args;
+	va_start(args, fmt);
+	void* buffer[10];
+	int i,ret = 0,nargs = strlen(fmt);
+	for (i=0;i<nargs;i++)
+		buffer[i] = va_arg(args, void*);
+	va_end(args);
+
+	while (list && list->data){
+		char* data = malloc(0xff);
+		sprintf(data, "return %s", list->data);
+		printf("%s\n",data);
+		int err = luaL_dostring(_G, data); // load the function into _G
+		if (err) continue;
+		for(i=0;i<nargs;i++){
+			switch(fmt[i]){
+			case 's':
+			case 'S':
+				// String
+				lua_pushstring(_G, buffer[i]);
+				break;
+			case 'i':
+			case 'I':
+				// Integer
+				lua_pushinteger(_G, (int)buffer[i]);
+				break;
+			case 'f':
+			case 'F':
+			case 'n':
+			case 'N':
+				// Number
+				lua_pushnumber(_G, *(double*)(buffer[i]));
+				break;
+			case 'b':
+			case 'B':
+				lua_pushboolean(_G, (int)buffer[i]);
+				break;
+			default:
+				lua_pushnil(_G);
+				printf("[Lua] Cannot parse the parameter type.");
+			}
+		}
+		lua_call(_G, nargs, 1);
+		ret = lua_tonumber(_G, 1);
+		//lua_pop(_G, 1);
+		list = list->next;
+	}
+	return ret;
+}
+
+struct ll* get_fn(char* type){
 	struct ll_c* fn;
 	int err = hashmap_get(hook_map, type, (void**)(&fn));
 	if (err != MAP_OK){
 		printf("[Lua] Cannot invoke hook %s\n", type);
-		return 0;
+		return NULL;
 	}
-	va_list args;
-	va_start(args, type);
-	printf("%d\n", fn->typ);
-	switch (fn->typ){
-	case 0:{ // join(id)
-		int id = va_arg(args, int);
-		printf("%s: id: %d\n", type, id);
-		break;
-	}
-	}
-
-	va_end(args);
-	return 0;
+	return fn->root;
 }
 
 /*
@@ -54,7 +130,11 @@ int invoke_hook(char* type, ...){
 int OnJoin(int id){
 	SendJoinMessage(id);
 	printf("%s (#%d) has joined the game!\n\tUsing ip %s:%d and usgn-id #%d!\n", player[id].name, id, inet_ntoa(player[id].ip), player[id].port, player[id].usgn);
-	invoke_hook("join", id);
+
+	struct ll* root = get_fn("join");
+	if(!root) return 0;
+	invoke_traverse(root, "i", id);
+
 	return 0;
 }
 

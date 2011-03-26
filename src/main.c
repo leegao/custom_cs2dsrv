@@ -92,7 +92,14 @@ int main(int argc, char *argv[]){
 	start_stream();
 
 	init_lua();
-	init_hooks();
+
+
+//	struct ll_c* fn;
+//	int err = hashmap_get(hook_map, "join", (void**)(&fn));
+
+//	fn->root = (struct ll*)malloc(sizeof(struct ll));
+//	fn->root->data="function(id) print(id) end";
+//	fn->root->next=NULL;
 
 	/**
 	 * \var needed for ExecuteFunctionsWithTime()

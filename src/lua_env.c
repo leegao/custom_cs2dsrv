@@ -173,9 +173,12 @@ int init_lua(){
 	/* You can do what you want here. Note: Remember to update the libraries used (see above) */
 	/* if you add to your program and use new Lua libraries. */
 	/* In the lines below, I load and run the Lua code contained in the file */
-	int err = luaL_dofile(l, lua_file ? lua_file : "server.lua");
 
 	_G = l;
+	init_hooks();
+
+	int err = luaL_dofile(l, lua_file ? lua_file : "server.lua");
+
 
 	if (err){
 		printf("[Lua] Cannot open file %s\n", lua_file ? lua_file : "server.lua");

@@ -24,6 +24,7 @@ struct ll_c{
 };
 
 void init_hooks();
+int addhook();
 
 int OnJoin(int id);
 int OnLeave(int id);
