@@ -20,6 +20,8 @@ void init_hooks(){
 
 	add(join);
 	add(leave);
+	add(team);
+
 #undef add
 
 	lua_pushcfunction(_G, addhook);
@@ -121,6 +123,10 @@ struct ll* get_fn(char* type){
 	return fn->root;
 }
 
+#define INVOKE(type, args...) struct ll* root = get_fn(type); \
+if(!root) return 0; \
+return invoke_traverse(root, args); \
+
 /*
  int OnJoin(int id)
  id - Who joins
@@ -129,13 +135,9 @@ struct ll* get_fn(char* type){
  */
 int OnJoin(int id){
 	SendJoinMessage(id);
-	printf("%s (#%d) has joined the game!\n\tUsing ip %s:%d and usgn-id #%d!\n", player[id].name, id, inet_ntoa(player[id].ip), player[id].port, player[id].usgn);
+	printf("%s (#%d) has joined the game using ip %s:%d and usgn-id #%d!\n", player[id].name, id, inet_ntoa(player[id].ip), player[id].port, player[id].usgn);
 
-	struct ll* root = get_fn("join");
-	if(!root) return 0;
-	invoke_traverse(root, "i", id);
-
-	return 0;
+	INVOKE("join", "i", id);
 }
 
 /*
@@ -144,11 +146,10 @@ int OnJoin(int id){
  Return Values:
  0 - OK
  */
-int OnLeave(int id)
-{
+int OnLeave(int id, int reason){
 	SendLeaveMessage(id);
-	printf("%s has left the game!\n", player[id].name);
-	return 0;
+	printf("%s has left the game.\n", player[id].name);
+	INVOKE("leave", "ii", id, reason);
 }
 
 /*

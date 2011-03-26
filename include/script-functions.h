@@ -27,7 +27,7 @@ void init_hooks();
 int addhook();
 
 int OnJoin(int id);
-int OnLeave(int id);
+int OnLeave(int id, int);
 int OnSpecmove(int id, int newx, int newy);
 int OnServerStart();
 int OnExit();

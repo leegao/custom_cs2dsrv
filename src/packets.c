@@ -758,7 +758,7 @@ int joinroutine_known(stream* packet, int id){
 }
 
 int leave(stream* packet, int id){
-	OnLeave(id);
+	OnLeave(id, 0);
 
 	free(player[id].name);
 	free(player[id].spraylogo);
