@@ -75,6 +75,8 @@ int main(int argc, char *argv[]){
 	bind_socket(&sock, INADDR_ANY, sv_hostport);
 	atexit(cleanup);
 
+	init_lua();
+
 	//struct in_addr usgnip = GetIp("usgn.de");
 	/*
 	 FD_ZERO(&descriptor);
@@ -91,7 +93,7 @@ int main(int argc, char *argv[]){
 	init_optable();
 	start_stream();
 
-	init_lua();
+
 
 	/**
 	 * \var needed for ExecuteFunctionsWithTime()

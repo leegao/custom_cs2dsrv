@@ -21,6 +21,10 @@ void init_hooks(){
 	add(join);
 	add(leave);
 	add(team);
+	add(start);
+	//add(exit); // nonstandard
+	//add(respawn); // NS
+	add(select);
 
 #undef add
 
@@ -74,9 +78,9 @@ int invoke_traverse(struct ll* list, char* fmt, ...){
 	while (list && list->data){
 		char* data = malloc(0xff);
 		sprintf(data, "return %s", list->data);
-		printf("%s\n",data);
+
 		int err = luaL_dostring(_G, data); // load the function into _G
-		if (err) continue;
+		if (err) {printf("[Lua] Error while calling hook: %s\n",list->data);continue;}
 		for(i=0;i<nargs;i++){
 			switch(fmt[i]){
 			case 's':
@@ -124,8 +128,8 @@ struct ll* get_fn(char* type){
 }
 
 #define INVOKE(type, args...) struct ll* root = get_fn(type); \
-if(!root) return 0; \
-return invoke_traverse(root, args); \
+	if(!root) return 0; \
+	return invoke_traverse(root, args); \
 
 /*
  int OnJoin(int id)
@@ -159,9 +163,8 @@ int OnLeave(int id, int reason){
  1 - Don't save it
  */
 
-int OnSpecmove(int id, int newx, int newy)
-{
-	return 0;
+int OnSpecmove(int id, int newx, int newy){
+	INVOKE("specmove", "iii", id, newx, newy);
 }
 
 /*
@@ -169,14 +172,12 @@ int OnSpecmove(int id, int newx, int newy)
  Return Values:
  0 - OK
  */
-int OnServerStart()
-{
+int OnServerStart(){
 	time_t rawtime;
 	time(&rawtime);
 	printf("********** Server started **********\n");
 	printf("Listening at port %d and using name '%s'\n", sv_hostport, sv_name);
-	printf("%s", ctime(&rawtime));
-	return 0;
+	INVOKE("start", "");
 }
 
 /*
@@ -184,10 +185,9 @@ int OnServerStart()
  Return Values:
  0 - OK
  */
-int OnExit()
-{
+int OnExit(){
 	printf("********** Server Shutdown! **********\n\n\n\n\n");
-	return 0;
+	INVOKE("exit", "");
 }
 
 /*
@@ -196,15 +196,14 @@ int OnExit()
  0 - Respawn
  1 - Don't Respawn
  */
-int OnRespawnRequest(int id)
-{
-	if (player[id].dead == 1)
-	{
+int OnRespawnRequest(int id){
+	if (player[id].dead == 1){
 		if (player[id].money + mp_dmspawnmoney > 65000)
 			player[id].money = 65000;
 		else
 			player[id].money += mp_dmspawnmoney;
-		return 0;
+
+		INVOKE("respawn","i",id);
 	}
 	else
 		return 1;
@@ -215,8 +214,7 @@ int OnRespawnRequest(int id)
  Return Values:
  0 - OK
  */
-int OnRespawn(int id)
-{
+int OnRespawn(int id){
 	return 0;
 }
 
@@ -235,7 +233,7 @@ int OnWeaponChangeAttempt(int id, int wpnid)
 	player[id].reloading = 0;
 
 	//printf("%s switched to %s\n", player[id].name, weapons[wpnid].name);
-	return 0;
+	INVOKE("select", "ii", id, wpnid);
 }
 
 /*
@@ -719,8 +717,8 @@ int OnChatMessage(int id, unsigned char *message, int team)
  0 - OK
  1 - Don't join
  */
-int OnTeamChangeAttempt(int id, unsigned char team, unsigned char skin)
-{
+int OnTeamChangeAttempt(int id, unsigned char team, unsigned char skin){
+	INVOKE("team", "iii", id, team, skin);
 	return 0;
 }
 
