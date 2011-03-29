@@ -2,7 +2,7 @@
 
 addhook("join", "lol")
 function lol(id)
-	error("omg");
+	--error("omg");
 	print("Hello ",id)
 end
 

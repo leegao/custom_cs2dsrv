@@ -222,8 +222,8 @@ void init_functions(){
 	lua_pushcfunction(_G, msg2);
 	lua_setfield(_G, LUA_GLOBALSINDEX, "msg2");
 
-	//lua_pushcfunction(_G, new_error);
-	//lua_setfield(_G, LUA_GLOBALSINDEX, "error");
+	lua_pushcfunction(_G, new_error);
+	lua_setfield(_G, LUA_GLOBALSINDEX, "error");
 }
 
 int init_lua(){
