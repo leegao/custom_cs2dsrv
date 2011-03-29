@@ -10,5 +10,5 @@ end
 
 addhook("select", "lol3")
 function lol3(id, wpn)
-	print("wpn", id, wpn)
+	msg2(id, "wpn", id, wpn)
 end

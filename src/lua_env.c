@@ -156,6 +156,51 @@ static void dotty (lua_State *L) {
   progname = oldprogname;
 }
 
+int msg(lua_State* l){
+	int n = lua_gettop(l), i;
+	if (n<1){
+		lua_pushstring(l, "msg() requires one argument.");
+		lua_error(l);
+	}
+	stream* m = init_stream(NULL);
+	for (i=1;i<=n;i++){
+		const char* arg = lua_tostring(l, i);
+		Stream.write(m, (byte*)arg, strlen(arg));
+		Stream.write_byte(m, ' ');
+	}
+	Stream.write_byte(m, '\0');
+	SendMessageToAll((char*)(m->mem),1);
+
+	return 0;
+}
+
+int msg2(lua_State* l){
+	int n = lua_gettop(l), i;
+	if (n<2){
+		lua_pushstring(l, "msg2() requires at least 2 arguments.");
+		lua_error(l);
+	}
+	stream* m = init_stream(NULL);
+	int id = lua_tonumber(l, 1);
+	for (i=2;i<=n;i++){
+		const char* arg = lua_tostring(l, i);
+		Stream.write(m, (byte*)arg, strlen(arg));
+		Stream.write_byte(m, ' ');
+	}
+	Stream.write_byte(m, '\0');
+	SendMessageToPlayer(id, (char*)(m->mem),1);
+
+	return 0;
+}
+
+void init_functions(){
+	lua_pushcfunction(_G, msg);
+	lua_setfield(_G, LUA_GLOBALSINDEX, "msg");
+
+	lua_pushcfunction(_G, msg2);
+	lua_setfield(_G, LUA_GLOBALSINDEX, "msg2");
+}
+
 int init_lua(){
 	_G = lua_open();
 
@@ -164,6 +209,17 @@ int init_lua(){
 	lua_gc(_G, LUA_GCRESTART, 0);
 
 	init_hooks();
+	init_functions();
+	if(lua_strict){
+		// break the print pattern
+		const char* strict_print = ""
+				"local __oldprint = print\n"
+				"function print(txt, ...)\n"
+				"	if ... or type(txt) ~= 'string' then error('print() expects a single string argument') end\n"
+				"	__oldprint(txt)\n"
+				"end\n";
+		if (luaL_dostring(_G, strict_print));
+	}
 
 	int err = luaL_dofile(_G, lua_file ? lua_file : "server.lua");
 
