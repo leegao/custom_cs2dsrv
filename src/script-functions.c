@@ -243,7 +243,7 @@ int OnServerStart(){
  0 - OK
  */
 int OnExit(){
-	printf("********** Server Shutdown! **********\n\n\n\n\n");
+	printf("********** Server Shutdown! **********\n");
 	INVOKE("exit", "");
 }
 
@@ -398,7 +398,7 @@ int OnFire(int id)
 		case 7: //TODO: grenades
 			return 0;
 		case 6: //shotgun
-			dmg == weapons[wpn].weapondamage;
+			dmg = weapons[wpn].weapondamage;
 			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
 			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
 			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);

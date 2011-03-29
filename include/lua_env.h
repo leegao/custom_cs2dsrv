@@ -11,5 +11,5 @@
 #include "settings.h"
 
 void *_G;
-
+int init_lua();
 #endif /* LUA_ENV_H_ */

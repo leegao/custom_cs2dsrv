@@ -758,19 +758,12 @@ int joinroutine_known(stream* packet, int id){
 }
 
 int leave(stream* packet, int id){
-	OnLeave(id, 0);
+	CHECK_STREAM(packet, 1);
+	int status = Stream.read_byte(packet);
 
-	free(player[id].name);
-	free(player[id].spraylogo);
-	free(player[id].win);
-
-	player[id].name = NULL;
-	player[id].usgn = 0;
-	player[id].spraylogo = NULL;
-	player[id].win = NULL;
+	OnLeave(id, status);
 
 	onlineplayer--;
-
 	ClearPlayer(id);
 	return 1;
 }

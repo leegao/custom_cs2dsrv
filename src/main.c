@@ -81,7 +81,10 @@ int main(int argc, char *argv[]){
 
 	sock = create_socket();
 	bind_socket(&sock, INADDR_ANY, sv_hostport);
-	atexit(cleanup);
+	atexit(&cleanup);
+	signal(SIGABRT, &exit);
+	signal(SIGTERM, &exit);
+	signal(SIGINT, &exit);
 
 	init_lua();
 
@@ -157,17 +160,16 @@ int main(int argc, char *argv[]){
 			if (size < 3) {
 				perror("Invalid packet! (size < 3)\n");
 			} else {
-				int id = IsPlayerKnown(newclient.sin_addr, newclient.sin_port); /// Function returns id or 0 if unknown
-
 				stream *packet = init_stream(NULL);
 				Stream.write(packet, buffer+2, size-2);
 
-				if (id){///When the player is known execute other commands as when the player is unknown
-					//TODO: ValidatePacket fails if client dropped
-					if (ValidatePacket(buffer,id)){ ///Checks and raise the packet numbering if necessary
-						PaketConfirmation(buffer,id); ///If the numbering is even, send a confirmation
-						player[id].lastpacket = mtime();
-						while (1){
+				// There's a chance that the guy left before all of the packet has been processed.
+				while(1){
+					int id = IsPlayerKnown(newclient.sin_addr, newclient.sin_port);
+					if (id){
+						if (ValidatePacket(buffer,id)){
+							PaketConfirmation(buffer,id); //If the numbering is even, send a confirmation
+							player[id].lastpacket = mtime();
 							int pid = Stream.read_byte(packet);
 							known_handler h = known_table[pid];
 							if (!h){
@@ -175,25 +177,19 @@ int main(int argc, char *argv[]){
 								unknown(packet, pid);
 							} else
 								h(packet, id);
-							if (EMPTY_STREAM(packet)){
-								free(packet);
-								break;
-							}
 						}
-					}
-				}else{
-					while (1){
+					}else{
 						int pid = Stream.read_byte(packet);
 						unknown_handler h = unknown_table[pid];
 						if (!h)
 							unknown(packet, pid);
 						else
 							h(packet, &newclient);
+					}
 
-						if (!packet->size){
-							free(packet);
-							break;
-						}
+					if (EMPTY_STREAM(packet)){
+						free(packet);
+						break;
 					}
 				}
 			}
