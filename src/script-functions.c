@@ -165,7 +165,7 @@ int invoke_traverse(struct ll* list, char* fmt, ...){
 				printf("[Lua] Cannot parse the parameter type.");
 			}
 		}
-		lua_call(_G, nargs, 1);
+		err = docall2(_G, nargs, 1);
 		ret = lua_tonumber(_G, 1);
 		lua_pop(_G, 1);
 		list = list->next;

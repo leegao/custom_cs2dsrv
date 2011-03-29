@@ -12,7 +12,7 @@
 static const char *progname = "[Lua]";
 
 
-static int traceback (lua_State *L) {
+int traceback (lua_State *L) {
   if (!lua_isstring(L, 1))  /* 'message' not a string? */
     return 1;  /* keep it intact */
   lua_getfield(L, LUA_GLOBALSINDEX, "debug");
@@ -38,6 +38,20 @@ static int docall (lua_State *L, int narg, int clear) {
   lua_insert(L, base);  /* put it under chunk and args */
   //signal(SIGINT, laction);
   status = lua_pcall(L, narg, (clear ? 0 : LUA_MULTRET), base);
+  //signal(SIGINT, SIG_DFL);
+  lua_remove(L, base);  /* remove traceback function */
+  /* force a complete garbage collection in case of errors */
+  if (status != 0) lua_gc(L, LUA_GCCOLLECT, 0);
+  return status;
+}
+
+int docall2 (void *L, int narg, int nret) {
+  int status;
+  int base = lua_gettop(L) - narg;  /* function index */
+  lua_pushcfunction(L, traceback);  /* push traceback function */
+  lua_insert(L, base);  /* put it under chunk and args */
+  //signal(SIGINT, laction);
+  status = lua_pcall(L, narg, nret, base);
   //signal(SIGINT, SIG_DFL);
   lua_remove(L, base);  /* remove traceback function */
   /* force a complete garbage collection in case of errors */
@@ -193,12 +207,23 @@ int msg2(lua_State* l){
 	return 0;
 }
 
+int new_error(lua_State* l){
+	if (lua_gettop(l))
+		printf("[Lua] Error: %s\n", lua_tostring(l, 1));
+	lua_pushnil(l);
+	lua_error(l);
+	return 0;
+}
+
 void init_functions(){
 	lua_pushcfunction(_G, msg);
 	lua_setfield(_G, LUA_GLOBALSINDEX, "msg");
 
 	lua_pushcfunction(_G, msg2);
 	lua_setfield(_G, LUA_GLOBALSINDEX, "msg2");
+
+	//lua_pushcfunction(_G, new_error);
+	//lua_setfield(_G, LUA_GLOBALSINDEX, "error");
 }
 
 int init_lua(){
@@ -213,11 +238,25 @@ int init_lua(){
 	if(lua_strict){
 		// break the print pattern
 		const char* strict_print = ""
+				//"error();"
 				"local __oldprint = print\n"
 				"function print(txt, ...)\n"
-				"	if ... or type(txt) ~= 'string' then error('print() expects a single string argument') end\n"
+				"	if ... or type(txt) ~= 'string' then error('print() expects a single string argument'); return end\n"
 				"	__oldprint(txt)\n"
-				"end\n";
+				"end\n"
+				""
+				"local __oldmsg = msg\n"
+				"function msg(txt, ...)\n"
+				"	if ... or type(txt) ~= 'string' then error('msg() expects a single string argument'); return end\n"
+				"	__oldmsg(txt)\n"
+				"end\n"
+				""
+				"local __oldmsg2 = msg2\n"
+				"function msg2(id, txt, ...)\n"
+				"	if ... or type(txt) ~= 'string' then error('msg2() expects 2 arguments'); return end\n"
+				"	__oldmsg2(id, txt)\n"
+				"end\n"
+				"";
 		if (luaL_dostring(_G, strict_print));
 	}
 

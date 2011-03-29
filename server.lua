@@ -1,5 +1,8 @@
+
+
 addhook("join", "lol")
 function lol(id)
+	error("omg");
 	print("Hello ",id)
 end
 
