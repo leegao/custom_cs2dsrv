@@ -208,7 +208,7 @@ int udp_recieve(int socket, unsigned char *data, int length,
 	int size;
 	len = sizeof(struct sockaddr_in);
 	size = recvfrom(socket, (char*) data, length, 0,
-			(struct sockaddr *) &newclient, &len);
+			(struct sockaddr *) &newclient, (socklen_t *)&len);
 	*client = newclient;
 #ifdef _WIN32
 	if (size == SOCKET_ERROR)

@@ -80,7 +80,7 @@ setting_closure read_config(const char* cfg_file, struct setting** settings){ //
 	int setting_num = 0;
 	f = fopen(cfg_file, "r");
 	setting_closure c = {0, 0};
-	if (!f) perror("Error opening CFG");
+	if (!f) {perror("Error opening CFG");return c;}
 	while (fgets(buf, 256, f)){
 		int ptr = 0;
 		while (buf_is_in (*buf++, 5, "\0", " ", "\t", "\n", "\r"));buf--; // trim
@@ -109,13 +109,10 @@ setting_closure read_config(const char* cfg_file, struct setting** settings){ //
 
 char *GetValue(setting_closure clsr, char *sname, char *alternate){
 	int i;
-	for (i = 0; i < clsr.entries; i++)
-	{
-		if (clsr.settings[i] != NULL)
-		{
+	for (i = 0; i < clsr.entries; i++){
+		if (clsr.settings[i] != NULL){
 			struct setting *var = clsr.settings[i];
-			if (strcmp(var->name, sname) == 0)
-			{
+			if (strcmp(var->name, sname) == 0){
 				char *string = malloc(strlen(var->value) + 1);
 				if (!string)
 					error_exit("Memory error in GetValue()\n");
