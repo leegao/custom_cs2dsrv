@@ -8,8 +8,7 @@
 
 #include "sendto_functions.h"
 
-void SendToPlayer(unsigned char *message, int length, int id, int reliable)
-{
+void SendToPlayer(unsigned char *message, int length, int id, int reliable){
 	//printf("SENDQUEUE\t");
 	//just(message, length);
 	struct sockaddr_in tempclient;

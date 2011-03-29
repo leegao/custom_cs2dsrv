@@ -21,6 +21,9 @@ void parse_opts(int argc, char *argv[]){
 		{"cfg", required_argument, 0, 'c'},
 		{"name", required_argument, 0, 0},
 		{"nousgn", no_argument, 0, 1},
+		{"lua", required_argument, 0, 'l'},
+		{"debug", no_argument, 0, 'd'},
+		{"strict", no_argument, 0, 's'},
 		{0, 0, 0, 0}
 	};
 
@@ -31,6 +34,15 @@ void parse_opts(int argc, char *argv[]){
 		switch (c){
 		case 'c':
 			cfg_file = optarg;
+			break;
+		case 'l':
+			lua_file = optarg;
+			break;
+		case 'd':
+			lua_debug = 1;
+			break;
+		case 's':
+			lua_strict = 1;
 			break;
 		case 0:
 			sv_name = (unsigned char*)optarg;
@@ -69,7 +81,12 @@ int main(int argc, char *argv[]){
 
 	sock = create_socket();
 	bind_socket(&sock, INADDR_ANY, sv_hostport);
-	atexit(cleanup);
+	atexit(&cleanup);
+	signal(SIGABRT, &exit);
+	signal(SIGTERM, &exit);
+	signal(SIGINT, &exit);
+
+	init_lua();
 
 	//struct in_addr usgnip = GetIp("usgn.de");
 	/*
@@ -84,8 +101,10 @@ int main(int argc, char *argv[]){
 	if (!no_usgn) //modify into optional offline mode
 	  UsgnRegister(sock);
 
-
+	init_optable();
 	start_stream();
+
+
 
 	/**
 	 * \var needed for ExecuteFunctionsWithTime()
@@ -126,8 +145,10 @@ int main(int argc, char *argv[]){
 
 		memmove(&lcbuffer[1], lcbuffer, sizeof(short)*(LC_BUFFER_SIZE - 1)*(MAX_CLIENTS)*2); //update lc position buffers
 		CheckForTimeout(sock);
-		//ExecuteFunctionsWithTime(&checktime, sock); // refactor into scheduler
+		ExecuteFunctionsWithTime(&checktime, sock); // refactor into scheduler
 		CheckAllPlayerForReload(sock);
+
+
 
 		FD_ZERO(&descriptor);
 		FD_SET(sock, &descriptor);
@@ -139,191 +160,36 @@ int main(int argc, char *argv[]){
 			if (size < 3) {
 				perror("Invalid packet! (size < 3)\n");
 			} else {
-				int id = IsPlayerKnown(newclient.sin_addr, newclient.sin_port); /// Function returns id or -1 if unknown
-				if (id){///When the player is known execute other commands as when the player is unknown
-					if (ValidatePacket(buffer,id)){ ///Checks and raise the packet numbering if necessary
-						PaketConfirmation(buffer,id); ///If the numbering is even, send a confirmation
-						player[id].lastpacket = mtime();
-						int control = 1;
-						stream* packet = init_stream(NULL);
-						Stream.write(packet, buffer+2, size-2);
+				stream *packet = init_stream(NULL);
+				Stream.write(packet, buffer+2, size-2);
 
-						/**
-						 * This while construct splits the recieved UDP-message
-						 * into cs2d-messages.
-						 * Every packet function returns the count of read bytes.
-						 */
-						while (control)
-						{
-							//int tempsize = size - position;
-
-							//unsigned char *message = malloc(tempsize);
-							//memcpy(message, buffer + position, tempsize);
-
-							//just(packet->mem, packet->size);
-
-							int rtn = 0;
-
-							switch ((rtn+Stream.read_byte(packet))){
-							case 1:
-								confirmation_known(packet,id);
-								break;
-							case 3:
-								connection_setup_known(packet, newclient.sin_addr, newclient.sin_port, id);
-								break;
-							case 7:
-								fire(packet, id);
-								break;
-							case 8:
-								advanced_fire(packet, id);
-								break;
-							case 9:
-								weaponchange(packet, id);
-								break;
-							case 10:
-								posupdaterun(packet, id);
-								break;
-							case 11:
-								posupdatewalk(packet, id);
-								break;
-							case 12:
-								rotupdate(packet, id);
-								break;
-							case 13:
-								posrotupdaterun(packet, id);
-								break;
-							case 14:
-								posrotupdatewalk(packet, id);
-								break;
-							case 16:
-								reload(packet, id);
-								break;
-							case 20:
-								teamchange(packet, id);
-								break;
-							case 23:
-								buy(packet, id);
-								break;
-							case 24:
-								drop(packet, id);
-								break;
-							case 28:
-								// Spray 28 - 0 - x x - y y - color
-								spray(packet, id);
-								break;
-							case 32:
-								specpos(packet, id);
-								break;
-							case 39:
-								respawnrequest(packet, id);
-								break;
-							case 236:
-								rcon_pw(packet, id);
-								break;
-							case 240:
-								chatmessage(packet, id);
-								break;
-							case 249:
-								ping_ingame(packet, id);
-								break;
-							case 252:
-								joinroutine_known(packet, id, sock);
-								break;
-							case 253:
-								leave(packet,id);
-								break;
-							default:
-								just(buffer, size);
-								SendMessageToPlayer(id, "Not implemented yet!", 1);
-								unknown(packet,  buffer, rtn);
-								break;
-							}
-
-							if (EMPTY_STREAM(packet)){
-								free(packet);
-								break;
-							}
-							/**
-							 * Security check (Buffer Overflow)
-							 */
-//							else if (position > size)
-//							{
-//								printf("Error while reading packet: position(%d) > size(%d)\n", position, size);
-//								free(packet);
-//							}
-							//free(packet); // This is fucking moronic
+				// There's a chance that the guy left before all of the packet has been processed.
+				while(1){
+					int id = IsPlayerKnown(newclient.sin_addr, newclient.sin_port);
+					if (id){
+						if (ValidatePacket(buffer,id)){
+							PaketConfirmation(buffer,id); //If the numbering is even, send a confirmation
+							player[id].lastpacket = mtime();
+							int pid = Stream.read_byte(packet);
+							known_handler h = known_table[pid];
+							if (!h){
+								printf("Unhandled packet originating from %s (id:%d)\n", player[id].name, id);
+								unknown(packet, pid);
+							} else
+								h(packet, id);
 						}
+					}else{
+						int pid = Stream.read_byte(packet);
+						unknown_handler h = unknown_table[pid];
+						if (!h)
+							unknown(packet, pid);
+						else
+							h(packet, &newclient);
 					}
-				}
-				else
-				{
-					int control = 1,i;
-					int position = 2;
 
-					stream *packet = init_stream(NULL);
-					Stream.write(packet, buffer+2, size-2);
-
-					while (control)
-					{
-						int tempsize = size - position;
-						int lol;
-
-						//just(packet->mem, packet->size);
-
-						//memcpy(packet, buffer + position, tempsize);
-
-						switch (lol=(Stream.read_byte(packet)))
-						//payload
-						{
-						case 1:
-							confirmation_unknown(packet,
-									newclient.sin_addr, newclient.sin_port);
-							break;
-						case 3:
-							connection_setup_unknown(packet,
-									newclient.sin_addr, newclient.sin_port);
-							break;
-						case 27:
-							UsgnPacket(27, packet);
-							break;
-						case 28:
-							UsgnPacket(28, packet);
-							break;
-						case 250:
-							ping_serverlist(packet,
-									&newclient, sock);
-							break;
-						case 251:
-							serverinfo_request(packet,
-									&newclient, sock);
-							break;
-						case 252:
-							joinroutine_unknown(packet,
-									&newclient);
-							break;
-						default:
-							//printf("%x: %d %d\n", lol, size, packet->size);
-							//for (i=0;i<size;i++)eprintf("%x ", buffer[i]);
-							//eprintf("\n");
-							unknown(packet,  buffer, lol);
-							break;
-						}
-
-						if (!packet->size)
-						{
-
-							free(packet);
-							break;
-						}
-						/**
-						 * Security check (Buffer Overflow)
-						 */
-//						else if (position > size)
-//						{
-//							printf("Error while reading packet: position(%d) > size(%d)\n", position, size);
-//							free(packet);
-//						}
-						//free(packet);
+					if (EMPTY_STREAM(packet)){
+						free(packet);
+						break;
 					}
 				}
 			}

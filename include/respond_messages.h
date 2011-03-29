@@ -14,7 +14,7 @@ void SendSpawnMessage(int id, unsigned short x, unsigned short y);
 void SendAdvancedFireMessage(int id, int status);
 void SendFireMessage(int id);
 void SendBuyMessage(int id, int wpnid);
-void SendHitMessage(int id, int victim, int health);
+void SendHitMessage(int id, int victim, int health, int armor);
 void SendWeaponChangeMessage(int id, int wpnid);
 void SendPosUpdate(int id, unsigned short x, unsigned short y, int status);
 void SendPosRotUpdate(int id, unsigned short x, unsigned short y, int status,
@@ -26,14 +26,13 @@ void SendJoinMessage(int id);
 void SendLeaveMessage(int id);
 void SendChatMessage(int id, unsigned char *message, int team);
 void SendTeamChangeMessage(int id, unsigned char team, unsigned char skin);
-void PingAllPlayer(int writesocket);
+void PingAllPlayer();
 void SendReloadMessage(int id, int status);
 void SendSprayMessage(char id, unsigned short xx, unsigned short yy, char c);
 void SendKillMessage(int id, int victim);
 void SendPingList(int writesocket);
 void SendBuyFailedMessage(int id, int status);
-void SendDropMessage(int id, int wpnid, int ammo1, int ammo2, int unknown1,
-		int unknown2, int unknown3);
+void SendDropMessage(int id, int wpnid, int ammo1, int ammo2);
 void SendRconPwMessage(int id, const unsigned char* message, int len,
 		unsigned char success);
 #endif // RESPOND_MESSAGES_H_INCLUDED

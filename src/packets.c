@@ -18,17 +18,12 @@
  * \param position where the unknown message in buffer begins
  * \return read bytes (specific: parameter length)
  */
-int unknown(stream* packet, unsigned char *buffer,
-		int pid){
-	int i;
-	printf("Unknown packet: %d\n",pid);
-//	for (i = 2; i <= position - 1; i++){
-//		eprintf("%d-", buffer[i]);
-//	}
-//	eprintf("\n\t");
+int unknown(stream* packet, int pid){
+	eprintf("\tUnknown packet: %d\n",pid);
 	int l = packet->size;
 	byte* msg = Stream.read(packet, l);
 	just(msg,l);
+	return 0;
 }
 
 /**
@@ -40,10 +35,12 @@ int unknown(stream* packet, unsigned char *buffer,
  * \param port clients port
  * \return read bytes (specific: 3)
  */
-int connection_setup_unknown(stream* packet,
-		struct in_addr ip, unsigned short port){
-	if (!Stream.read(packet, 2))
+int connection_setup_unknown(stream* packet, struct sockaddr_in *newclient){
+	if (!Stream.read(packet, 2)){
 		printf("Invalid packet (connection_setup_unknown)!\n");
+		return 0;
+	}
+	return 1;
 }
 
 /**
@@ -55,10 +52,12 @@ int connection_setup_unknown(stream* packet,
  * \param port clients port
  * \return read bytes (specific: 3)
  */
-int connection_setup_known(stream* packet,
-		struct in_addr ip, unsigned short port, int id){
-	if (!Stream.read(packet,2))
+int connection_setup_known(stream* packet, int id){
+	if (!Stream.read(packet,2)){
 		printf("Invalid packet (connection_setup_known)!\n");
+		return 0;
+	}
+	return 1;
 }
 
 /**
@@ -71,9 +70,12 @@ int connection_setup_known(stream* packet,
  * \return read bytes (specific: 5)
  */
 int ping_ingame(stream *packet, int id){
-	if (!Stream.read(packet,4))
+	if (!Stream.read(packet,4)){
 		printf("Invalid packet (ping_ingame)!\n");
+		return 0;
+	}
 	player[id].latency = mtime() - player[id].start;
+	return 1;
 }
 
 /**
@@ -85,9 +87,12 @@ int ping_ingame(stream *packet, int id){
  * \param port clients port
  * \return read bytes (specific: 3)
  */
-int confirmation_unknown(stream* packet, struct in_addr ip, unsigned short port){
-	if (!Stream.read(packet, 2))
+int confirmation_unknown(stream* packet, struct sockaddr_in *newclient){
+	if (!Stream.read(packet, 2)){
 		printf("Invalid packet (confirmation_unknown)!\n");
+		return 0;
+	}
+	return 1;
 }
 
 /**
@@ -99,9 +104,12 @@ int confirmation_unknown(stream* packet, struct in_addr ip, unsigned short port)
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 3)
  */
-void confirmation_known(stream *packet, int id){
-	if (!Stream.read(packet, 2))
+int confirmation_known(stream *packet, int id){
+	if (!Stream.read(packet, 2)){
 		printf("Invalid packet (confirmation_known)!\n");
+		return 0;
+	}
+	return 1;
 }
 
 /**
@@ -117,8 +125,8 @@ int fire(stream *packet, int id){
 	switch (OnFire(id)){
 	case 0:
 		SendFireMessage(id);
-		break;
 	}
+	return 1;
 }
 
 /**
@@ -138,6 +146,7 @@ int advanced_fire(stream* packet, int id){
 		SendAdvancedFireMessage(id, status);
 		break;
 	}
+	return 1;
 }
 
 /**
@@ -159,6 +168,7 @@ int buy(stream* packet, int id){
 		break;
 	}
 	Stream.read_byte(packet); // TODO: profile last byte in buy()
+	return 1;
 }
 
 /**
@@ -176,6 +186,7 @@ int rotupdate(stream* packet, int id){
 	if (temprotation >= -180 && temprotation <= 180)
 		SendRotUpdate(id, (player[id].rotation = temprotation));
 	Stream.read(packet, 3);
+	return 1;
 }
 
 /**
@@ -203,6 +214,7 @@ int posupdatewalk(stream* packet, int id)
 	case 1:
 		SendPosUpdate(id, *player[id].x, *player[id].y, 0);
 	}
+	return 1;
 }
 /**
  * \fn int posupdaterun(stream* packet, int id)
@@ -226,6 +238,7 @@ int posupdaterun(stream* packet, int id){
 	case 1:
 		SendPosUpdate(id, *player[id].x, *player[id].y, 1);
 	}
+	return 1;
 }
 /**
  * \fn int posrotupdatewalk(stream* packet, int id))
@@ -258,6 +271,7 @@ int posrotupdatewalk(stream* packet, int id)
 
 		}
 	}
+	return 1;
 }
 
 /**
@@ -287,6 +301,7 @@ int posrotupdaterun(stream* packet, int id){
 			SendPosRotUpdate(id, *player[id].x, *player[id].y, 1, player[id].rotation);
 		}
 	}
+	return 1;
 }
 
 /**
@@ -329,6 +344,7 @@ int respawnrequest(stream* packet, int id)
 		}
 		break;
 	}
+	return 1;
 }
 /**
  * \fn int weaponchange(stream* packet, int id)
@@ -349,6 +365,7 @@ int weaponchange(stream* packet, int id)
 		SendWeaponChangeMessage(id, wpnid);
 	}
 	Stream.read_byte(packet); // TODO: profile this
+	return 1;
 }
 
 /**
@@ -371,6 +388,7 @@ int teamchange(stream* packet, int id){
 		if (skin != 5) player[id].skin = skin;
 		OnTeamChange(id, team, skin);
 	}
+	return 1;
 }
 /**
  * \fn int ping_serverlist(stream* packet, struct sockaddr_in *client)
@@ -381,7 +399,7 @@ int teamchange(stream* packet, int id){
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 5)
  */
-int ping_serverlist(stream* packet, struct sockaddr_in *client, int writesocket){
+int ping_serverlist(stream* packet, struct sockaddr_in *client){
 	CHECK_STREAM(packet, 4);
 
 	unsigned char *tempbuffer = malloc(packet->size+3);
@@ -399,11 +417,10 @@ int ping_serverlist(stream* packet, struct sockaddr_in *client, int writesocket)
 	//udp_send(writesocket, tempbuffer, 5, client);
 	free(tempbuffer);
 	Stream.read(packet, 4);
+	return 1;
 }
 
-int serverinfo_request(stream* packet,
-		struct sockaddr_in *client, int sock)
-{
+int serverinfo_request(stream* packet, struct sockaddr_in *client){
 	CHECK_STREAM(packet,1);
 	byte* message = packet->mem;
 	stream* buf = init_stream(NULL);
@@ -413,8 +430,7 @@ int serverinfo_request(stream* packet,
 	Stream.write_short(buf, 1);
 	Stream.write_byte(buf, 0xfb);
 	Stream.write_byte(buf, Stream.read_byte(packet));
-	switch (message[0])
-	{
+	switch (message[0]){
 	case 1:
 	case 2:
 		Stream.write_byte(buf, GetServerStatus());
@@ -430,6 +446,7 @@ int serverinfo_request(stream* packet,
 	}
 	free(buf);
 	Stream.read(packet, packet->size);
+	return 1;
 }
 
 int joinroutine_unknown(stream* packet, struct sockaddr_in *client){
@@ -464,7 +481,9 @@ int joinroutine_unknown(stream* packet, struct sockaddr_in *client){
 	}
 	default:
 		printf("Unexpected join data\n");
+		return 0;
 	}
+	return 1;
 }
 
 int specpos(stream* packet, int id){
@@ -477,6 +496,7 @@ int specpos(stream* packet, int id){
 		player[id].specposx = x;
 		player[id].specposy = y;
 	}
+	return 1;
 }
 
 int chatmessage(stream* packet, int id){
@@ -495,13 +515,14 @@ int chatmessage(stream* packet, int id){
 		break;
 	default:
 		printf("Unknown Return value for OnChatMessage()!\n");
-		break;
+		return 0;
 	}
 
 	free(msg);
+	return 1;
 }
 
-int joinroutine_known(stream* packet, int id, int sock){
+int joinroutine_known(stream* packet, int id){
 	CHECK_STREAM(packet, 1);
 
 	switch (Stream.read_byte(packet)){
@@ -570,12 +591,12 @@ int joinroutine_known(stream* packet, int id, int sock){
 			onlineplayer++;
 		} else {
 			printf("Unexpected join data (1) from %s; expected %d\n", player[id].name, player[id].joinstatus+1);
+			return 0;
 		}
 		break;
 	}
 	case 3:{
 		if (player[id].joinstatus == 2){
-			//Map-Hash
 			byte* mhash = Stream.read_str(packet);
 			byte* pre_authcode_respond = Stream.read_str(packet);
 			byte mapstatus = Stream.read_byte(packet);
@@ -587,6 +608,7 @@ int joinroutine_known(stream* packet, int id, int sock){
 			player[id].joinstatus = 3;
 		} else {
 			printf("Unexpected join data (3) from %s; expected %d\n", player[id].name, player[id].joinstatus+1);
+			return 0;
 		}
 		break;
 	}
@@ -724,30 +746,26 @@ int joinroutine_known(stream* packet, int id, int sock){
 			OnJoin(id);//exit(0);
 		}else{
 			printf("Unexpected join data 4 from %s; expected %d\n", player[id].name, player[id].joinstatus+1);
+			return 0;
 		}
 		break;
 	}
 	default:
 		printf("Unexpected join data (.) from %s; expected %d\n", player[id].name, player[id].joinstatus+1);
-		break;
+		return 0;
 	}
+	return 1;
 }
 
 int leave(stream* packet, int id){
-	OnLeave(id);
+	CHECK_STREAM(packet, 1);
+	int status = Stream.read_byte(packet);
 
-	free(player[id].name);
-	free(player[id].spraylogo);
-	free(player[id].win);
-
-	player[id].name = NULL;
-	player[id].usgn = 0;
-	player[id].spraylogo = NULL;
-	player[id].win = NULL;
+	OnLeave(id, status);
 
 	onlineplayer--;
-
 	ClearPlayer(id);
+	return 1;
 }
 
 int reload(stream* packet, int id){
@@ -760,6 +778,7 @@ int reload(stream* packet, int id){
 		player[id].reloading = player[id].actualweapon;
 		player[id].reloadtimer = mtime() + weapons[player[id].actualweapon].reloadtime;
 	}
+	return 1;
 }
 
 int spray(stream* packet, int id){
@@ -776,52 +795,47 @@ int spray(stream* packet, int id){
 	// xx and yy are positions, not tiles.
 
 	SendSprayMessage(i, x, y, c);
+	return 1;
 }
 
-int UsgnPacket(int packetid, stream* packet){ //No check if really from usgn.de
-	byte id = Stream.read_byte(packet);
-	switch (packetid){
-	case 27:
-		if (id == 1){
-			printf("[USGN] Server successfully added to the serverlist..\n");
-		}else{
-			printf("[USGN] Server NOT added to the serverlist.. (Code: .)\n");
-		} // 2
-		break;
-	case 28:
-		if (id == 2){
-			printf("[USGN] Server successfully updated in the serverlist..\n");
-		}else{
-			printf("[USGN] Server NOT updated in the serverlist.. (Code: .)\n");
-		} // 2
-		break;
-	default:
-		printf("[USGN] Unknown Message recieved: ");
-		int i, size = packet->size; byte* message = Stream.read(packet, packet->size);
-		for (i = 0; i < size; i++)
-			eprintf("%d-", message[i]);
-		eprintf("\n");
-		break;
+int usgn_add(stream* packet, struct sockaddr_in *newclient){
+	int code;
+	if ((code = Stream.read_byte(packet)) == 1)
+		printf("[USGN] Server successfully added to the serverlist..\n");
+	else{
+		printf("[USGN] Server NOT added to the serverlist.. (Code: %d)\n", code);
+		return 0;
 	}
+	return 1;
+}
+
+int usgn_update(stream* packet, struct sockaddr_in *newclient){
+	int code;
+	if ((code = Stream.read_byte(packet)) == 2)
+		printf("[USGN] Server successfully updated in the serverlist..\n");
+	else{
+		printf("[USGN] Server NOT updated to the serverlist.. (Code: %d)\n", code);
+		return 0;
+	}
+	return 1;
 }
 
 int drop(stream* packet, int id){
 	CHECK_STREAM(packet, 6);
 
-	unsigned char wpnid, unknown1, unknown2, unknown3;
+	unsigned char wpnid, unknown3;
 	unsigned short ammo1, ammo2;
 
 	wpnid = Stream.read_byte(packet);
-	ammo1 = Stream.read_byte(packet);
-	unknown1 = Stream.read_byte(packet);
-	ammo2 = Stream.read_byte(packet);
-	unknown2 = Stream.read_byte(packet);
+	ammo1 = Stream.read_short(packet);
+	ammo2 = Stream.read_short(packet);
 	unknown3 = Stream.read_byte(packet);
 
-	switch (OnDrop(id, wpnid, ammo1, ammo2, unknown1, unknown2, unknown3)){
+	switch (OnDrop(id, wpnid, ammo1, ammo2)){
 	case 0:
-		SendDropMessage(id, wpnid, ammo1, ammo2, unknown1, unknown2, unknown3);
+		SendDropMessage(id, wpnid, ammo1, ammo2);
 	}
+	return 1;
 }
 
 int rcon_pw(stream* packet, int id){
@@ -853,8 +867,59 @@ int rcon_pw(stream* packet, int id){
 		SendRconPwMessage(id, buf->mem, buf->size, 0);
 		free(buf);
 	}
+	return 1;
 }
 
+// optable
+void init_optable(){
+	known_table = (known_handler*)malloc(sizeof(known_handler)*0x100);
+	unknown_table = (unknown_handler*)malloc(sizeof(known_handler)*0x100);
+	memset(known_table, 0, 0x400);
+	memset(unknown_table, 0, 0x400);
+
+	// TODO: fill out the rest of the packets in here.
+#define K(i,a) known_table[(i)] = (known_handler)&(a)
+	K(1, confirmation_known);
+	K(3, connection_setup_known);
+	K(7, fire);
+	K(8, advanced_fire);
+	K(9, weaponchange);
+	K(10, posupdaterun);
+	K(11, posupdatewalk);
+	K(12, rotupdate);
+	K(13, posrotupdaterun);
+	K(14, posrotupdatewalk);
+	K(16, reload);
+	//K(17, hit);
+	//K(19, killmsg);
+	K(20, teamchange);
+	//K(21, spawn_msg); <- client?
+	//K(22, round_start);
+	K(23, buy);
+	K(24, drop);
+	//K(25, pickup);
+	//K(27, projectile);
+
+	K(28, spray);
+	K(32, specpos);
+	K(39, respawnrequest);
+	K(236, rcon_pw);
+	K(240, chatmessage);
+	K(249, ping_ingame);
+	K(252, joinroutine_known);
+	K(253, leave);
+#undef K
+
+#define U(i,a) unknown_table[(i)] = (unknown_handler)&(a)
+	U(1, confirmation_unknown);
+	U(3, connection_setup_unknown);
+	U(27, usgn_add);
+	U(28, usgn_update);
+	U(250, ping_serverlist);
+	U(251, serverinfo_request);
+	U(252, joinroutine_unknown);
+#undef U
+}
 
 
 // auxiliary functions
@@ -952,7 +1017,7 @@ int write_float(stream* s, float c){
 
 byte* read_str(stream* s){
 	byte i = read_byte(s);
-	if (!i) return "";
+	if (!i) return (byte*)"";
 	byte* str = (byte*)malloc(i+1), *src = Stream.read(s, i);
 	if (!src) return 0;
 	memcpy(str, src, i);
@@ -962,12 +1027,21 @@ byte* read_str(stream* s){
 
 byte* read_str2(stream* s){
 	short i = read_short(s);
-	if (!i) return "";
+	if (!i) return (byte*)"";
 	byte* str = (byte*)malloc(i+1), *src = Stream.read(s, i);
 	if (!src) return 0;
 	memcpy(str, src, i);
 	str[i] = 0;
 	return str;
+}
+
+int write_str2(stream* s, byte* str){
+	int n = strlen((char*)str);
+	byte* str_ = (byte*)malloc(n+2);
+	memcpy(str_+2, str, n);
+	*str_++ = (n++)&0xff;
+	*str_-- = ((n++)-1)/0xff;
+	return Stream.write(s, str_, n);
 }
 
 int write_str(stream* s, byte* str){
@@ -1020,4 +1094,5 @@ void start_stream(){
 	Stream.write_line = &write_line;
 
 	Stream.read_str2 = &read_str2;
+	Stream.write_str2 = &write_str2;
 }

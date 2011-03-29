@@ -8,17 +8,197 @@
 
 #include "script-functions.h"
 
+void init_hooks(){
+	hook_map = hashmap_new();
+	int i = 0;
+#define add(type) /*struct ll *type##_value = malloc(2*sizeof(int));*/ \
+	struct ll_c *type##_c = malloc(3*sizeof(int));\
+	type##_c->typ = i++;\
+	type##_c->name = #type;\
+	type##_c->root = NULL;\
+	hashmap_put(hook_map, #type, type##_c); \
+
+	add(ms100);
+	add(second);
+	add(minute);
+	add(always); // delegate to ms100
+	add(startround);
+	add(endround);
+	add(mapchange);
+	add(parse);
+	add(trigger);
+	add(triggerentity);
+	add(break);
+	add(projectile);
+	add(log);
+	add(rcon);
+	add(clientdata);
+	add(join);
+	add(leave);
+	add(team);
+	add(spawn);
+	add(name);
+	add(serveraction);
+	add(buy);
+	add(walkover);
+	add(collect);
+	add(drop);
+	add(select);
+	add(reload);
+	add(attack);
+	add(attack2);
+	add(move);
+	add(movetile);
+	add(hit);
+	add(kill);
+	add(die);
+	add(use);
+	add(usebutton);
+	add(say);
+	add(sayteam);
+	add(radio);
+	add(spray);
+	add(vote);
+	add(buildattempt);
+	add(build);
+	add(flagtake);
+	add(flagcapture);
+	add(dominate);
+	add(bombplant);
+	add(bombdefuse);
+	add(bombexplode);
+	add(hostagerescue);
+	add(vipescape);
+	add(menu);
+	add(objectdamage);
+	add(objectkill);
+	add(objectupgrade);
+
+	if (!lua_strict){ // nonstandard hooks
+		add(start);
+		add(exit);
+		add(respawn);
+	}
+
+
+
+#undef add
+
+	lua_pushcfunction(_G, addhook);
+	lua_setfield(_G, LUA_GLOBALSINDEX, "addhook");
+}
+
+int addhook(lua_State* l){
+	int n = lua_gettop(l); // we need at least 2
+	if (n<2){
+		lua_pushstring(l, "addhook() requires two strings.");
+		lua_error(l);
+	}
+	const char* type = lua_tostring(l, 1);
+	const char* data = lua_tostring(l, 2);
+
+	struct ll_c* fn;
+	int err = hashmap_get(hook_map, (char*)type, (void**)(&fn));
+	if (err != MAP_OK){
+		lua_pushfstring(l, "Invalid hook %s.", type);
+		lua_error(l);
+	}
+
+	struct ll* root = fn->root;
+
+	if(!root) root = (fn->root = (struct ll*)malloc(sizeof(struct ll)));
+	else{
+		while (root->next)
+			root = root->next;
+		root = (root->next = (struct ll*)malloc(sizeof(struct ll)));
+	}
+
+	root->data = (char*)data;
+	root->next = NULL;
+
+	return 0;
+}
+
+// Fmt - s i f b
+int invoke_traverse(struct ll* list, char* fmt, ...){
+	if (!list) return 0;
+
+	va_list args;
+	va_start(args, fmt);
+	void* buffer[10];
+	int i,ret = 0,nargs = strlen(fmt);
+	for (i=0;i<nargs;i++)
+		buffer[i] = va_arg(args, void*);
+	va_end(args);
+
+	while (list && list->data){
+		char* data = malloc(0xff);
+		sprintf(data, "return %s", list->data);
+
+		int err = luaL_dostring(_G, data); // load the function into _G
+		if (err) {printf("[Lua] Error while calling hook: %s\n",list->data);continue;}
+		for(i=0;i<nargs;i++){
+			switch(fmt[i]){
+			case 's':
+			case 'S':
+				// String
+				lua_pushstring(_G, buffer[i]);
+				break;
+			case 'i':
+			case 'I':
+				// Integer
+				lua_pushinteger(_G, (int)buffer[i]);
+				break;
+			case 'f':
+			case 'F':
+			case 'n':
+			case 'N':
+				// Number
+				lua_pushnumber(_G, *(double*)(buffer[i]));
+				break;
+			case 'b':
+			case 'B':
+				lua_pushboolean(_G, (int)buffer[i]);
+				break;
+			default:
+				lua_pushnil(_G);
+				printf("[Lua] Cannot parse the parameter type.");
+			}
+		}
+		lua_call(_G, nargs, 1);
+		ret = lua_tonumber(_G, 1);
+		//lua_pop(_G, 1);
+		list = list->next;
+	}
+	return ret;
+}
+
+struct ll* get_fn(char* type){
+	struct ll_c* fn;
+	int err = hashmap_get(hook_map, type, (void**)(&fn));
+	if (err != MAP_OK){
+		if (lua_debug)
+			printf("[Lua] DEBUG: Cannot invoke hook %s\n", type);
+		return NULL;
+	}
+	return fn->root;
+}
+
+#define INVOKE(type, args...) struct ll* root = get_fn(type); \
+	if(!root) return 0; \
+	return invoke_traverse(root, args); \
+
 /*
  int OnJoin(int id)
  id - Who joins
  Return Values:
  0 - OK
  */
-int OnJoin(int id)
-{
+int OnJoin(int id){
 	SendJoinMessage(id);
-	printf("%s (#%d) has joined the game!\n\tUsing ip %s:%d and usgn-id #%d!\n", player[id].name, id, inet_ntoa(player[id].ip), player[id].port, player[id].usgn);
-	return 0;
+	printf("%s (#%d) has joined the game using ip %s:%d and usgn-id #%d!\n", player[id].name, id, inet_ntoa(player[id].ip), player[id].port, player[id].usgn);
+
+	INVOKE("join", "i", id);
 }
 
 /*
@@ -27,11 +207,10 @@ int OnJoin(int id)
  Return Values:
  0 - OK
  */
-int OnLeave(int id)
-{
+int OnLeave(int id, int reason){
 	SendLeaveMessage(id);
-	printf("%s has left the game!\n", player[id].name);
-	return 0;
+	printf("%s has left the game.\n", player[id].name);
+	INVOKE("leave", "ii", id, reason);
 }
 
 /*
@@ -41,9 +220,8 @@ int OnLeave(int id)
  1 - Don't save it
  */
 
-int OnSpecmove(int id, int newx, int newy)
-{
-	return 0;
+int OnSpecmove(int id, int newx, int newy){
+	INVOKE("specmove", "iii", id, newx, newy);
 }
 
 /*
@@ -51,14 +229,12 @@ int OnSpecmove(int id, int newx, int newy)
  Return Values:
  0 - OK
  */
-int OnServerStart()
-{
+int OnServerStart(){
 	time_t rawtime;
 	time(&rawtime);
 	printf("********** Server started **********\n");
 	printf("Listening at port %d and using name '%s'\n", sv_hostport, sv_name);
-	printf("%s", ctime(&rawtime));
-	return 0;
+	INVOKE("start", "");
 }
 
 /*
@@ -66,10 +242,9 @@ int OnServerStart()
  Return Values:
  0 - OK
  */
-int OnExit()
-{
-	printf("********** Server Shutdown! **********\n\n\n\n\n");
-	return 0;
+int OnExit(){
+	printf("********** Server Shutdown! **********\n");
+	INVOKE("exit", "");
 }
 
 /*
@@ -78,15 +253,14 @@ int OnExit()
  0 - Respawn
  1 - Don't Respawn
  */
-int OnRespawnRequest(int id)
-{
-	if (player[id].dead == 1)
-	{
+int OnRespawnRequest(int id){
+	if (player[id].dead == 1){
 		if (player[id].money + mp_dmspawnmoney > 65000)
 			player[id].money = 65000;
 		else
 			player[id].money += mp_dmspawnmoney;
-		return 0;
+
+		INVOKE("respawn","i",id);
 	}
 	else
 		return 1;
@@ -97,8 +271,7 @@ int OnRespawnRequest(int id)
  Return Values:
  0 - OK
  */
-int OnRespawn(int id)
-{
+int OnRespawn(int id){
 	return 0;
 }
 
@@ -117,7 +290,7 @@ int OnWeaponChangeAttempt(int id, int wpnid)
 	player[id].reloading = 0;
 
 	//printf("%s switched to %s\n", player[id].name, weapons[wpnid].name);
-	return 0;
+	INVOKE("select", "ii", id, wpnid);
 }
 
 /*
@@ -189,7 +362,7 @@ int OnAdvancedFire(int id, int status)
 	}
 
 	}
-
+	INVOKE("attack2", "ii", id, status)
 	return 0;
 }
 /*
@@ -200,135 +373,85 @@ int OnAdvancedFire(int id, int status)
  */
 int OnFire(int id)
 {
-	//printf("%s tried to shoot!\n", player[id].name);
-	short *ammo1 = &player[id].wpntable[player[id].actualweapon].ammo1;
-	if (*ammo1 <= 0 && *ammo1 != -1)
-	{
-		printf("Not enough ammo!\n");
-		return 1;
+	unsigned char wpn = player[id].actualweapon;
+
+	if (weapons[wpn].slot == 0) return 0;
+
+	short *ammo1 = &player[id].wpntable[wpn].ammo1;
+	if (*ammo1 != -1) {
+		if (*ammo1 <= 0) {
+			printf("Not enough ammo!\n");
+			return 1;
+		} else
+			--(*ammo1);
 	}
-	else
-	{
-		if (*ammo1 != -1)
-		{
-			*ammo1 = *ammo1 - 1;
-		}
-	}
-	if (mtime() < player[id].firetimer)
-	{
+
+	/*if (mtime() < player[id].firetimer) {
 		printf("Firetimer error!%u %u\n", mtime(), player[id].firetimer);
 		return 1;
-	}
-	else
-	{
-		player[id].firetimer = mtime()
-				+ weapons[player[id].actualweapon].freq;
-	}
+	} else
+		player[id].firetimer = mtime() + weapons[wpn].freq;*/
+	
+	short dmg;
 
-	int i;
-	int range = weapons[player[id].actualweapon].range;
-
-	int startx = *player[id].x;
-	int starty = *player[id].y;
-	int frames = fpsnow * player[id].latency / 1000;
-	if (frames > sv_lcbuffer)
-	{
-		frames = sv_lcbuffer;
-	}
-	float rotx;
-	float roty;
-	float temprot = player[id].rotation;
-
-	short playershit[MAX_CLIENTS] =
-	{ 0 };
-
-	if (temprot < 0)
-	{
-		temprot = 360 - (temprot * -1);
-	}
-	temprot = 360 - temprot;
-
-	temprot += 90;
-	if (temprot > 360)
-	{
-		temprot = temprot - 360;
-	}
-
-	rotx = cos((temprot) * PI / 180);
-	roty = sin((temprot) * PI / 180);
-
-	for (i = 1; i <= range; i++)
-	{
-		startx += i * rotx;
-		starty -= i * roty;
-
-		int tilex = (int) (startx) / 32;
-		int tiley = (int) (starty) / 32;
-
-		if (tilex <= 0 || tiley <= 0)
-			break;
-		int tilemode = map.tiles[tilex][tiley].mode;
-		if (tilemode == 1 || tilemode == 3 || tilemode == 4)
-		{
-			break;
-		}
-
-		int b;
-		for (b = 1; b <= sv_maxplayers; b++)
-		{
-			if (player[b].used == 1 && player[b].joinstatus >= 4 && b != id
-					&& player[b].dead == 0 && playershit[b] == 0
-					&& player[id].team != player[b].team)
-			{
-				if (sqrt((lcbuffer[frames][b-1][0] - startx)
-						* (lcbuffer[frames][b-1][0] - startx)
-						+ (lcbuffer[frames][b-1][1] - starty)
-								* (lcbuffer[frames][b-1][1] - starty)) <= 16)
-				/*if (sqrt((player[b].x - startx) * (player[b].x - startx)
-				 + (player[b].y - starty) * (player[b].y - starty))
-				 <= 16)*/
-				{
-					OnHit(id, b);
-					playershit[b] = 1;
-				}
+	switch (weapons[wpn].special) { //lmao 76543210
+		case 7: //TODO: grenades
+			return 0;
+		case 6: //shotgun
+			dmg = weapons[wpn].weapondamage;
+			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
+			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
+			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
+			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
+			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
+			return 0;
+		case 5:
+		case 4:
+		case 3: //scoped or melee weapons
+			if (player[id].wpntable[wpn].status == 2) {
+				dmg = weapons[wpn].weapondamage_z1;
+				break;
+			} else if (player[id].wpntable[wpn].status == 3) {
+				dmg = weapons[wpn].weapondamage_z2;
+				break;
 			}
-		}
+		case 2: //burst weapon
+			if (player[id].wpntable[wpn].status == 2) {
+				dmg = 0.64 * weapons[wpn].weapondamage;
+				simulate_bullet(id, wpn, dmg, player[id].rotation - 6 + 12 * (float)rand() / RAND_MAX);
+				simulate_bullet(id, wpn, dmg, player[id].rotation + 6 + 8 * (float)rand() / RAND_MAX);
+				simulate_bullet(id, wpn, dmg, player[id].rotation - 6 - 8 * (float)rand() / RAND_MAX);
+				return 0;
+			}
+		case 1: //silencer does nothing
+		case 0: //regular
+			dmg = weapons[wpn].weapondamage;
+			break;
+		default:
+			return 1;
 	}
+
+	simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * weapons[wpn].accuracy);
+	INVOKE("attack", "i", id);
 	return 0;
 }
 /*
- int OnHit(int hitter, int victim)
+ int OnHit(int hitter, int victim, unsigned char wpn, short dmg)
  Return Values:
  0 - OK
  */
-int OnHit(int hitter, int victim)
+int OnHit(int hitter, int victim, unsigned char wpn, short dmg)
 {
-	int wpnid = player[hitter].actualweapon;
-	int damage;
-	switch (player[hitter].wpntable[wpnid].status)
-	{
-	case 1:
-		damage = weapons[wpnid].weapondamage;
-		break;
-	case 2:
-		damage = weapons[wpnid].weapondamage_z1;
-		break;
-	case 3:
-		damage = weapons[wpnid].weapondamage_z2;
-		break;
-	default:
-		damage = weapons[wpnid].weapondamage;
-		break;
-	}
-	if (player[victim].health - damage > 0)
-	{
-		player[victim].health -= damage;
-		SendHitMessage(victim, hitter, player[victim].health);
-		//printf("%s hitted %s with %s\n", player[hitter].name, player[victim].name, weapons[wpnid].name);
-	}
-	else
-	{
-		OnKill(hitter, victim, wpnid);
+	short newarmor = (short)player[victim].armor - dmg;
+	if (newarmor < 0) newarmor = 0;
+	short newhealth = (short)player[victim].health - dmg + ((short)player[victim].armor - newarmor) * 3 / 10;
+
+	if (newhealth > 0) {
+		player[victim].health = newhealth;
+		player[victim].armor = newarmor;
+		SendHitMessage(victim, hitter, player[victim].health, player[victim].armor);
+	} else {
+		OnKill(hitter, victim, wpn);
 	}
 
 	return 0;
@@ -522,8 +645,7 @@ int OnBuy(int id, int wpnid)
 					if (player[id].wpntable[i].status > 0 && weapons[i].slot == weapons[wpnid].slot)
 					{
 						RemovePlayerWeapon(id, i);
-						SendDropMessage(id, i, player[id].wpntable[i].ammo1,
-							player[id].wpntable[i].ammo2, 0, 0, 0);
+						SendDropMessage(id, i, player[id].wpntable[i].ammo1, player[id].wpntable[i].ammo2);
 						break;
 					}
 				}
@@ -551,7 +673,7 @@ int OnKill(int hitter, int victim, int wpnid)
 	else
 		player[hitter].money += 300;
 	RemoveAllPlayerWeapon(victim);
-	SendHitMessage(victim, hitter, player[victim].health);
+	SendHitMessage(victim, hitter, player[victim].health, player[victim].armor);
 	SendKillMessage(hitter, victim);
 	printf("%s killed %s with %s\n", player[hitter].name, player[victim].name, weapons[wpnid].name);
 	return 0;
@@ -602,8 +724,8 @@ int OnChatMessage(int id, unsigned char *message, int team)
  0 - OK
  1 - Don't join
  */
-int OnTeamChangeAttempt(int id, unsigned char team, unsigned char skin)
-{
+int OnTeamChangeAttempt(int id, unsigned char team, unsigned char skin){
+	INVOKE("team", "iii", id, team, skin);
 	return 0;
 }
 
@@ -631,7 +753,7 @@ int OnTeamChange(int id, unsigned char team, unsigned char skin)
 			printf("%s joined a unknown team\n", player[id].name);
 			break;
 		}
-		SendHitMessage(id, id, 0);
+		SendHitMessage(id, id, 0, 0);
 		player[id].dead = 1;
 		RemoveAllPlayerWeapon(id);
 	}
@@ -664,8 +786,7 @@ int OnMoveAttempt(int id, unsigned short x, unsigned short y, int status)
  0 - OK
  1 - Don't drop
  */
-int OnDrop(int id, unsigned char wpnid, unsigned short ammo1, unsigned short ammo2,
-		unsigned char unknown1, unsigned char unknown2, unsigned char unknown3)
+int OnDrop(int id, unsigned char wpnid, unsigned short ammo1, unsigned short ammo2)
 {
 	if ((player[id].wpntable[wpnid].status > 0) &&
 		(player[id].wpntable[wpnid].ammo1 == ammo1) &&
@@ -676,3 +797,5 @@ int OnDrop(int id, unsigned char wpnid, unsigned short ammo1, unsigned short amm
 	}
 	return 1;
 }
+
+#undef INVOKE
