@@ -12,4 +12,5 @@
 
 void *_G;
 int init_lua();
+void lua_cleanup(void* l);
 #endif /* LUA_ENV_H_ */

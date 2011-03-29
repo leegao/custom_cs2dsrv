@@ -131,14 +131,14 @@ void socket_error(char *message)
  * \fn cleanup(void)
  * \brief clean the socket
  */
-void cleanup(void)
-{
+void cleanup(void){
 	OnExit();
 #ifdef _WIN32
 	WSACleanup();
 #else
 	/* Nichts zu tun */
 #endif
+	lua_cleanup(_G);
 }
 
 /**

@@ -157,40 +157,23 @@ static void dotty (lua_State *L) {
 }
 
 int init_lua(){
-	/* Declare the Lua libraries we wish to use. */
-	/* Note: If you are opening and running a file containing Lua code */
-	/* using 'lua_dofile(l, "myfile.lua") - you must declare all the libraries */
-	/* used in that file here also. */
+	_G = lua_open();
 
+	lua_gc(_G, LUA_GCSTOP, 0);
+	luaL_openlibs(_G);
+	lua_gc(_G, LUA_GCRESTART, 0);
 
-	/* Declare a Lua State, open the Lua State and load the libraries (see above). */
-	lua_State *l = lua_open();
-
-	lua_gc(l, LUA_GCSTOP, 0);
-	luaL_openlibs(l);
-	lua_gc(l, LUA_GCRESTART, 0);
-
-	/* You can do what you want here. Note: Remember to update the libraries used (see above) */
-	/* if you add to your program and use new Lua libraries. */
-	/* In the lines below, I load and run the Lua code contained in the file */
-
-	_G = l;
 	init_hooks();
 
-	int err = luaL_dofile(l, lua_file ? lua_file : "server.lua");
-
+	int err = luaL_dofile(_G, lua_file ? lua_file : "server.lua");
 
 	if (err){
 		printf("[Lua] Cannot open file %s\n", lua_file ? lua_file : "server.lua");
 	}
 
-	/* Remember to destroy the Lua State */
-	//lua_close(l);
-
-	//dotty(l);
 	return 0;
 }
 
-void lua_cleanup(lua_State* l){
+void lua_cleanup(void* l){
 	lua_close(l);
 }
