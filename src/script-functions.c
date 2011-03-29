@@ -18,13 +18,69 @@ void init_hooks(){
 	type##_c->root = NULL;\
 	hashmap_put(hook_map, #type, type##_c); \
 
+	add(ms100);
+	add(second);
+	add(minute);
+	add(always); // delegate to ms100
+	add(startround);
+	add(endround);
+	add(mapchange);
+	add(parse);
+	add(trigger);
+	add(triggerentity);
+	add(break);
+	add(projectile);
+	add(log);
+	add(rcon);
+	add(clientdata);
 	add(join);
 	add(leave);
 	add(team);
-	add(start);
-	//add(exit); // nonstandard
-	//add(respawn); // NS
+	add(spawn);
+	add(name);
+	add(serveraction);
+	add(buy);
+	add(walkover);
+	add(collect);
+	add(drop);
 	add(select);
+	add(reload);
+	add(attack);
+	add(attack2);
+	add(move);
+	add(movetile);
+	add(hit);
+	add(kill);
+	add(die);
+	add(use);
+	add(usebutton);
+	add(say);
+	add(sayteam);
+	add(radio);
+	add(spray);
+	add(vote);
+	add(buildattempt);
+	add(build);
+	add(flagtake);
+	add(flagcapture);
+	add(dominate);
+	add(bombplant);
+	add(bombdefuse);
+	add(bombexplode);
+	add(hostagerescue);
+	add(vipescape);
+	add(menu);
+	add(objectdamage);
+	add(objectkill);
+	add(objectupgrade);
+
+	if (!lua_strict){ // nonstandard hooks
+		add(start);
+		add(exit);
+		add(respawn);
+	}
+
+
 
 #undef add
 
@@ -121,7 +177,8 @@ struct ll* get_fn(char* type){
 	struct ll_c* fn;
 	int err = hashmap_get(hook_map, type, (void**)(&fn));
 	if (err != MAP_OK){
-		printf("[Lua] Cannot invoke hook %s\n", type);
+		if (lua_debug)
+			printf("[Lua] DEBUG: Cannot invoke hook %s\n", type);
 		return NULL;
 	}
 	return fn->root;
@@ -305,7 +362,7 @@ int OnAdvancedFire(int id, int status)
 	}
 
 	}
-
+	INVOKE("attack2", "ii", id, status)
 	return 0;
 }
 /*
@@ -375,6 +432,7 @@ int OnFire(int id)
 	}
 
 	simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * weapons[wpn].accuracy);
+	INVOKE("attack", "i", id);
 	return 0;
 }
 /*
@@ -739,3 +797,5 @@ int OnDrop(int id, unsigned char wpnid, unsigned short ammo1, unsigned short amm
 	}
 	return 1;
 }
+
+#undef INVOKE

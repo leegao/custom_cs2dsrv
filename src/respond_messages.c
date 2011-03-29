@@ -114,7 +114,7 @@ void SendChatMessage(int id, unsigned char *message, int team){
 	Stream.write_byte(buf, id);
 	Stream.write_byte(buf, team);
 	Stream.write_str2(buf, message);
-	void (*send)() = team==1?&SendToAll:&SendToTeam; // What black magic is this? Just don't try this on VC++ ie use _MSC_VER macro, but it'd break anyways so who gives a fuck.
+	void (*send)() = team==1?(void (*)())&SendToAll:(void (*)())&SendToTeam; // What black magic is this? Just don't try this on VC++ ie use _MSC_VER macro, but it'd break anyways so who gives a fuck.
 	send(buf->mem, buf->size, 1, player[id].team);
 	free(buf);
 }

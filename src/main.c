@@ -22,6 +22,8 @@ void parse_opts(int argc, char *argv[]){
 		{"name", required_argument, 0, 0},
 		{"nousgn", no_argument, 0, 1},
 		{"lua", required_argument, 0, 'l'},
+		{"debug", no_argument, 0, 'd'},
+		{"strict", no_argument, 0, 's'},
 		{0, 0, 0, 0}
 	};
 
@@ -35,6 +37,12 @@ void parse_opts(int argc, char *argv[]){
 			break;
 		case 'l':
 			lua_file = optarg;
+			break;
+		case 'd':
+			lua_debug = 1;
+			break;
+		case 's':
+			lua_strict = 1;
 			break;
 		case 0:
 			sv_name = (unsigned char*)optarg;

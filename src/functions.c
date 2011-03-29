@@ -482,7 +482,7 @@ void ExecuteFunctionsWithTime(time_t *checktime, int writesocket)
 		if (actualtime % 5 == 0) //execute every 5 seconds
 		{
 			SendPingList(writesocket);
-			SendMessageToAll("This is an alpha version! Don't play at it!", 1); //Do not remove or change this until server reaches beta status
+			//SendMessageToAll("This is an alpha version! Don't play at it!", 1); //Do not remove or change this until server reaches beta status
 			PingAllPlayer();
 		}
 		else if (actualtime % 50 == 0)
