@@ -62,6 +62,7 @@ void parse_opts(int argc, char *argv[]){
  * \return EXIT_SUCCESS or EXIT_FAILURE
  */
 int main(int argc, char *argv[]){
+	init_parse();
 	// Parses the commandline arguments
 	parse_opts(argc, argv); // IE: ./server -cserver.cfg --name "My Server"
 
@@ -74,6 +75,8 @@ int main(int argc, char *argv[]){
 	unsigned char buffer[MAX_BUF];
 	int size;
 	fd_set descriptor; //I don't know
+
+	//parse("banip 192.168.1.1;banip 123 ");
 
 	ClearAllPlayer();
 	WeaponInit();

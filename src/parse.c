@@ -25,7 +25,7 @@ char* tokenize(char* text, int* consumed, char* fmt, ...){
 	for (i=-1;i<nargs;i++){
 		char* buf = NULL;
 		if (!*text) {printf("[Parse] Too few arguments.\n");return NULL;}
-		while(*text && *text == ' '){
+		while(*text && (*text == ' ' || *text == ';')){
 			text++;(*consumed)++;
 		}
 		if (*text == '"'){
@@ -33,18 +33,18 @@ char* tokenize(char* text, int* consumed, char* fmt, ...){
 		}
 		for(j=0;text[j];j++){
 			// unquoted termination condition
-			if (!quot && text[j] == ' '){
+			if (!quot && (text[j] == ' ' || text[j] == ';' || !text[j])){
 				buf = (char*)malloc(j+1);
 				memcpy(buf, text, j);
 				buf[j]='\0';
-				while(text[j] == ' ') j++;
+				while(text[j] == ' ' || text[j] == ';') j++;
 				text+=j;
 				break;
 			// quoted termination condition
 			} else if (quot && text[j] == '"'){
 				buf = (char*)malloc(j+1);
 				memcpy(buf, text, j);
-				buf[j]='\0';
+				buf[j++]='\0';
 				text+=j;
 				break;
 			}
@@ -82,4 +82,42 @@ char* tokenize(char* text, int* consumed, char* fmt, ...){
 
 	va_end(args);
 	return cmd;
+}
+
+int p_banip(char* text, int* consumed){
+	char* ip;
+	char* check = tokenize(text, consumed, "s", &ip);
+	if (!check) return 0;
+	printf("IP %d is now banned.\n", *(ip+2));
+	return 1;
+}
+
+void init_parse(){
+	parse_t = hashmap_new();
+#define add(type) hashmap_put(parse_t, #type, &p_##type);
+
+	add(banip);
+
+#undef add
+
+}
+
+void parse(char* text){
+	if (!*text) return;
+	//printf("%d\n",*text);
+	int consumed;
+	char* type = tokenize(text,&consumed,"");
+	//printf("%s : %s\n", text, type);
+	parse_h handler;
+	int err = hashmap_get(parse_t, (char*)type, (void**)(&handler));
+	if (err != MAP_OK){
+		printf("[Parse] Invalid command '%s'\n",type);
+		return parse(text+consumed);
+	}
+
+	int e = handler(text,&consumed);
+	if (e){
+		// pass
+	}
+	parse(text+consumed);
 }

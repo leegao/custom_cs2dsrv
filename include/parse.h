@@ -12,4 +12,10 @@
 
 char* tokenize(char* text, int* consumed, char* fmt, ...);
 
+void* parse_t;
+void init_parse();
+
+typedef int(*parse_h)(char*,int*);
+void parse(char* text);
+
 #endif /* PARSE_H_ */
