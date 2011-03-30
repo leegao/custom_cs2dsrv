@@ -621,10 +621,10 @@ int joinroutine_known(stream* packet, int id){
 
 			stream* buf = init_stream(NULL);
 
-			Stream.write(buf, (byte*)"\xfc\6\0", 3);
+			Stream.write(buf, (byte*)"\xfc\6\0\xa", 3);
 			Stream.write_str(buf, sv_map);
 			Stream.write_str(buf, sv_name);
-			byte wtf[] = {
+			byte wtf[] = { //seriously what the fuck?
 					0,
 					0,
 					sv_friendlyfire,
@@ -632,8 +632,8 @@ int joinroutine_known(stream* packet, int id){
 					mp_roundtime,
 					mp_freezetime,
 					mp_c4timer,
-					32,
-					124,
+					0x3d, //no fucking idea. not static
+					0x4a, //no fucking idea. not static.
 					0,
 					0,
 					1,
@@ -644,9 +644,10 @@ int joinroutine_known(stream* packet, int id){
 					sv_gamemode,
 					mp_respawndelay,
 					mp_infammo,
+					1,8,51,58,11,22,32,35,80,73,0, //no fucking idea what these are.
 					3, 'A', 'C', 'K'
 			};
-			Stream.write(buf, wtf, 23);
+			Stream.write(buf, wtf, 34);
 
 			SendToPlayer(buf->mem, buf->size, id, 1);
 			free(buf);
@@ -723,7 +724,6 @@ int joinroutine_known(stream* packet, int id){
 			SendToPlayer((byte*)"\xfc\7\2\0", 4, id, 1);
 
 			//----------- ItemData -----------
-			//fc 07 03 01(1 anzahl) 01(id) 00 4b(waffenid) 0f 00 12 00 (position) 01 (munition ?) 00 00 00
 			SendToPlayer((byte*)"\xfc\7\3\0", 4, id, 1);
 
 			//----------- EnityData -----------
@@ -737,9 +737,12 @@ int joinroutine_known(stream* packet, int id){
 
 			//----------- DynamicObjectImageData -----------
 			SendToPlayer((byte*)"\xfc\7\7\0", 4, id, 1);
+			
+			//----------- uh.. SomethingData??? -----------
+			SendToPlayer((byte*)"\xfc\7\x8\0", 4, id, 1);
 
-			//----------- Final ACK ----------- c8 3 41 43 4b
-			SendToPlayer((byte*)"\xfc\7\xc8\3\x41\x43\x4b", 7, id, 1);
+			//----------- Final ACK ----------- c8 3 41 43 4b 1c 00 01
+			SendToPlayer((byte*)"\xfc\7\xc8\3\x41\x43\x4b\x1c\0\1", 10, id, 1);
 
 			player[id].joinstatus = 4;
 			free(mapname);
