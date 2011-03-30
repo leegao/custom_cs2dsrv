@@ -215,7 +215,7 @@ int new_error(lua_State* l){
 	return 0;
 }
 
-int l_player(lua_State* l){
+int l_player(lua_State* l){ // I'm not proud of this...
 	int n = lua_gettop(l);
 	if (n<2){
 		lua_pushstring(l, "player() requires exactly two arguments");
@@ -230,8 +230,50 @@ int l_player(lua_State* l){
 		lua_pushboolean(l, player[id].name?1:0);
 		return 1;
 	}
+#define INSERT() lua_pushnumber(l, i++); /* table index */ \
+		lua_pushnumber(l, n);	/* id */ \
+		lua_rawset(l, -3);      /* the table is 3 down */
 
-	if (!player[id].name){
+	if(!id){
+		lua_newtable(l);
+		int i=1,n;
+		if IS("table")
+			for (n=0;n<MAX_CLIENTS;n++)
+				if (player[n].name){
+					INSERT();
+				}
+		else if IS("tableliving")
+			for (n=0;n<MAX_CLIENTS;n++)
+				if (player[n].name && !player[n].dead){
+					INSERT();
+				}
+		else if IS("team1")
+			for (n=0;n<MAX_CLIENTS;n++)
+				if (player[n].name && player[n].team == 1){
+					INSERT();
+				}
+		else if IS("team2")
+			for (n=0;n<MAX_CLIENTS;n++)
+				if (player[n].name && player[n].team == 2){
+					INSERT();
+				}
+		else if IS("team1living")
+			for (n=0;n<MAX_CLIENTS;n++)
+				if (player[n].name && player[n].team == 1 && !player[n].dead){
+					INSERT();
+				}
+		else if IS("team2living")
+			for (n=0;n<MAX_CLIENTS;n++)
+				if (player[n].name && player[n].team == 2 && !player[n].dead){
+					INSERT();
+				}
+#undef INSERT
+		else{
+			lua_pushstring(l,"player() argument is invalid");
+			lua_error(l);
+		}
+		return 1;
+	}else if(!player[id].name){
 		lua_pushfstring(l, "id %d is not a valid player", id);
 		lua_error(l);
 	}
@@ -278,8 +320,38 @@ int l_player(lua_State* l){
 		lua_pushinteger(l, 0); // replace later
 	}else if IS("hostagekills"){
 		lua_pushinteger(l, 0); // replace later
-	}else if IS(""){
-
+	}else if IS("teambuildingkills"){
+		lua_pushinteger(l, 0); // replace later
+	}else if IS("weapontype"){
+		lua_pushinteger(l, player[id].actualweapon);
+	}else if IS("nightvision"){
+		lua_pushboolean(l, 0); // replace later
+	}else if IS("defusekit"){
+		lua_pushboolean(l, 0); // replace later
+	}else if IS("bomb"){
+		lua_pushboolean(l, 0); // replace later
+	}else if IS("flag"){
+		lua_pushboolean(l, 0); // replace later
+	}else if IS("reloading"){
+		lua_pushboolean(l, player[id].reloading);
+	}else if IS("process"){
+		lua_pushboolean(l, 0); // idk wtf this is
+	}else if IS("sprayname"){
+		lua_pushstring(l, (char*)player[id].spraylogo);
+	}else if IS("spraycolor"){
+		lua_pushinteger(l, 0); // replace later
+	}else if IS("votekick"){
+		lua_pushinteger(l, 0); // replace later
+	}else if IS("votemap"){
+		lua_pushinteger(l, 0); // replace later
+	}else if IS("favteam"){
+		lua_pushinteger(l, player[id].team); // replace later
+	}else if IS("speedmod"){
+		lua_pushinteger(l, 1); // replace later
+	}else if IS("maxhealth"){
+		lua_pushinteger(l, 100); // replace later
+	}else if IS("rcon"){
+		lua_pushboolean(l, player[id].rcon);
 	}else{
 		lua_pushstring(l, "Player argument is invalid");
 		lua_error(l);
