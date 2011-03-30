@@ -10,4 +10,6 @@
 
 #include "main.h"
 
+char* tokenize(char* text, int* consumed, char* fmt, ...);
+
 #endif /* PARSE_H_ */

@@ -601,6 +601,7 @@ int joinroutine_known(stream* packet, int id){
 			byte* pre_authcode_respond = Stream.read_str(packet);
 			byte mapstatus = Stream.read_byte(packet);
 
+			(void)mapstatus; // sentinel for mapstatus
 			free(pre_authcode_respond);
 			free(mhash);
 
