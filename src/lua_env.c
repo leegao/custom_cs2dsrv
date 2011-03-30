@@ -215,6 +215,79 @@ int new_error(lua_State* l){
 	return 0;
 }
 
+int l_player(lua_State* l){
+	int n = lua_gettop(l);
+	if (n<2){
+		lua_pushstring(l, "player() requires exactly two arguments");
+		lua_error(l);
+	}
+
+	int id = lua_tonumber(l, 1);
+
+	const char* type = lua_tostring(l,2);
+#define IS(typ) (!strcmp(type, (typ)))
+	if IS("exists"){
+		lua_pushboolean(l, player[id].name?1:0);
+		return 1;
+	}
+
+	if (!player[id].name){
+		lua_pushfstring(l, "id %d is not a valid player", id);
+		lua_error(l);
+	}
+
+	if IS("name"){
+		lua_pushstring(l, (char*)player[id].name);
+	}else if IS("ip"){
+		lua_pushstring(l, inet_ntoa(player[id].ip));
+	}else if IS("port"){
+		lua_pushinteger(l, player[id].port);
+	}else if IS("usgn"){
+		lua_pushinteger(l, player[id].usgn);
+	}else if IS("ping"){
+		lua_pushinteger(l, player[id].latency);
+	}else if IS("idle"){
+		lua_pushboolean(l, (player[id].lastpacket - mtime()) > 10000); // not correct :P
+	}else if IS("bot"){
+		lua_pushboolean(l, 0); // for now
+	}else if IS("team"){
+		lua_pushinteger(l, player[id].team);
+	}else if IS("look"){
+		lua_pushinteger(l, player[id].skin);
+	}else if IS("x"){
+		lua_pushinteger(l, *player[id].x);
+	}else if IS("y"){
+		lua_pushinteger(l, *player[id].y);
+	}else if IS("rot"){
+		lua_pushnumber(l, (double)player[id].rotation);
+	}else if IS("tilex"){
+		lua_pushinteger(l, 16+(*player[id].x)/32);
+	}else if IS("tiley"){
+		lua_pushinteger(l, 16+(*player[id].y)/32);
+	}else if IS("health"){
+		lua_pushinteger(l, player[id].health);
+	}else if IS("armor"){
+		lua_pushinteger(l, player[id].armor);
+	}else if IS("money"){
+		lua_pushinteger(l, player[id].money);
+	}else if IS("score"){
+		lua_pushinteger(l, player[id].score);
+	}else if IS("deaths"){
+		lua_pushinteger(l, player[id].deaths);
+	}else if IS("teamkills"){
+		lua_pushinteger(l, 0); // replace later
+	}else if IS("hostagekills"){
+		lua_pushinteger(l, 0); // replace later
+	}else if IS(""){
+
+	}else{
+		lua_pushstring(l, "Player argument is invalid");
+		lua_error(l);
+	}
+#undef IS
+	return 1;
+}
+
 void init_functions(){
 	lua_pushcfunction(_G, msg);
 	lua_setfield(_G, LUA_GLOBALSINDEX, "msg");
@@ -224,6 +297,9 @@ void init_functions(){
 
 	lua_pushcfunction(_G, new_error);
 	lua_setfield(_G, LUA_GLOBALSINDEX, "error");
+
+	lua_pushcfunction(_G, l_player);
+		lua_setfield(_G, LUA_GLOBALSINDEX, "player");
 }
 
 int init_lua(){

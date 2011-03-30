@@ -3,7 +3,7 @@
 addhook("join", "lol")
 function lol(id)
 	--error("omg");
-	print("Hello ",id)
+	print("Hello ",player(id,"ip"))
 end
 
 addhook("leave", "lol2")
