@@ -148,6 +148,8 @@ void SendSprayMessage(char id, unsigned short x, unsigned short y, char c){
 //FIXME complete SendKillMessage
 void SendKillMessage(int id, int victim)
 {
+	int suicide = 0;
+	if (id == 0) {id = victim; suicide = 1;}
 	byte sHealth[4];
 	byte sArmor[4]; //= player[id].health
 	int sHealthLength = sprintf((char*)sHealth, "%i", (int) player[id].health);
@@ -156,17 +158,19 @@ void SendKillMessage(int id, int victim)
 	int length = 4 + sNameLength + sHealthLength + sArmorLength;
 
 	stream* buf = init_stream(NULL);
-	byte buffer[] = {19,victim,id,
+	byte buffer[] = {19,victim,((suicide == 1) ? 0 : id),
 					player[id].actualweapon,
 					SHORT(*player[victim].x),SHORT(*player[victim].y),
 					240,0,1,SHORT(length),'k',166}; // 166 acts like a string separator, rest of this line is like wtf
 	Stream.write(buf, buffer, 15);
-	Stream.write(buf, player[id].name, sNameLength);
-	Stream.write_byte(buf, 166);
-	Stream.write(buf, sHealth, sHealthLength);
-	Stream.write_byte(buf, 166);
-	Stream.write(buf, sArmor, sArmorLength);
-	Stream.write_byte(buf, 166);
+	if (suicide == 0) {
+		Stream.write(buf, player[id].name, sNameLength);
+		Stream.write_byte(buf, 166);
+		Stream.write(buf, sHealth, sHealthLength);
+		Stream.write_byte(buf, 166);
+		Stream.write(buf, sArmor, sArmorLength);
+		Stream.write_byte(buf, 166);
+	}
 
 	SendToPlayer(buf->mem, buf->size, victim, 1);
 	free(buf->mem);
