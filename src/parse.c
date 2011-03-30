@@ -7,6 +7,95 @@
 
 #include "parse.h"
 
+
+
+
+
+int p_banip(char* text, int* consumed){
+	char* ip; int duration = -1;  // declarations
+	char* check = tokenize(text, consumed, "\1" "si", &ip, &duration);
+	if (!check) return 0;
+
+	// banip(ip, duration);
+
+	return 1;
+}
+
+int p_banname(char* text, int* consumed){
+	char* name; int duration = -1;  // declarations
+	char* check = tokenize(text, consumed, "\1" "si", &name, &duration);
+	if (!check) return 0;
+
+	// banname(name, duration);
+
+	return 1;
+}
+
+int p_bans(char* text, int* consumed){
+	 // declarations
+	char* check = tokenize(text, consumed, "\0" "");
+	if (!check) return 0;
+
+	// bans();
+
+	return 1;
+}
+
+int p_banusgn(char* text, int* consumed){
+	int usgn; int duration = -1;  // declarations
+	char* check = tokenize(text, consumed, "\1" "ii", &usgn, &duration);
+	if (!check) return 0;
+
+	// banusgn(usgn, duration);
+
+	return 1;
+}
+
+int p_changelevel(char* text, int* consumed){
+	char* map;  // declarations
+	char* check = tokenize(text, consumed, "\1" "s", &map);
+	if (!check) return 0;
+
+	// changelevel(map);
+
+	return 1;
+}
+
+int p_changemap(char* text, int* consumed){
+	char* map;  // declarations
+	char* check = tokenize(text, consumed, "\1" "s", &map);
+	if (!check) return 0;
+
+	// changemap(map);
+
+	return 1;
+}
+
+int p_customkill(char* text, int* consumed){
+	int killer; char* weapon; int victim;  // declarations
+	char* check = tokenize(text, consumed, "\3" "isi", &killer, &weapon, &victim);
+	if (!check) return 0;
+
+	// customkill(killer, weapon, victim);
+
+	return 1;
+}
+
+int p_deathslap(char* text, int* consumed){
+	char* player;  // declarations
+	char* check = tokenize(text, consumed, "\1" "s", &player);
+	if (!check) return 0;
+
+	// deathslap(player);
+
+	return 1;
+}
+
+
+
+
+
+
 /* tokenizer splits the cmd into the args, returns the cmd-type
  *
 	int c;char* s;float port;
@@ -16,7 +105,8 @@
  * fmt = s i f
  */
 char* tokenize(char* text, int* consumed, char* fmt, ...){
-	int i,j, quot = 0, nargs = strlen(fmt);
+	int min = *(fmt++);
+	int i,j, quot = 0, nargs = strlen(fmt), term = 0;
 	*consumed = 0;
 	char* cmd = NULL;
 	va_list args;
@@ -24,7 +114,14 @@ char* tokenize(char* text, int* consumed, char* fmt, ...){
 
 	for (i=-1;i<nargs;i++){
 		char* buf = NULL;
-		if (!*text) {printf("[Parse] Too few arguments.\n");return NULL;}
+		if ((!*text || term) && i>=min) {
+			va_end(args);
+			return cmd;
+		}else if (!*text || term){
+			printf("[Parse] Too few arguments.\n");
+			return NULL;
+		}
+
 		while(*text && (*text == ' ' || *text == ';')){
 			text++;(*consumed)++;
 		}
@@ -34,6 +131,7 @@ char* tokenize(char* text, int* consumed, char* fmt, ...){
 		for(j=0;text[j];j++){
 			// unquoted termination condition
 			if (!quot && (text[j] == ' ' || text[j] == ';' || !text[j])){
+				if (text[j] == ';') term = 1;
 				buf = (char*)malloc(j+1);
 				memcpy(buf, text, j);
 				buf[j]='\0';
@@ -52,6 +150,7 @@ char* tokenize(char* text, int* consumed, char* fmt, ...){
 		if(!buf){
 			buf = (char*)malloc(j);
 			memcpy(buf, text, j);
+			buf[j] = '\0';
 			text+=j;
 		}
 
@@ -76,20 +175,14 @@ char* tokenize(char* text, int* consumed, char* fmt, ...){
 		}
 		default:
 			printf("[Parse] Bad parser format '%c'\n",fmt[i]);
+			va_end(args);
 			return NULL;
 		}
+
 	}
 
 	va_end(args);
 	return cmd;
-}
-
-int p_banip(char* text, int* consumed){
-	char* ip;
-	char* check = tokenize(text, consumed, "s", &ip);
-	if (!check) return 0;
-	printf("IP %d is now banned.\n", *(ip+2));
-	return 1;
 }
 
 void init_parse(){
@@ -104,10 +197,8 @@ void init_parse(){
 
 void parse(char* text){
 	if (!*text) return;
-	//printf("%d\n",*text);
 	int consumed;
-	char* type = tokenize(text,&consumed,"");
-	//printf("%s : %s\n", text, type);
+	char* type = tokenize(text,&consumed,"\0");
 	parse_h handler;
 	int err = hashmap_get(parse_t, (char*)type, (void**)(&handler));
 	if (err != MAP_OK){
@@ -115,9 +206,11 @@ void parse(char* text){
 		return parse(text+consumed);
 	}
 
-	int e = handler(text,&consumed);
-	if (e){
+	int status = handler(text,&consumed);
+	if (!status){
 		// pass
 	}
 	parse(text+consumed);
 }
+
+
