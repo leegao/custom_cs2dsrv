@@ -248,7 +248,7 @@ unsigned int endian_swap_int(unsigned int *x)
 }
 
 /**
- * \fn int ValidatePaket(char *message, int id)
+ * \fn int ValidatePacket(char *message, int id)
  * \brief validate if the first two bytes follow the numbering for a player and rise them if necessary
  * \param *message pointer to the message
  * \param id player-id
@@ -267,12 +267,12 @@ int ValidatePacket(unsigned char *message, int id){
 	return 1;
 }
 /**
- * \fn void PaketConfirmation(char *message, int id, int writesocket)
+ * \fn void PacketConfirmation(char *message, int id, int writesocket)
  * \brief sends an confirmation to a player if necessary
  * \param *message pointer to the message
  * \param id player-id
  */
-void PaketConfirmation(unsigned char *message, int id)
+void PacketConfirmation(unsigned char *message, int id)
 {
 	unsigned short *pTempNummer = (unsigned short *) message;
 	/*

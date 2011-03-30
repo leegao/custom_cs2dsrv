@@ -16,7 +16,7 @@ void error_exit(char *message);
 void bind_socket(int *sock, unsigned long adress, unsigned short port);
 void socket_error_exit(char *message);
 void cleanup(void);
-int udp_recieve(int socket, unsigned char *data, int length,
+int udp_receive(int socket, unsigned char *data, int length,
 		struct sockaddr_in *client);
 void udp_send(int socket, unsigned char *data, int length,
 		struct sockaddr_in *client);

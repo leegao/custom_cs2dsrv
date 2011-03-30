@@ -6,8 +6,8 @@
  * Author/s of this file: Jermuk
  */
 
-#ifndef PAKETS_H_INCLUDED
-#define PAKETS_H_INCLUDED
+#ifndef PACKETS_H_INCLUDED
+#define PACKETS_H_INCLUDED
 
 #include "main.h"
 //#include ""
@@ -67,4 +67,4 @@ known_handler *known_table;
 unknown_handler *unknown_table;
 void init_optable();
 
-#endif // PAKETS_H_INCLUDED
+#endif // PACKETS_H_INCLUDED

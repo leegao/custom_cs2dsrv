@@ -58,7 +58,7 @@ void parse_opts(int argc, char *argv[]){
 
 /**
  * \fn int main()
- * \brief initialize sockets and if a message was recieved, give it to the right function.
+ * \brief initialize sockets and if a message was received, give it to the right function.
  * \return EXIT_SUCCESS or EXIT_FAILURE
  */
 int main(int argc, char *argv[]){
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]){
 		select(sock + 1, &descriptor, NULL, NULL, &timeout);
 
 		if (FD_ISSET(sock, &descriptor)){
-			size = udp_recieve(sock, buffer, MAX_BUF, &newclient);
+			size = udp_receive(sock, buffer, MAX_BUF, &newclient);
 
 			if (size < 3) {
 				perror("Invalid packet! (size < 3)\n");
@@ -168,7 +168,7 @@ int main(int argc, char *argv[]){
 					int id = IsPlayerKnown(newclient.sin_addr, newclient.sin_port);
 					if (id){
 						if (ValidatePacket(buffer,id)){
-							PaketConfirmation(buffer,id); //If the numbering is even, send a confirmation
+							PacketConfirmation(buffer,id); //If the numbering is even, send a confirmation
 							player[id].lastpacket = mtime();
 							int pid = Stream.read_byte(packet);
 							known_handler h = known_table[pid];
