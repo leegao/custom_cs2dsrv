@@ -368,6 +368,18 @@ int weaponchange(stream* packet, int id)
 	return 1;
 }
 
+int killmsg(stream* packet, int id)
+{
+	if (player[id].health == 0) return 1;
+	player[id].health = 0;
+	player[id].dead = 1;
+	player[id].deaths++;
+	RemoveAllPlayerWeapon(id);
+	SendKillMessage(0, id);
+	printf("%s commit suicide", player[id].name);
+	return 1;
+}
+
 /**
  * \fn int teamchange(stream* packet, int id)
  * \brief handles a team change
@@ -381,7 +393,7 @@ int teamchange(stream* packet, int id){
 	CHECK_STREAM(packet, 2);
 	unsigned char team = Stream.read_byte(packet);
 	unsigned char skin = Stream.read_byte(packet);
-
+	//printf("%d %d\n", team, skin); //happens in 2 stages. first is [team] 5; second is [team] [look]
 	switch (OnTeamChangeAttempt(id, team, skin)){
 	case 0:
 		player[id].team = team;
@@ -895,7 +907,7 @@ void init_optable(){
 	K(14, posrotupdatewalk);
 	K(16, reload);
 	//K(17, hit);
-	//K(19, killmsg);
+	K(19, killmsg);
 	K(20, teamchange);
 	//K(21, spawn_msg); <- client?
 	//K(22, round_start);

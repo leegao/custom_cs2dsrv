@@ -442,6 +442,7 @@ int OnFire(int id)
  */
 int OnHit(int hitter, int victim, unsigned char wpn, short dmg)
 {
+	if (player[victim].health == 0 ) return 0;
 	short newarmor = (short)player[victim].armor - dmg;
 	if (newarmor < 0) newarmor = 0;
 	short newhealth = (short)player[victim].health - dmg + ((short)player[victim].armor - newarmor) * 3 / 10;
@@ -663,6 +664,7 @@ int OnBuy(int id, int wpnid)
 
 int OnKill(int hitter, int victim, int wpnid)
 {
+	if (player[victim].health == 0 ) return 0;
 	player[victim].health = 0;
 	player[victim].dead = 1;
 	player[hitter].score++;
@@ -736,7 +738,7 @@ int OnTeamChangeAttempt(int id, unsigned char team, unsigned char skin){
  */
 int OnTeamChange(int id, unsigned char team, unsigned char skin)
 {
-	if (skin != 5)
+	if (skin != 5 || team == 0)
 	{
 		switch (team)
 		{
@@ -753,9 +755,11 @@ int OnTeamChange(int id, unsigned char team, unsigned char skin)
 			printf("%s joined a unknown team\n", player[id].name);
 			break;
 		}
-		SendHitMessage(id, id, 0, 0);
+		player[id].health = 0;
 		player[id].dead = 1;
+		player[id].deaths++;
 		RemoveAllPlayerWeapon(id);
+		SendKillMessage(0, id);
 	}
 	if (team <= 2)
 	{

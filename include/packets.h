@@ -34,6 +34,7 @@ int posrotupdatewalk(stream*, int id);
 int posrotupdaterun(stream*, int id);
 int respawnrequest(stream*, int id);
 int weaponchange(stream*, int id);
+int killmsg(stream*, int id);
 int teamchange(stream*, int id);
 int ping_serverlist(stream*, struct sockaddr_in *client);
 int serverinfo_request(stream*, struct sockaddr_in *client);
@@ -56,7 +57,7 @@ int rcon_pw(stream*, int id);
 #define NULL_STREAM ((stream*)0)
 #define EMPTY_STREAM(s) (!((s)->size))
 #define CHECK_STREAM(s,b) if (((s)->size) < (b)){ \
-	printf("Invalid packet check: %s()", __func__); \
+	printf("Invalid packet check: %s()\n", __func__); \
 	return 0; \
 }\
 
