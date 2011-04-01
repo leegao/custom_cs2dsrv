@@ -16,7 +16,7 @@ int p_banip(char* text, int* consumed){
 	char* check = tokenize(text, consumed, "\1" "si", &ip, &duration);
 	if (!check) return 0;
 
-	// banip(ip, duration);
+	// banip_cmd(ip, duration);
 
 	return 1;
 }
@@ -26,7 +26,7 @@ int p_banname(char* text, int* consumed){
 	char* check = tokenize(text, consumed, "\1" "si", &name, &duration);
 	if (!check) return 0;
 
-	// banname(name, duration);
+	// banname_cmd(name, duration);
 
 	return 1;
 }
@@ -36,7 +36,7 @@ int p_bans(char* text, int* consumed){
 	char* check = tokenize(text, consumed, "\0" "");
 	if (!check) return 0;
 
-	// bans();
+	// bans_cmd();
 
 	return 1;
 }
@@ -46,7 +46,7 @@ int p_banusgn(char* text, int* consumed){
 	char* check = tokenize(text, consumed, "\1" "ii", &usgn, &duration);
 	if (!check) return 0;
 
-	// banusgn(usgn, duration);
+	// banusgn_cmd(usgn, duration);
 
 	return 1;
 }
@@ -56,7 +56,7 @@ int p_changelevel(char* text, int* consumed){
 	char* check = tokenize(text, consumed, "\1" "s", &map);
 	if (!check) return 0;
 
-	// changelevel(map);
+	// changelevel_cmd(map);
 
 	return 1;
 }
@@ -66,7 +66,7 @@ int p_changemap(char* text, int* consumed){
 	char* check = tokenize(text, consumed, "\1" "s", &map);
 	if (!check) return 0;
 
-	// changemap(map);
+	// changemap_cmd(map);
 
 	return 1;
 }
@@ -76,7 +76,7 @@ int p_customkill(char* text, int* consumed){
 	char* check = tokenize(text, consumed, "\3" "isi", &killer, &weapon, &victim);
 	if (!check) return 0;
 
-	// customkill(killer, weapon, victim);
+	// customkill_cmd(killer, weapon, victim);
 
 	return 1;
 }
@@ -86,7 +86,7 @@ int p_deathslap(char* text, int* consumed){
 	char* check = tokenize(text, consumed, "\1" "s", &player);
 	if (!check) return 0;
 
-	// deathslap(player);
+	// deathslap_cmd(player);
 
 	return 1;
 }

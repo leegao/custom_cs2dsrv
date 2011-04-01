@@ -5,7 +5,7 @@ int p_%s(char* text, int* consumed){
 	char* check = tokenize(text, consumed, "\%s" "%s"%s);
 	if (!check) return 0;
 
-	// %s(%s);
+	// %s_cmd(%s);
 
 	return 1;
 }

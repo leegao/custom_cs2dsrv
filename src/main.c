@@ -76,8 +76,6 @@ int main(int argc, char *argv[]){
 	int size;
 	fd_set descriptor; //I don't know
 
-	parse("banip 192.168.1.1;banip 123.2");
-
 	ClearAllPlayer();
 	WeaponInit();
 	ReadServerCfg(cfg_file ? cfg_file:"server.cfg"); // Reads the server.cfg file (We can also check argv for --cfg or -c flag
