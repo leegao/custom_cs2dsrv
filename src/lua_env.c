@@ -12,7 +12,7 @@
 static const char *progname = "[Lua]";
 
 
-static int traceback (lua_State *L) {
+int traceback (lua_State *L) {
   if (!lua_isstring(L, 1))  /* 'message' not a string? */
     return 1;  /* keep it intact */
   lua_getfield(L, LUA_GLOBALSINDEX, "debug");
@@ -38,6 +38,20 @@ static int docall (lua_State *L, int narg, int clear) {
   lua_insert(L, base);  /* put it under chunk and args */
   //signal(SIGINT, laction);
   status = lua_pcall(L, narg, (clear ? 0 : LUA_MULTRET), base);
+  //signal(SIGINT, SIG_DFL);
+  lua_remove(L, base);  /* remove traceback function */
+  /* force a complete garbage collection in case of errors */
+  if (status != 0) lua_gc(L, LUA_GCCOLLECT, 0);
+  return status;
+}
+
+int docall2 (void *L, int narg, int nret) {
+  int status;
+  int base = lua_gettop(L) - narg;  /* function index */
+  lua_pushcfunction(L, traceback);  /* push traceback function */
+  lua_insert(L, base);  /* put it under chunk and args */
+  //signal(SIGINT, laction);
+  status = lua_pcall(L, narg, nret, base);
   //signal(SIGINT, SIG_DFL);
   lua_remove(L, base);  /* remove traceback function */
   /* force a complete garbage collection in case of errors */
@@ -156,41 +170,253 @@ static void dotty (lua_State *L) {
   progname = oldprogname;
 }
 
+int msg(lua_State* l){
+	int n = lua_gettop(l), i;
+	if (n<1){
+		lua_pushstring(l, "msg() requires one argument.");
+		lua_error(l);
+	}
+	stream* m = init_stream(NULL);
+	for (i=1;i<=n;i++){
+		const char* arg = lua_tostring(l, i);
+		Stream.write(m, (byte*)arg, strlen(arg));
+		Stream.write_byte(m, ' ');
+	}
+	Stream.write_byte(m, '\0');
+	SendMessageToAll((char*)(m->mem),1);
+
+	return 0;
+}
+
+int msg2(lua_State* l){
+	int n = lua_gettop(l), i;
+	if (n<2){
+		lua_pushstring(l, "msg2() requires at least 2 arguments.");
+		lua_error(l);
+	}
+	stream* m = init_stream(NULL);
+	int id = lua_tonumber(l, 1);
+	for (i=2;i<=n;i++){
+		const char* arg = lua_tostring(l, i);
+		Stream.write(m, (byte*)arg, strlen(arg));
+		Stream.write_byte(m, ' ');
+	}
+	Stream.write_byte(m, '\0');
+	SendMessageToPlayer(id, (char*)(m->mem),1);
+
+	return 0;
+}
+
+int new_error(lua_State* l){
+	if (lua_gettop(l))
+		printf("[Lua] Error: %s\n", lua_tostring(l, 1));
+	lua_pushnil(l);
+	lua_error(l);
+	return 0;
+}
+
+int l_player(lua_State* l){ // I'm not proud of this...
+	int n = lua_gettop(l);
+	if (n<2){
+		lua_pushstring(l, "player() requires exactly two arguments");
+		lua_error(l);
+	}
+
+	int id = lua_tonumber(l, 1);
+
+	const char* type = lua_tostring(l,2);
+#define IS(typ) (!strcmp(type, (typ)))
+	if IS("exists"){
+		lua_pushboolean(l, player[id].name?1:0);
+		return 1;
+	}
+#define INSERT() lua_pushnumber(l, i++); /* table index */ \
+		lua_pushnumber(l, n);	/* id */ \
+		lua_rawset(l, -3);      /* the table is 3 down */
+
+	if(!id){
+		lua_newtable(l);
+		int i=1,n;
+		if IS("table")
+			for (n=0;n<MAX_CLIENTS;n++)
+				if (player[n].name){
+					INSERT();
+				}
+		else if IS("tableliving")
+			for (n=0;n<MAX_CLIENTS;n++)
+				if (player[n].name && !player[n].dead){
+					INSERT();
+				}
+		else if IS("team1")
+			for (n=0;n<MAX_CLIENTS;n++)
+				if (player[n].name && player[n].team == 1){
+					INSERT();
+				}
+		else if IS("team2")
+			for (n=0;n<MAX_CLIENTS;n++)
+				if (player[n].name && player[n].team == 2){
+					INSERT();
+				}
+		else if IS("team1living")
+			for (n=0;n<MAX_CLIENTS;n++)
+				if (player[n].name && player[n].team == 1 && !player[n].dead){
+					INSERT();
+				}
+		else if IS("team2living")
+			for (n=0;n<MAX_CLIENTS;n++)
+				if (player[n].name && player[n].team == 2 && !player[n].dead){
+					INSERT();
+				}
+#undef INSERT
+		else{
+			lua_pushstring(l,"player() argument is invalid");
+			lua_error(l);
+		}
+		return 1;
+	}else if(!player[id].name){
+		lua_pushfstring(l, "id %d is not a valid player", id);
+		lua_error(l);
+	}
+
+	if IS("name"){
+		lua_pushstring(l, (char*)player[id].name);
+	}else if IS("ip"){
+		lua_pushstring(l, inet_ntoa(player[id].ip));
+	}else if IS("port"){
+		lua_pushinteger(l, player[id].port);
+	}else if IS("usgn"){
+		lua_pushinteger(l, player[id].usgn);
+	}else if IS("ping"){
+		lua_pushinteger(l, player[id].latency);
+	}else if IS("idle"){
+		lua_pushboolean(l, (player[id].lastpacket - mtime()) > 10000); // not correct :P
+	}else if IS("bot"){
+		lua_pushboolean(l, 0); // for now
+	}else if IS("team"){
+		lua_pushinteger(l, player[id].team);
+	}else if IS("look"){
+		lua_pushinteger(l, player[id].skin);
+	}else if IS("x"){
+		lua_pushinteger(l, *player[id].x);
+	}else if IS("y"){
+		lua_pushinteger(l, *player[id].y);
+	}else if IS("rot"){
+		lua_pushnumber(l, (double)player[id].rotation);
+	}else if IS("tilex"){
+		lua_pushinteger(l, 16+(*player[id].x)/32);
+	}else if IS("tiley"){
+		lua_pushinteger(l, 16+(*player[id].y)/32);
+	}else if IS("health"){
+		lua_pushinteger(l, player[id].health);
+	}else if IS("armor"){
+		lua_pushinteger(l, player[id].armor);
+	}else if IS("money"){
+		lua_pushinteger(l, player[id].money);
+	}else if IS("score"){
+		lua_pushinteger(l, player[id].score);
+	}else if IS("deaths"){
+		lua_pushinteger(l, player[id].deaths);
+	}else if IS("teamkills"){
+		lua_pushinteger(l, 0); // replace later
+	}else if IS("hostagekills"){
+		lua_pushinteger(l, 0); // replace later
+	}else if IS("teambuildingkills"){
+		lua_pushinteger(l, 0); // replace later
+	}else if IS("weapontype"){
+		lua_pushinteger(l, player[id].actualweapon);
+	}else if IS("nightvision"){
+		lua_pushboolean(l, 0); // replace later
+	}else if IS("defusekit"){
+		lua_pushboolean(l, 0); // replace later
+	}else if IS("bomb"){
+		lua_pushboolean(l, 0); // replace later
+	}else if IS("flag"){
+		lua_pushboolean(l, 0); // replace later
+	}else if IS("reloading"){
+		lua_pushboolean(l, player[id].reloading);
+	}else if IS("process"){
+		lua_pushboolean(l, 0); // idk wtf this is
+	}else if IS("sprayname"){
+		lua_pushstring(l, (char*)player[id].spraylogo);
+	}else if IS("spraycolor"){
+		lua_pushinteger(l, 0); // replace later
+	}else if IS("votekick"){
+		lua_pushinteger(l, 0); // replace later
+	}else if IS("votemap"){
+		lua_pushinteger(l, 0); // replace later
+	}else if IS("favteam"){
+		lua_pushinteger(l, player[id].team); // replace later
+	}else if IS("speedmod"){
+		lua_pushinteger(l, 1); // replace later
+	}else if IS("maxhealth"){
+		lua_pushinteger(l, 100); // replace later
+	}else if IS("rcon"){
+		lua_pushboolean(l, player[id].rcon);
+	}else{
+		lua_pushstring(l, "Player argument is invalid");
+		lua_error(l);
+	}
+#undef IS
+	return 1;
+}
+
+void init_functions(){
+	lua_pushcfunction(_G, msg);
+	lua_setfield(_G, LUA_GLOBALSINDEX, "msg");
+
+	lua_pushcfunction(_G, msg2);
+	lua_setfield(_G, LUA_GLOBALSINDEX, "msg2");
+
+	lua_pushcfunction(_G, new_error);
+	lua_setfield(_G, LUA_GLOBALSINDEX, "error");
+
+	lua_pushcfunction(_G, l_player);
+		lua_setfield(_G, LUA_GLOBALSINDEX, "player");
+}
+
 int init_lua(){
-	/* Declare the Lua libraries we wish to use. */
-	/* Note: If you are opening and running a file containing Lua code */
-	/* using 'lua_dofile(l, "myfile.lua") - you must declare all the libraries */
-	/* used in that file here also. */
+	_G = lua_open();
 
+	lua_gc(_G, LUA_GCSTOP, 0);
+	luaL_openlibs(_G);
+	lua_gc(_G, LUA_GCRESTART, 0);
 
-	/* Declare a Lua State, open the Lua State and load the libraries (see above). */
-	lua_State *l = lua_open();
-
-	lua_gc(l, LUA_GCSTOP, 0);
-	luaL_openlibs(l);
-	lua_gc(l, LUA_GCRESTART, 0);
-
-	/* You can do what you want here. Note: Remember to update the libraries used (see above) */
-	/* if you add to your program and use new Lua libraries. */
-	/* In the lines below, I load and run the Lua code contained in the file */
-
-	_G = l;
 	init_hooks();
+	init_functions();
+	if(lua_strict){
+		// break the print pattern
+		const char* strict_print = ""
+				//"error();"
+				"local __oldprint = print\n"
+				"function print(txt, ...)\n"
+				"	if ... or type(txt) ~= 'string' then error('print() expects a single string argument'); return end\n"
+				"	__oldprint(txt)\n"
+				"end\n"
+				""
+				"local __oldmsg = msg\n"
+				"function msg(txt, ...)\n"
+				"	if ... or type(txt) ~= 'string' then error('msg() expects a single string argument'); return end\n"
+				"	__oldmsg(txt)\n"
+				"end\n"
+				""
+				"local __oldmsg2 = msg2\n"
+				"function msg2(id, txt, ...)\n"
+				"	if ... or type(txt) ~= 'string' then error('msg2() expects 2 arguments'); return end\n"
+				"	__oldmsg2(id, txt)\n"
+				"end\n"
+				"";
+		if (luaL_dostring(_G, strict_print));
+	}
 
-	int err = luaL_dofile(l, lua_file ? lua_file : "server.lua");
-
+	int err = luaL_dofile(_G, lua_file ? lua_file : "server.lua");
 
 	if (err){
 		printf("[Lua] Cannot open file %s\n", lua_file ? lua_file : "server.lua");
 	}
 
-	/* Remember to destroy the Lua State */
-	//lua_close(l);
-
-	//dotty(l);
 	return 0;
 }
 
-void lua_cleanup(lua_State* l){
+void lua_cleanup(void* l){
 	lua_close(l);
 }

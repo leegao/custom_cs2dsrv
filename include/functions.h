@@ -22,7 +22,7 @@ unsigned short GetServerStatus(void);
 unsigned short endian_swap_short(unsigned short *x);
 unsigned int endian_swap_int(unsigned int *x);
 int ValidatePacket(unsigned char *message, int id);
-void PaketConfirmation(unsigned char *message, int id);
+void PacketConfirmation(unsigned char *message, int id);
 int CheckPlayerData(unsigned char *password);
 unsigned char *GetEncodedString(unsigned char *string, int length);
 void CheckAllPlayerForReload(int writesocket);

@@ -131,14 +131,14 @@ void socket_error(char *message)
  * \fn cleanup(void)
  * \brief clean the socket
  */
-void cleanup(void)
-{
+void cleanup(void){
 	OnExit();
 #ifdef _WIN32
 	WSACleanup();
 #else
 	/* Nichts zu tun */
 #endif
+	lua_cleanup(_G);
 }
 
 /**
@@ -192,15 +192,15 @@ void udp_send(int socket, unsigned char *data, int length,
 }
 
 /**
- * \fn int udp_recieve(int socket, unsigned char *data, int length, struct sockaddr_in *client)
- * \brief Recieves a message on a specicific socket and save (if something recieved) the data
- * \param socket socket to recieve
+ * \fn int udp_receive(int socket, unsigned char *data, int length, struct sockaddr_in *client)
+ * \brief Receives a message on a specific socket and save (if something received) the data
+ * \param socket socket to receive
  * \param *data pointer where the data should be saved
  * \param length max length of *data
  * \param *client pointer where the clientdata (ip, ...) should be saved
  * \return length of read data
  */
-int udp_recieve(int socket, unsigned char *data, int length,
+int udp_receive(int socket, unsigned char *data, int length,
 		struct sockaddr_in *client)
 {
 	struct sockaddr_in newclient;
@@ -208,7 +208,7 @@ int udp_recieve(int socket, unsigned char *data, int length,
 	int size;
 	len = sizeof(struct sockaddr_in);
 	size = recvfrom(socket, (char*) data, length, 0,
-			(struct sockaddr *) &newclient, &len);
+			(struct sockaddr *) &newclient, (socklen_t *)&len);
 	*client = newclient;
 #ifdef _WIN32
 	if (size == SOCKET_ERROR)

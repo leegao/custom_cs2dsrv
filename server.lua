@@ -1,6 +1,7 @@
+
 addhook("join", "lol")
 function lol(id)
-	print("Hello ",id)
+	print(unpack(player(0,"table")))
 end
 
 addhook("leave", "lol2")
@@ -10,5 +11,5 @@ end
 
 addhook("select", "lol3")
 function lol3(id, wpn)
-	print("wpn", id, wpn)
+	msg2(id, "wpn", id, wpn)
 end

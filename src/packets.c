@@ -368,6 +368,18 @@ int weaponchange(stream* packet, int id)
 	return 1;
 }
 
+int killmsg(stream* packet, int id)
+{
+	if (player[id].health == 0) return 1;
+	player[id].health = 0;
+	player[id].dead = 1;
+	player[id].deaths++;
+	RemoveAllPlayerWeapon(id);
+	SendKillMessage(0, id);
+	printf("%s commit suicide", player[id].name);
+	return 1;
+}
+
 /**
  * \fn int teamchange(stream* packet, int id)
  * \brief handles a team change
@@ -381,7 +393,7 @@ int teamchange(stream* packet, int id){
 	CHECK_STREAM(packet, 2);
 	unsigned char team = Stream.read_byte(packet);
 	unsigned char skin = Stream.read_byte(packet);
-
+	//printf("%d %d\n", team, skin); //happens in 2 stages. first is [team] 5; second is [team] [look]
 	switch (OnTeamChangeAttempt(id, team, skin)){
 	case 0:
 		player[id].team = team;
@@ -601,6 +613,7 @@ int joinroutine_known(stream* packet, int id){
 			byte* pre_authcode_respond = Stream.read_str(packet);
 			byte mapstatus = Stream.read_byte(packet);
 
+			(void)mapstatus; // sentinel for mapstatus
 			free(pre_authcode_respond);
 			free(mhash);
 
@@ -620,10 +633,10 @@ int joinroutine_known(stream* packet, int id){
 
 			stream* buf = init_stream(NULL);
 
-			Stream.write(buf, (byte*)"\xfc\6\0", 3);
+			Stream.write(buf, (byte*)"\xfc\6\0\xa", 3);
 			Stream.write_str(buf, sv_map);
 			Stream.write_str(buf, sv_name);
-			byte wtf[] = {
+			byte wtf[] = { //seriously what the fuck?
 					0,
 					0,
 					sv_friendlyfire,
@@ -631,8 +644,8 @@ int joinroutine_known(stream* packet, int id){
 					mp_roundtime,
 					mp_freezetime,
 					mp_c4timer,
-					32,
-					124,
+					0x3d, //no fucking idea. not static
+					0x4a, //no fucking idea. not static.
 					0,
 					0,
 					1,
@@ -643,9 +656,10 @@ int joinroutine_known(stream* packet, int id){
 					sv_gamemode,
 					mp_respawndelay,
 					mp_infammo,
+					1,8,51,58,11,22,32,35,80,73,0, //no fucking idea what these are.
 					3, 'A', 'C', 'K'
 			};
-			Stream.write(buf, wtf, 23);
+			Stream.write(buf, wtf, 34);
 
 			SendToPlayer(buf->mem, buf->size, id, 1);
 			free(buf);
@@ -722,7 +736,6 @@ int joinroutine_known(stream* packet, int id){
 			SendToPlayer((byte*)"\xfc\7\2\0", 4, id, 1);
 
 			//----------- ItemData -----------
-			//fc 07 03 01(1 anzahl) 01(id) 00 4b(waffenid) 0f 00 12 00 (position) 01 (munition ?) 00 00 00
 			SendToPlayer((byte*)"\xfc\7\3\0", 4, id, 1);
 
 			//----------- EnityData -----------
@@ -736,9 +749,12 @@ int joinroutine_known(stream* packet, int id){
 
 			//----------- DynamicObjectImageData -----------
 			SendToPlayer((byte*)"\xfc\7\7\0", 4, id, 1);
+			
+			//----------- uh.. SomethingData??? -----------
+			SendToPlayer((byte*)"\xfc\7\x8\0", 4, id, 1);
 
-			//----------- Final ACK ----------- c8 3 41 43 4b
-			SendToPlayer((byte*)"\xfc\7\xc8\3\x41\x43\x4b", 7, id, 1);
+			//----------- Final ACK ----------- c8 3 41 43 4b 1c 00 01
+			SendToPlayer((byte*)"\xfc\7\xc8\3\x41\x43\x4b\x1c\0\1", 10, id, 1);
 
 			player[id].joinstatus = 4;
 			free(mapname);
@@ -891,7 +907,7 @@ void init_optable(){
 	K(14, posrotupdatewalk);
 	K(16, reload);
 	//K(17, hit);
-	//K(19, killmsg);
+	K(19, killmsg);
 	K(20, teamchange);
 	//K(21, spawn_msg); <- client?
 	//K(22, round_start);
