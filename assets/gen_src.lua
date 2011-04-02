@@ -1,11 +1,9 @@
 function generate(name, fmt, min, ...)
 	baseline = [[
-int p_%s(char* text, int* consumed){
-	%s // declarations
-	char* check = tokenize(text, consumed, "\x%s" "%s"%s);
-	if (!check) return 0;
+int %s_cmd(%s){
+	printf("[Parse] Error: %s(%s) is unimplemented.\n");
 
-	return %s_cmd(%s);
+	return 0;
 }
 	]]
 	local args = {...}
@@ -29,17 +27,17 @@ int p_%s(char* text, int* consumed){
 		else
 			declaration = declaration .. "void* "..identifier
 		end
-		if type(args[i]) == "table" then
+		if type(args[i]) == "tablea" then
 			declaration = declaration .. " = "
 			if t == "s" then declaration = declaration .. '"'..args[i][2]..'"'
 			else declaration = declaration .. args[i][2] end
 		end
-		declaration = declaration .. "; "
+		declaration = declaration .. ", "
 		parameter = parameter .. ", &"..identifier
 		table.insert(identifiers, identifier)
 	end
 	identifiers = table.concat(identifiers, ", ")
-	return baseline:format(name, declaration, min, fmt, parameter, name, identifiers)
+	return baseline:format(name, declaration:sub(1,#declaration-2), name, declaration:sub(1,#declaration-2))
 end
 
 a = ""
@@ -213,7 +211,7 @@ a = a .. "\n" .. generate("usgn_addserver", "", 0, nil)
 a = a .. "\n" .. generate("usgn_info", "", 0, nil)
 
 print(a)
-f = io.open("partial_parse.part", "w")
+f = io.open("parse_cmd_c.part", "w")
 f:write(a)
 f:close()
 

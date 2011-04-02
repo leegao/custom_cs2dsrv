@@ -1,0 +1,332 @@
+
+	add(banip);
+
+	add(banname);
+
+	add(bans);
+
+	add(banusgn);
+
+	add(changelevel);
+
+	add(changemap);
+
+	add(customkill);
+
+	add(deathslap);
+
+	add(bot_add);
+
+	add(bot_add_ct);
+
+	add(bot_add_t);
+
+	add(bot_count);
+
+	add(bot_jointeam);
+
+	add(bot_kill);
+
+	add(bot_prefix);
+
+	add(bot_remove);
+
+	add(bot_remove_all);
+
+	add(bot_remove_ct);
+
+	add(bot_remove_t);
+
+	add(bot_skill);
+
+	add(bot_weapons);
+
+	add(effect);
+
+	add(equip);
+
+	add(explosion);
+
+	add(flashplayer);
+
+	add(flashposition);
+
+	add(hudtxt);
+
+	add(hudtxt2);
+
+	add(hudtxtalphafade);
+
+	add(hudtxtcolorfade);
+
+	add(hudtxtmove);
+
+	add(items);
+
+	add(kick);
+
+	add(killobject);
+
+	add(killplayer);
+
+	add(listbans);
+
+	add(listplayers);
+
+	add(logaddress_add);
+
+	add(logaddress_remove);
+
+	add(logaddress_removeall);
+
+	add(lua);
+
+	add(luareset);
+
+	add(makect);
+
+	add(makespec);
+
+	add(maket);
+
+	add(map);
+
+	add(maps);
+
+	add(mp_antispeeder);
+
+	add(mp_autogamemode);
+
+	add(mp_autoteambalance);
+
+	add(mp_building_health);
+
+	add(mp_building_limit);
+
+	add(mp_building_price);
+
+	add(mp_buytime);
+
+	add(mp_c4timer);
+
+	add(mp_curtailedexplosions);
+
+	add(mp_damagefactor);
+
+	add(mp_deathdrop);
+
+	add(mp_dispenser_health);
+
+	add(mp_dispenser_money);
+
+	add(mp_dmspawnmoney);
+
+	add(mp_dropgrenades);
+
+	add(mp_floodprot);
+
+	add(mp_freezetime);
+
+	add(mp_grenaderebuy);
+
+	add(mp_hostagepenalty);
+
+	add(mp_idleaction);
+
+	add(mp_idlekick);
+
+	add(mp_idletime);
+
+	add(mp_infammo);
+
+	add(mp_kevlar);
+
+	add(mp_kickpercent);
+
+	add(mp_killbuildingmoney);
+
+	add(mp_killbuildings);
+
+	add(mp_killinfo);
+
+	add(mp_killteambuildings);
+
+	add(mp_lagcompensation);
+
+	add(mp_localrconoutput);
+
+	add(mp_luamap);
+
+	add(mp_luaserver);
+
+	add(mp_mapgoalscore);
+
+	add(mp_mapvoteratio);
+
+	add(mp_maxclientsip);
+
+	add(mp_maxrconfails);
+
+	add(mp_natholepunching);
+
+	add(mp_pinglimit);
+
+	add(mp_postspawn);
+
+	add(mp_radar);
+
+	add(mp_randomspawn);
+
+	add(mp_reservations);
+
+	add(mp_respawndelay);
+
+	add(mp_roundlimit);
+
+	add(mp_roundtime);
+
+	add(mp_startmoney);
+
+	add(mp_supply_items);
+
+	add(mp_teamkillpenalty);
+
+	add(mp_teleportreload);
+
+	add(mp_tempbantime);
+
+	add(mp_timelimit);
+
+	add(mp_tkpunish);
+
+	add(mp_trace);
+
+	add(mp_turretdamage);
+
+	add(mp_unbuildable);
+
+	add(mp_unbuyable);
+
+	add(mp_vulnerablehostages);
+
+	add(mp_winlimit);
+
+	add(mp_wpndmg);
+
+	add(mp_wpndmg_z1);
+
+	add(mp_wpndmg_z2);
+
+	add(mp_zombiedmg);
+
+	add(mp_zombiekillequip);
+
+	add(mp_zombiekillscore);
+
+	add(mp_zombierecover);
+
+	add(mp_zombiespeedmod);
+
+	add(msg);
+
+	add(rcon);
+
+	add(rcon_password);
+
+	add(rcon_pw);
+
+	add(removeitem);
+
+	add(reroute);
+
+	add(restart);
+
+	add(restartround);
+
+	add(setarmor);
+
+	add(setdeaths);
+
+	add(sethealth);
+
+	add(setmaxhealth);
+
+	add(setmoney);
+
+	add(setname);
+
+	add(setpos);
+
+	add(setscore);
+
+	add(setweapon);
+
+	add(shake);
+
+	add(slap);
+
+	add(spawnitem);
+
+	add(spawnnpc);
+
+	add(spawnobject);
+
+	add(spawnplayer);
+
+	add(speedmod);
+
+	add(strip);
+
+	add(sv_fow);
+
+	add(sv_friendlyfire);
+
+	add(sv_gamemode);
+
+	add(sv_gm);
+
+	add(sv_hostport);
+
+	add(sv_lan);
+
+	add(sv_map);
+
+	add(sv_maptransfer);
+
+	add(sv_maxplayers);
+
+	add(sv_msg);
+
+	add(sv_msg2);
+
+	add(sv_name);
+
+	add(sv_password);
+
+	add(sv_rcon);
+
+	add(sv_restart);
+
+	add(sv_restartround);
+
+	add(sv_sound);
+
+	add(sv_sound2);
+
+	add(sv_specmode);
+
+	add(sv_spraytransfer);
+
+	add(sv_usgnonly);
+
+	add(transfer_speed);
+
+	add(trigger);
+
+	add(unban);
+
+	add(unbanall);
+
+	add(usgn_addserver);
+
+	add(usgn_info);

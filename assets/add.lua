@@ -1,3 +1,41 @@
+function generate(name, fmt, min, ...)
+	baseline = [[	add(%s);
+]]
+	local args = {...}
+	local declaration = ""
+	local parameter = ""
+	local identifiers = {}
+	for i=1,#fmt do
+		local t = string.char(fmt:byte(i))
+		local identifier = args[i]
+		if not identifier then identifier = "_"..i end
+		if type(identifier) == "table" then
+			identifier = identifier[1]
+		end
+
+		if t == "s" then
+			declaration = declaration .. "char* "..identifier
+		elseif t == "i" then
+			declaration = declaration .. "int "..identifier
+		elseif t == "f" then
+			declaration = declaration .. "float "..identifier
+		else
+			declaration = declaration .. "void* "..identifier
+		end
+		if type(args[i]) == "tablea" then
+			declaration = declaration .. " = "
+			if t == "s" then declaration = declaration .. '"'..args[i][2]..'"'
+			else declaration = declaration .. args[i][2] end
+		end
+		declaration = declaration .. ", "
+		parameter = parameter .. ", &"..identifier
+		table.insert(identifiers, identifier)
+	end
+	identifiers = table.concat(identifiers, ", ")
+	return baseline:format(name)
+end
+
+a= ""
 a = a .. "\n" .. generate("banip", "si", 1, "ip", {"duration",-1})
 a = a .. "\n" .. generate("banname", "si", 1, "name", {"duration",-1})
 a = a .. "\n" .. generate("bans", "", 0)
@@ -166,3 +204,8 @@ a = a .. "\n" .. generate("unban", "s", 1, "banmask")
 a = a .. "\n" .. generate("unbanall", "", 0, nil)
 a = a .. "\n" .. generate("usgn_addserver", "", 0, nil)
 a = a .. "\n" .. generate("usgn_info", "", 0, nil)
+
+print(a)
+f = io.open("add.part", "w")
+f:write(a)
+f:close()

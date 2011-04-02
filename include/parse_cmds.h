@@ -8,6 +8,7 @@
 #ifndef PARSE_CMDS_H_
 #define PARSE_CMDS_H_
 
+#include "main.h"
 
 int banip_cmd(char* ip, int duration);
 

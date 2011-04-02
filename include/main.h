@@ -49,6 +49,7 @@
 #include "lua_env.h"
 #include "hashmap.h"
 #include "parse.h"
+#include "parse_cmds.h"
 
 #include <signal.h>
 #include <lua.h>
