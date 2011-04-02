@@ -293,8 +293,8 @@ int p_hudtxt2(char* text, int* consumed){
 }
 
 int p_hudtxtalphafade(char* text, int* consumed){
-	int player; int id; int duration; int alpha;  // declarations
-	char* check = tokenize(text, consumed, "\x4" "iiii", &player, &id, &duration, &alpha);
+	int player; int id; int duration; float alpha;  // declarations
+	char* check = tokenize(text, consumed, "\x4" "iiif", &player, &id, &duration, &alpha);
 	if (!check) return 0;
 
 	// hudtxtalphafade_cmd(player, id, duration, alpha);
@@ -383,8 +383,8 @@ int p_listplayers(char* text, int* consumed){
 }
 
 int p_logaddress_add(char* text, int* consumed){
-	int address;  // declarations
-	char* check = tokenize(text, consumed, "\x1" "i", &address);
+	char* address;  // declarations
+	char* check = tokenize(text, consumed, "\x1" "s", &address);
 	if (!check) return 0;
 
 	// logaddress_add_cmd(address);
@@ -393,8 +393,8 @@ int p_logaddress_add(char* text, int* consumed){
 }
 
 int p_logaddress_remove(char* text, int* consumed){
-	int address;  // declarations
-	char* check = tokenize(text, consumed, "\x1" "i", &address);
+	char* address;  // declarations
+	char* check = tokenize(text, consumed, "\x1" "s", &address);
 	if (!check) return 0;
 
 	// logaddress_remove_cmd(address);
@@ -543,8 +543,8 @@ int p_mp_building_price(char* text, int* consumed){
 }
 
 int p_mp_buytime(char* text, int* consumed){
-	int time;  // declarations
-	char* check = tokenize(text, consumed, "\x1" "i", &time);
+	float time;  // declarations
+	char* check = tokenize(text, consumed, "\x1" "f", &time);
 	if (!check) return 0;
 
 	// mp_buytime_cmd(time);
@@ -573,8 +573,8 @@ int p_mp_curtailedexplosions(char* text, int* consumed){
 }
 
 int p_mp_damagefactor(char* text, int* consumed){
-	int factor;  // declarations
-	char* check = tokenize(text, consumed, "\x1" "i", &factor);
+	float factor;  // declarations
+	char* check = tokenize(text, consumed, "\x1" "f", &factor);
 	if (!check) return 0;
 
 	// mp_damagefactor_cmd(factor);
@@ -713,8 +713,8 @@ int p_mp_infammo(char* text, int* consumed){
 }
 
 int p_mp_kevlar(char* text, int* consumed){
-	int percent;  // declarations
-	char* check = tokenize(text, consumed, "\x1" "i", &percent);
+	float percent;  // declarations
+	char* check = tokenize(text, consumed, "\x1" "f", &percent);
 	if (!check) return 0;
 
 	// mp_kevlar_cmd(percent);
@@ -723,8 +723,8 @@ int p_mp_kevlar(char* text, int* consumed){
 }
 
 int p_mp_kickpercent(char* text, int* consumed){
-	int percent;  // declarations
-	char* check = tokenize(text, consumed, "\x1" "i", &percent);
+	float percent;  // declarations
+	char* check = tokenize(text, consumed, "\x1" "f", &percent);
 	if (!check) return 0;
 
 	// mp_kickpercent_cmd(percent);
@@ -823,8 +823,8 @@ int p_mp_mapgoalscore(char* text, int* consumed){
 }
 
 int p_mp_mapvoteratio(char* text, int* consumed){
-	int percent;  // declarations
-	char* check = tokenize(text, consumed, "\x1" "i", &percent);
+	float percent;  // declarations
+	char* check = tokenize(text, consumed, "\x1" "f", &percent);
 	if (!check) return 0;
 
 	// mp_mapvoteratio_cmd(percent);
@@ -933,8 +933,8 @@ int p_mp_roundlimit(char* text, int* consumed){
 }
 
 int p_mp_roundtime(char* text, int* consumed){
-	int time;  // declarations
-	char* check = tokenize(text, consumed, "\x1" "i", &time);
+	float time;  // declarations
+	char* check = tokenize(text, consumed, "\x1" "f", &time);
 	if (!check) return 0;
 
 	// mp_roundtime_cmd(time);
@@ -983,8 +983,8 @@ int p_mp_teleportreload(char* text, int* consumed){
 }
 
 int p_mp_tempbantime(char* text, int* consumed){
-	int time;  // declarations
-	char* check = tokenize(text, consumed, "\x1" "i", &time);
+	float time;  // declarations
+	char* check = tokenize(text, consumed, "\x1" "f", &time);
 	if (!check) return 0;
 
 	// mp_tempbantime_cmd(time);
@@ -993,8 +993,8 @@ int p_mp_tempbantime(char* text, int* consumed){
 }
 
 int p_mp_timelimit(char* text, int* consumed){
-	int time;  // declarations
-	char* check = tokenize(text, consumed, "\x1" "i", &time);
+	float time;  // declarations
+	char* check = tokenize(text, consumed, "\x1" "f", &time);
 	if (!check) return 0;
 
 	// mp_timelimit_cmd(time);
@@ -1103,8 +1103,8 @@ int p_mp_wpndmg_z2(char* text, int* consumed){
 }
 
 int p_mp_zombiedmg(char* text, int* consumed){
-	int percentage;  // declarations
-	char* check = tokenize(text, consumed, "\x1" "i", &percentage);
+	float percentage;  // declarations
+	char* check = tokenize(text, consumed, "\x1" "f", &percentage);
 	if (!check) return 0;
 
 	// mp_zombiedmg_cmd(percentage);
@@ -1413,11 +1413,11 @@ int p_sv_fow(char* text, int* consumed){
 }
 
 int p_sv_friendlyfire(char* text, int* consumed){
-	int FF;  // declarations
-	char* check = tokenize(text, consumed, "\x1" "i", &FF);
+	int ff;  // declarations
+	char* check = tokenize(text, consumed, "\x1" "i", &ff);
 	if (!check) return 0;
 
-	// sv_friendlyfire_cmd(FF);
+	// sv_friendlyfire_cmd(ff);
 
 	return 1;
 }
