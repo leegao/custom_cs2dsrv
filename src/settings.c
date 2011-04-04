@@ -73,6 +73,13 @@ int buf_is_in(char c, int n, ...){
 	return 0;
 }
 
+//int is_in(char c, char* args){
+//	int i, n = strlen(args);
+//	for (i=0; i<n; i++)
+//		if (args[i]==c) return 1;
+//	return 0;
+//}
+
 setting_closure read_config(const char* cfg_file, struct setting** settings){ // rewritten, also renamed for C naming standard
 	FILE * f;
 	char *buf = (char*)malloc(1024);
