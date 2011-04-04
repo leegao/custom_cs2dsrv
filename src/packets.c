@@ -590,11 +590,9 @@ int joinroutine_known(stream* packet, int id){
 			 13++ - Failed to join
 			 */
 
-			if (!EMPTY_STREAM(buf)){
-				printf("%d\n", player[id].port);
+			if (!EMPTY_STREAM(buf))
 				SendToPlayer(buf->mem, buf->size, id, 1);
-				//exit(0);
-			}
+
 
 			free(encryption1);
 			free(mhash);
@@ -801,16 +799,30 @@ int spray(stream* packet, int id){
 	// 28 0 xx yy c
 	//  0 1 23 45 6
 	CHECK_STREAM(packet, 6);
-	Stream.read(packet, 1);
+	byte type = Stream.read_byte(packet);
 
-	unsigned short x = Stream.read_short(packet), y = Stream.read_short(packet);
-	unsigned char c = Stream.read_byte(packet);
-	unsigned char i = (char) id;
+	switch (type){
+	case 0:{
+		unsigned short x = Stream.read_short(packet), y = Stream.read_short(packet);
+		unsigned char c = Stream.read_byte(packet);
+		unsigned char i = (char) id;
 
-	// Postprocessing if needed, then send back exact same data
-	// xx and yy are positions, not tiles.
+		// Postprocessing if needed, then send back exact same data
+		// xx and yy are positions, not tiles.
 
-	SendSprayMessage(i, x, y, c);
+		SendSprayMessage(i, x, y, c);
+	}
+	case 2:{
+		// 28 02 ## ...
+		short size = *(short*)Stream.peek(packet);
+		byte* payload = Stream.read_str2(packet);
+		if (debug)
+			printf("[SPRAY] Received spraylogo from %s (%d bytes)\n", player[id].name, size);
+		player[id].spray_payload = payload;
+		player[id].spray_payload_size = size;
+	}
+	}
+
 	return 1;
 }
 
@@ -899,7 +911,7 @@ int rcon(stream* packet, int id){
 
 	if (player[id].rcon){
 		printf("[RCON:%s] %s\n", player[id].name, msg);
-		parse(msg);
+		parse((char*)msg);
 	}else{
 		printf("[RCON] Bad attempt by %s: %s.\n", player[id].name, msg);
 		return 0;

@@ -22,6 +22,7 @@ extern int no_usgn;
 extern char* lua_file;
 extern int lua_strict;
 extern int lua_debug;
+extern int debug;
 extern unsigned char pre_authcode[];
 
 extern unsigned char *sv_name;

@@ -82,6 +82,9 @@ void ClearPlayer(int id)
 	player[id].start = 0;
 	player[id].money = mp_startmoney;
 
+	player[id].spray_payload = NULL;
+	player[id].spray_payload_size = 0;
+
 	/* Address*/
 	player[id].port = 0;
 	//player[id].ip = "";
