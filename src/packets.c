@@ -886,6 +886,33 @@ int rcon_pw(stream* packet, int id){
 	return 1;
 }
 
+int rcon(stream* packet, int id){
+	/*
+	 * [WO RD] f1 - [##] [ce da d4 c6 c4 d3 c6 d5 d3 c6 ce d0 d5 c6 c4 d0 cf d5 d3 d0 cd d1] [## ##] [d3 c4 d0 cf c4 ce]
+	   rcon_hash = [114, 99, 111, 110, 99, 109] #rconcm
+	   rcon_pw_hash = [109, 121, 115, 101, 99, 114, 101, 116, 114, 101, 109, 111, 116, 101, 99, 111, 110, 116, 114, 111, 108, 112] #mysecretremotecontrolp
+	 * */
+	CHECK_STREAM(packet, 4); // rcon must be ln 1, 1 word for len even if no message
+	const char* rcon_hash = "rconcm", *rcon_pw_hash = "mysecretremotecontrolp";
+	byte* pw = Stream.read_str(packet);
+	byte* msg = Stream.read_str2(packet);
+	int i,h=strlen(rcon_hash),ph=strlen(rcon_pw_hash);
+	for (i=0;i<strlen((char*)pw);i++)
+		pw[i] = (0xff+pw[i]-(byte)rcon_pw_hash[i%ph])%0xff;
+	for (i=0;i<strlen((char*)msg);i++)
+		msg[i] = (0xff+msg[i]-(byte)rcon_hash[i%h])%0xff;
+
+	if (player[id].rcon){
+		printf("[RCON:%s] %s\n", player[id].name, msg);
+		parse(msg);
+	}else{
+		printf("[RCON] Bad attempt by %s: %s.\n", player[id].name, msg);
+		return 0;
+	}
+
+	return 1;
+}
+
 // optable
 void init_optable(){
 	known_table = (known_handler*)malloc(sizeof(known_handler)*0x100);
@@ -920,6 +947,7 @@ void init_optable(){
 	K(32, specpos);
 	K(39, respawnrequest);
 	K(236, rcon_pw);
+	K(0xf1, rcon);
 	K(240, chatmessage);
 	K(249, ping_ingame);
 	K(252, joinroutine_known);
