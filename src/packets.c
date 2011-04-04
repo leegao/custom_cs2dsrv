@@ -887,11 +887,6 @@ int rcon_pw(stream* packet, int id){
 }
 
 int rcon(stream* packet, int id){
-	/*
-	 * [WO RD] f1 - [##] [ce da d4 c6 c4 d3 c6 d5 d3 c6 ce d0 d5 c6 c4 d0 cf d5 d3 d0 cd d1] [## ##] [d3 c4 d0 cf c4 ce]
-	   rcon_hash = [114, 99, 111, 110, 99, 109] #rconcm
-	   rcon_pw_hash = [109, 121, 115, 101, 99, 114, 101, 116, 114, 101, 109, 111, 116, 101, 99, 111, 110, 116, 114, 111, 108, 112] #mysecretremotecontrolp
-	 * */
 	CHECK_STREAM(packet, 4); // rcon must be ln 1, 1 word for len even if no message
 	const char* rcon_hash = "rconcm", *rcon_pw_hash = "mysecretremotecontrolp";
 	byte* pw = Stream.read_str(packet);
