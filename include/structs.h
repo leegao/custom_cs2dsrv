@@ -94,6 +94,9 @@ struct PLAYER
 
 	int firetimer, zoomtimer;
 	int rcon;
+	unsigned char* spray_payload, *spray_data;
+	unsigned long spray_payload_size;
+	short spray_data_size;
 
 	/* Address*/
 	unsigned short port;

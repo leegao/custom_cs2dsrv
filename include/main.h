@@ -49,11 +49,15 @@
 #include "lua_env.h"
 #include "hashmap.h"
 #include "parse.h"
+#include "parse_cmds.h"
 
 #include <signal.h>
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
+#ifdef USE_ZLIB
+#include <zlib.h>
+#endif
 
 int main();
 void just(byte*, int);

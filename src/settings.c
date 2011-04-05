@@ -16,6 +16,7 @@ char* lua_file = NULL;
 int no_usgn = 0;
 int lua_strict = 0;
 int lua_debug = 0;
+int debug = 0;
 
 unsigned char pre_authcode[] = "5TWs3Obv7";
 char startweapons[] = { 50 };
@@ -72,6 +73,13 @@ int buf_is_in(char c, int n, ...){
 	va_end(ap);
 	return 0;
 }
+
+//int is_in(char c, char* args){
+//	int i, n = strlen(args);
+//	for (i=0; i<n; i++)
+//		if (args[i]==c) return 1;
+//	return 0;
+//}
 
 setting_closure read_config(const char* cfg_file, struct setting** settings){ // rewritten, also renamed for C naming standard
 	FILE * f;

@@ -1,0 +1,2434 @@
+    +-----------------------------------------------------------------------
+    + BANIP 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >ip (text): IP address
+    |  >[duration] (-1 - 1440): Temporary ban duration in minutes (or 0 for
+    |   infinite ban, or -1 for default temp ban time mp_tempbantime)
+    |
+    + Description:
+    |   Bans an IP address. Players with this IP will not be able to join
+    |     anymore.
+    |
+    |   This command supports wildcards (*). The address does always have to
+    |     have 3 dots even when using wildcards. Some examples:
+    |
+    |   123.*.*.* = ban every ip starting with 123
+    |
+    |   *.*.*.123 = ban every ip ending with 123
+    |
+    |   *.123.234.* = ban every ip with 123.234 in the middle
+    |
+    |   The following ban addresses are NOT supported! Do NOT use comparable
+    |     bans:
+    |
+    |   123.* = not enough dots
+    |
+    |   *.123.234 = not enough dots
+    |
+    |   12*.*.* = mixed digits and * (12*) are not supported
+    |
+    |   You can also specify a duration if you want the ban to be temporary
+    |     only. Use -1 if you want to use the value of mp_tempbantime as
+    |     duration or use a value >0 to specify the ban duration in minutes. 0
+    |     means that the ban will be infinite (default).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + BANNAME 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >name (text): name of a other
+    |  >[duration] (-1 - 1440): Temporary ban duration in minutes (or 0 for
+    |   infinite ban, or -1 for default temp ban time mp_tempbantime)
+    |
+    + Description:
+    |   Bans a name. Players with this name will not be able to join anymore.
+    |
+    |   You can also specify a duration if you want the ban to be temporary
+    |     only. Use -1 if you want to use the value of mp_tempbantime as
+    |     duration or use a value >0 to specify the ban duration in minutes. 0
+    |     means that the ban will be infinite (default).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + BANS 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Shows a list of all bans at your server (as server only).
+    |
+    |   Same as listbans.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + BANUSGN 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >id (number): U.S.G.N. account id
+    |  >[duration] (-1 - 1440): Temporary ban duration in minutes (or 0 for
+    |   infinite ban, or -1 for default temp ban time mp_tempbantime)
+    |
+    + Description:
+    |   Bans an U.S.G.N. account. The player with this account will not be
+    |     able to join if he is logged in.
+    |
+    |   You can also specify a duration if you want the ban to be temporary
+    |     only. Use -1 if you want to use the value of mp_tempbantime as
+    |     duration or use a value >0 to specify the ban duration in minutes. 0
+    |     means that the ban will be infinite (default).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + BOT_ADD 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Add a bot to the team with less players.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + BOT_ADD_CT 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Add a counter-terrorist bot.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + BOT_ADD_T 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Add a terrorist bot.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + BOT_COUNT 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >count (0-32): number of bots which will join the server after starting
+    |
+    + Description:
+    |   Select how many bots join the server after starting it.
+    |
+    |   Does not have any effect when you execute it after starting.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + BOT_JOINTEAM 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >team (0-2): 0 both, 1 T, 2 CT
+    |
+    + Description:
+    |   Select which teams bots will join.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + BOT_KILL 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Kill all bots.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + BOT_PREFIX 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >prefix (text): a prefix for botnames
+    |
+    + Description:
+    |   Set a prefix for all bot names. This makes it easier to see which
+    |     players are bots.
+    |
+    |   You have to change this setting BEFORE bots join. It does NOT affect
+    |     bots who already joined.
+    |
+    |   Set it to "" if you don't want to use a prefix for bots.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + BOT_REMOVE 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Remove a random bot.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + BOT_REMOVE_ALL 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Remove all bots on the server.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + BOT_REMOVE_CT 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Remove a counter-terrorist bot.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + BOT_REMOVE_T 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Remove a terrorist bot.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + BOT_SKILL 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >skill (0-4): skill of bots from low (0) to high (4)
+    |
+    + Description:
+    |   Sets the skill of all bots.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + BOT_WEAPONS 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >weapons (0-7): weapons which bots can use
+    |
+    + Description:
+    |   Defines which weapons bots will buy and use:
+    |
+    |   0 - all weapons
+    |
+    |   1 - melee only
+    |
+    |   2 - pistols only
+    |
+    |   3 - shotguns only
+    |
+    |   4 - smgs only
+    |
+    |   5 - riles only
+    |
+    |   6 - sniper rifles only
+    |
+    |   7 - mgs only
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + CHANGELEVEL 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >map (text): name of a map
+    |
+    + Description:
+    |   Change the map on a server.
+    |
+    |   Same as sv_map, map and changemap!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + CHANGEMAP 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >map (text): name of a map
+    |
+    + Description:
+    |   Change the map on a server.
+    |
+    |   Same as sv_map, map and changelevel!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + CUSTOMKILL 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >killer (0-32): killer other id (or 0 for no killer)
+    |  >weapon name (text): a name for the weapon the killer used (as text!)
+    |  >victim (1-32): victim other id
+    |
+    + Description:
+    |   Simulate a kill with a custom weapon (as server only).
+    |
+    |   Use killer 0 for suicides or "environment kills".
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + DEATHSLAP 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (text): name or id of a other
+    |
+    + Description:
+    |   Slap a player to death (kill him).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + EFFECT 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >effect (text): effect type
+    |  >x (0-X): x position in pixels
+    |  >y (0-X): y position in pixels
+    |  >p1 (0-X): parameter 1 (amount in most cases)
+    |  >p2 (0-X): parameter 2 (radius in most cases)
+    |  >r (0-255): color red
+    |  >g (0-255): color green
+    |  >b (0-255): color blue
+    |
+    + Description:
+    |   Create effects on the map. The usage of the parameters depends on the
+    |     type. You can use r,g,b to define a color for some of the effects.
+    |     However this doesn't work for all effects!
+    |
+    |   The amount is limited to a maximum of 100 in most cases!
+    |
+    |   "fire"
+    |
+    |   fire particles (yellow/orange/red).
+    |
+    |   p1=amount, p2=radius
+    |
+    |   r,g,b=no influence!
+    |
+    |   "smoke"
+    |
+    |   smoke particles (gray).
+    |
+    |   p1=amount, p2=radius
+    |
+    |   r,g,b=no influence!
+    |
+    |   "flare"
+    |
+    |   flare particles with certain color.
+    |
+    |   p1=amount, p2=radius
+    |
+    |   r,g,b=color
+    |
+    |   "colorsmoke"
+    |
+    |   smoke particles with certain color.
+    |
+    |   p1=amount, p2=radius
+    |
+    |   r,g,b=color
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + EQUIP 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other
+    |  >weapon (1-255): type id of a weapon
+    |
+    + Description:
+    |   Give a weapon to a player (as server only).
+    |
+    |   Hint: Use the editor and the Env_Item entity to see the IDs of
+    |     weapons.
+    |
+    |   Attention: A player can hold each weapon only one time. Equip the same
+    |     weapon again to re-fill the ammunition of this weapon.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + EXPLOSION 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >x (0-X): x position in pixels
+    |  >y (0-X): y position in pixels
+    |  >size (0-X): size/range in pixels
+    |  >damage (0-X): explosion damage
+    |  >source other (0-32): source other id, 0 for no other as source
+    |
+    + Description:
+    |   Create an explosion somewhere at the map (as server only).
+    |
+    |   You can specify a source player. This player will get the score etc.
+    |     when the explosion kills someone. However you don't have to. Just
+    |     don't enter the last parameter or enter a 0 for it when your explosion
+    |     is not caused by a player.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + FLASHPLAYER 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (0-32): other who will be flashed (0 for all)
+    |  >intensity (0-100): flash intensity
+    |
+    + Description:
+    |   Flash one or all players.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + FLASHPOSITION 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >x (0-X): x position in pixels
+    |  >y (0-X): y position in pixels
+    |  >intensity (0-100): flash intensity
+    |
+    + Description:
+    |   Flash all players who are close to the position + which have a direct
+    |     line of sight to this position (without wall).
+    |
+    |   Pretty similar to the explosion of a flashbang.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + HUDTXT 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >id (0-49): internal text id
+    |  >text (text): the text you want to display
+    |  >x (0-640): x position
+    |  >y (0-480): y position
+    |  >align (0,1,2): text alignment
+    |
+    + Description:
+    |   Display or hide a text on the screen of every player (as server only).
+    |
+    |   Just enter the first parameter (id) and leave out all other parameters
+    |     in order to hide an existing text.
+    |
+    |   The position in pixels defines the text position on the screen.
+    |
+    |   The alignment parameters mean:
+    |
+    |   0 - left alignment (normal)
+    |
+    |   1 - center alignment
+    |
+    |   2 - right alignment
+    |
+    |   You can also use color-codes at the beginning of your text
+    |     (©RRRGGGBBB)! For example: "©255000000This is a red text"
+    |
+    |   Attention: The texts/IDs are shared with the hudtxt2 command!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + HUDTXT2 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other
+    |  >id (0-49): internal text id
+    |  >text (text): the text you want to display
+    |  >x (0-640): x position
+    |  >y (0-480): y position
+    |  >align (-1,0,1): text alignment
+    |
+    + Description:
+    |   Display or hide a text on the screen of a certain player (as server
+    |     only).
+    |
+    |   Just enter the first parameter (id) and leave out all other parameters
+    |     in order to hide an existing text.
+    |
+    |   The position in pixels defines the text position on the screen.
+    |
+    |   The alignment parameters mean:
+    |
+    |   0 - left alignment (normal)
+    |
+    |   1 - center alignment
+    |
+    |   -1 - right alignment
+    |
+    |   You can also use color-codes at the beginning of your text
+    |     (©RRRGGGBBB)! For example: "©255000000This is a red text"
+    |
+    |   Attention: The texts/IDs are shared with the hudtxt command!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + HUDTXTALPHAFADE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other (or 0 for all)
+    |  >id (0-49): internal text id
+    |  >duration (ms): alpha fade/transition effect in milliseconds
+    |  >alpha (0.0-1.0): new alpha value
+    |
+    + Description:
+    |   Lets a HUD text (specified with id) change its alpha value. The
+    |     transition will be smooth and will take the given time (duration).
+    |
+    |   You can let this effect be visible for all players (player=0) or to a
+    |     certain player only (player=id of this player).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + HUDTXTCOLORFADE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other (or 0 for all)
+    |  >id (0-49): internal text id
+    |  >duration (ms): color fade/transition effect in milliseconds
+    |  >red (0-255): new red color value
+    |  >green (0-255): new red color value
+    |  >blue (0-255): new red color value
+    |
+    + Description:
+    |   Lets a HUD text (specified with id) change its color. The transition
+    |     will be smooth and will take the given time (duration).
+    |
+    |   You can let this effect be visible for all players (player=0) or to a
+    |     certain player only (player=id of this player).
+    |
+    |   The text needs to be set with hudtxt or hudtxt2 before you use this
+    |     command.
+    |
+    |   Note (about hudtxt and hudtxt2 text color):
+    |
+    |   The default text color is ©255220000 (red=255, green=220, blue=0).
+    |     You can use another text color by starting the HUD text with
+    |     ©RRRGGGBBB (with RRR/GGG/BBB being the red/green/blue values, all
+    |     with 3 digits)
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + HUDTXTMOVE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other (or 0 for all)
+    |  >id (0-49): internal text id
+    |  >duration (ms): alpha fade/transition effect in milliseconds
+    |  >x (0-640): new x position
+    |  >x (0-480): new y position
+    |
+    + Description:
+    |   Lets a HUD text (specified with id) change its position. The
+    |     transition will be smooth and will take the given time (duration).
+    |
+    |   You can let this effect be visible for all players (player=0) or to a
+    |     certain player only (player=id of this player).
+    |
+    |   Note that you can also use coordinates outside the screen range (0-640
+    |     and 0-480) to make text scroll out of the screen. The values above
+    |     only define the visible screen area.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + ITEMS 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Show item information in console (server only)
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + KICK 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (text): ID or name of a other
+    |  >reason (text): A kick reason (optional)
+    |
+    + Description:
+    |   Kick a certain player from the server. You can also state a short
+    |     reason for the kick if you want to.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + KILLOBJECT 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >object id (1-X): ID of an object
+    |
+    + Description:
+    |   Kill an object (as server only). Objects are buildings, mines, portals
+    |     etc.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + KILLPLAYER 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other
+    |
+    + Description:
+    |   Kill a player (as server only).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + LISTBANS 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Shows a list of all bans at your server (as server only).
+    |
+    |   Same as bans.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + LISTPLAYERS 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Display list of players on server in console. The list also contains
+    |     all player IDs.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + LOGADDRESS_ADD 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >address (IP and Port): address of a server
+    |
+    + Description:
+    |   Send all console output to this address
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + LOGADDRESS_REMOVE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >address (IP and Port): address of a server
+    |
+    + Description:
+    |   Stop sending console output to this address
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + LOGADDRESS_REMOVEALL 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Stop sending console output to any server
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + LUA 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >script (text): a Lua script
+    |
+    + Description:
+    |   Execute a line of Lua script (as server only)
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + LUARESET 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Reset the whole Lua scriptengine and remove all loaded
+    |     scripts/hooks/variables (as server only)
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MAKECT 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (text): name or id of a other
+    |
+    + Description:
+    |   Make a player counter-terrorist.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MAKESPEC 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (text): name or id of a other
+    |
+    + Description:
+    |   Make a player spectator.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MAKET 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (text): name or id of a other
+    |
+    + Description:
+    |   Make a player terrorist.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MAP 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >map (text): name of a map
+    |
+    + Description:
+    |   Change the map on a server.
+    |
+    |   Same as sv_map, changemap and changelevel!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MAPS 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Show a list of maps in console
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_ANTISPEEDER 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >antispeeder protection (0-1): use protection against speedhackers?
+    |
+    + Description:
+    |   AntiSpeeder is a protection against annoying speedhackers. It uses a
+    |     number of different techniques to detect speedhackers. It
+    |     automatically kicks + tempbans all detected speedhackers.
+    |
+    |   Attention: The detection might fail on servers with a bad connection
+    |     and a slow system. Massive lags can lead to wrong detections as well.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_AUTOGAMEMODE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >autogamemode (0-1): automatically switch gamemode?
+    |
+    + Description:
+    |   When enabled (1) this function will automatically switch to the best
+    |     game-mode when loading a map.
+    |
+    |   It simply checks the map prefix to find the best game-mode. "as_",
+    |     "cs_" and "de_" will make it switch to the standard mode for example.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_AUTOTEAMBALANCE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >balance (0/1): automatically try to keep teams even?
+    |
+    + Description:
+    |   If this is set to 1, CS2D automatically tries to keep teams even by
+    |     changing the team of players.
+    |
+    |   This happens as soon as one team has two players more than the other
+    |     team.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_BUILDING_HEALTH 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >building (text): name of a building
+    |  >price (0-X): health
+    |
+    + Description:
+    |   Set the health for a building.
+    |
+    |   Attention: Make sure that you use the name exactly as the building is
+    |     called in-game.
+    |
+    |   Examples:
+    |
+    |   mp_building_health "Turret" 10
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_BUILDING_LIMIT 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >building (text): name of a building
+    |  >limit (0-X): limit
+    |
+    + Description:
+    |   Set the build limit for a building.
+    |
+    |   Attention: Make sure that you use the name exactly as the building is
+    |     called in-game.
+    |
+    |   Attention: This does not affect upgrades. You can upgrade buildings
+    |     always - even if you exceed the limit by doing that.
+    |
+    |   Examples:
+    |
+    |   mp_building_limit "Wall I" 5
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_BUILDING_PRICE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >building (text): name of a building
+    |  >price (0-16000): price in $
+    |
+    + Description:
+    |   Set the price for a building.
+    |
+    |   Attention: Make sure that you use the name exactly as the building is
+    |     called in-game.
+    |
+    |   Examples:
+    |
+    |   mp_building_price "Wall II" 50
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_BUYTIME 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >time (0-1000000): buytime in minutes (floats allowed!)
+    |
+    + Description:
+    |   Control how long players are allowed to buy equipment after
+    |     roundstart.
+    |
+    |   Value in minutes! You can use floats!
+    |
+    |   Examples:
+    |
+    |   0.25 = 0.25*60 Sec = 15 Sec
+    |
+    |   0.5 = 0.5*60 Sec = 30 Sec
+    |
+    |   2 = 2*60 = 120 Sec
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_C4TIMER 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >time (0-255): countdown in seconds
+    |
+    + Description:
+    |   Set the C4 (bomb) timer countdown in seconds. The bomb explodes after
+    |     this time.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_CURTAILEDEXPLOSIONS 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >curtailed (0/1): are explosions curtailed by walls?
+    |
+    + Description:
+    |   Explosions do not cause any damage through walls if this setting is
+    |     set to 1.
+    |
+    |   Set it to 0 if you want explosions to cause damage through all walls.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_DAMAGEFACTOR 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >factor (0-1000): damage factor
+    |
+    + Description:
+    |   The damage of weapons is multiplied with this factor. Change it to
+    |     make players die faster or slower.
+    |
+    |   Examples:
+    |
+    |   0.5 = half damage
+    |
+    |   1 = normal damage
+    |
+    |   2 = double damage
+    |
+    |   0 = no damage
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_DEATHDROP 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >drop (0-4): 0 everything, 1 Prim+Sec+Defuse+NV, 2 Prim+Sec+Defuse, 3
+    |   Prim+Sec, 4 Nothing
+    |
+    + Description:
+    |   Control what a player drops when he dies or leaves the game.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_DISPENSER_HEALTH 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >health (0-100): health points you get each seoncds
+    |
+    + Description:
+    |   Select how much health you get each second while standing close to a
+    |     dispenser.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_DISPENSER_MONEY 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >money (0-16000): money in $ you get each second
+    |
+    + Description:
+    |   Select how much money you get each second while standing close to a
+    |     dispenser.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_DMSPAWNMONEY 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >money (0-16000): money in $ each respawn
+    |
+    + Description:
+    |   Select how much money a player gets when respawning.
+    |
+    |   For game modes like deathmacht or construction.
+    |
+    |   Does not affect the normal game mode!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_DROPGRENADES 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >drop (0/1): allow the other to drop grenades
+    |
+    + Description:
+    |   Select if the player is allowed to drop grenades (without activating
+    |     them) or not.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_FLOODPROT 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >flood protection (0/1): flood protection enabled?
+    |
+    + Description:
+    |   Enable or disable the flood protection.
+    |
+    |   This is a general network protection against hackers who try to crash
+    |     servers with massive amounts of messages.
+    |
+    |   Warning: Flood protection is an essential security module. Only
+    |     disable if absolutely necessary!
+    |
+    |   Please note: This is about net messages/packets with data - not about
+    |     chat or radio messages!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_FREEZETIME 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >time (0-30): freezetime in seconds
+    |
+    + Description:
+    |   Control the freezetime (for buying weapons). Players can't move or
+    |     shoot during freezetime.
+    |
+    |   Set it to 0 if you do not want to have a freezetime!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_GRENADEREBUY 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >allowed (0/1): allow grenade rebuying or not
+    |
+    + Description:
+    |   This settings controls if players are allowed to buy new grenades
+    |     after throwing/dropping their old ones.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_HOSTAGEPENALTY 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >kills (0-1000000): allowed hostagekills
+    |
+    + Description:
+    |   Kick player after X hostagekills.
+    |
+    |   Set this value to 0 if you don't want to kick players for hostages
+    |     automatically.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_IDLEACTION 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >action (0-4): 0 kick, 1 make spec., 2 slap, 3 kill, 4 show message
+    |
+    + Description:
+    |   Peform this action if mp_idlekick is 1 and if a player was idle too
+    |     long (mp_idletime).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_IDLEKICK 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >idle action (0/1): perform action on idle others?
+    |
+    + Description:
+    |   Set this to 1 if you want to perform an action on idle players (kick
+    |     by default).
+    |
+    |   Also see mp_idletime and mp_idleaction!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_IDLETIME 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >time (10-3600): allowed idle time in seconds before the game performs
+    |   an action
+    |
+    + Description:
+    |   Select how long players are allowed to be idle (no movement etc.).
+    |     After this time the game will perform an action depending on
+    |     mp_idleaction!
+    |
+    |   mp_idlekick has to be 1 to activate this function!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_INFAMMO 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >infinite ammo (0/1): is ammo infinite?
+    |
+    + Description:
+    |   Make ammunition for all firearms (not grenades!) infinite (1) or
+    |     finite (0).
+    |
+    |   It will replace the carried-ammo-display in your HUD with a infinity-
+    |     symbol.
+    |
+    |   Please note that you still have to reload when infinite ammo is
+    |     activated!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_KEVLAR 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >percent (0.0-1.0): percentage (0.0=0%, 1.0=100%) of damage which will
+    |   be absorbed by kevlar
+    |
+    + Description:
+    |   Controls how much damaged is absorbed by kevlar vests.
+    |
+    |   The calculation depends on this value, the damage value and the armor
+    |     points you have left.
+    |
+    |   0.0 = no protection
+    |
+    |   1.0 = best protection
+    |
+    |   the default value is 0.3 (30% protection)
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_KICKPERCENT 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >percent (0.0-1.0): percentage (0.0=0%, 1.0=100%) of votes needed for a
+    |   kick
+    |
+    + Description:
+    |   Select how much percent of players in the same team have to vote a
+    |     player before the server kicks him.
+    |
+    |   Set it to 0 in order to disable kick-voting.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_KILLBUILDINGMONEY 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >money (0/1): do others get money for killing buildings?
+    |
+    + Description:
+    |   Select if players get money for killing buildings (construction mode).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_KILLBUILDINGS 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >kill (0-3): 0 kill all, 1 don't kill walls, 2 kill
+    |   disp.+turret+supply, 3 kill nothing
+    |
+    + Description:
+    |   Select which buildings of a player will be killed when this player
+    |     leaves the game.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_KILLINFO 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >info (0/1): show kill info?
+    |
+    + Description:
+    |   If this is set to 1 the server sends an information to every player
+    |     who has been killed. It tells him who killed him and how much health
+    |     and armor this player has left.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_KILLTEAMBUILDINGS 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >mode (0-2): 0 unkillable, 1 killable, 2 killable+penalty
+    |
+    + Description:
+    |   Select if players are able to kill buildings of their teammates and if
+    |     they get a penalty for this or not.
+    |
+    |   Players can always destroy their own buildings!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_LAGCOMPENSATION 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >max compensation time (0-10): time limit in 1/10 seconds for
+    |   compensation (default 5)
+    |
+    + Description:
+    |   Compensate high pings of clients by using previous positions of
+    |     players when checking for hits. Set this setting to 0 to completely
+    |     disable lag compensation.
+    |
+    |   Default setting is 5 which means that pings up to 500 (0,5 second
+    |     delay) will be compensated. Highest setting is 10 (1 second delay, a
+    |     ping of 1000).
+    |
+    |   ATTENTION: Lag compensation is not fully supported by listen servers!
+    |     Only dedicated servers do have complete lag compensation.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_LOCALRCONOUTPUT 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >output (0/1): Display output of remotely executed commands?
+    |
+    + Description:
+    |   You always see all console output of commands executed remotely (RCon)
+    |     in the console/logs of your server when this setting is enabled (1,
+    |     default).
+    |
+    |   Disable it (0) if you don't want to see this output on your server. Of
+    |     course the client who performs the commands will receive all output
+    |     anyway.
+    |
+    |   Attention: Disabling the local RCon output can be a security risk
+    |     because it is hard to trace any remote control of your server without
+    |     it!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_LUAMAP 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >use (0/1): use Lua map script if available or not
+    |
+    + Description:
+    |   Each map can have its own Lua script which is saved as
+    |     maps/MAPNAME.lua. A script for de_dust would have to be saved as
+    |     maps/de_dust.lua for example.
+    |
+    |   CS2D loads this script automatically when the map is loaded. You can
+    |     use mp_luamap 0 to disable the automatic loading of the map script.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_LUASERVER 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >file (text): filename of a Lua script in sys/lua (server.lua by
+    |   default)
+    |
+    + Description:
+    |   Name of the Lua script you want to load with your server. Use an empty
+    |     string if you do not want to use Lua scripts.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_MAPGOALSCORE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >score (0/1): do others get score for map goals?
+    |
+    + Description:
+    |   Select if players get additional score for map goals like bomb
+    |     planting, defusing etc.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_MAPVOTERATIO 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >percent (0.0-1.0): percentage (0.0=0%, 1.0=100%) of votes needed for a
+    |   mapchange
+    |
+    + Description:
+    |   Select how much percent of all players have to vote the same map
+    |     before the server changes to this map.
+    |
+    |   Set it to 0 in order to disable map-voting.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_MAXCLIENTSIP 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >clients (1-32): maximum allowed clients with same IP
+    |
+    + Description:
+    |   Set the maximum of allowed clients with the same IP.
+    |
+    |   This setting is a protection against imposter or flooders who join a
+    |     server with several clients at the same time.
+    |
+    |   Set it to a high value (32) for LAN servers!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_MAXRCONFAILS 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >max. fails (0-100): maximum fails (0=infinite fails allowed + reset
+    |   fail-cache)
+    |
+    + Description:
+    |   Limit for maximum rcon_password failures. Each failed attempt will be
+    |     saved with IP address. CS2D ignores all rcon_password-attempts from
+    |     this IP address as soon as the number exceeds the limit.
+    |
+    |   This setting is highly recommended in order to prevent RCon password
+    |     bruteforcing. The default value is 5.
+    |
+    |   Set it to 0 to allow an infinite number of RCon login failures and to
+    |     reset/delete the cache of failed logins.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_NATHOLEPUNCHING 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >allow punching (0-1): allow NAT hole punching?
+    |
+    + Description:
+    |   Allow or disallow NAT hole punching. This technique makes use of the
+    |     U.S.G.N. to increase the accessibility of servers behind NAT routers.
+    |     It is enabled by default.
+    |
+    |   Set it to 0 to ignore NAT hole punching requests from the U.S.G.N.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_PINGLIMIT 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >limit (0-10000): maximum allowed ping
+    |
+    + Description:
+    |   Use this setting to automatically kick all players who have a high
+    |     ping.
+    |
+    |   Set it to 0 if you don't want to kick players because of their ping.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_POSTSPAWN 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >time (0-5940): time you are allowed to spawn (instantly) after
+    |   roundstart (standard game mode)
+    |
+    + Description:
+    |   Change the time (in seconds) in that players are allowed to spawn
+    |     after the start of the round.
+    |
+    |   A "post-spawn" is only possible once after joining the server. So this
+    |     is only for players who just joined the game and missed the last round
+    |     start.
+    |
+    |   You can completely disable this feature by setting the value to 0.
+    |     Then each new player will have to wait until the next round begins.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_RADAR 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >radar (0-1): display radar?
+    |
+    + Description:
+    |   This is a server setting which controls if players will see a radar in
+    |     the top left corner of their screen (1, default) or not (0).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_RANDOMSPAWN 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >random (0/1): do others spawn at spawnpoints (0) or at random
+    |   positions (1)?
+    |
+    + Description:
+    |   Make players spawn on random positions.
+    |
+    |   Random spawning is recommended for the deathmatch game mode!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_RESERVATIONS 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >reservations (text): a list of U.S.G.N. IDs
+    |
+    + Description:
+    |   Define which players are allowed to join the server always - even if
+    |     it is already full. The server will then kick a player if necessary to
+    |     make room for a player with reservation.
+    |
+    |   Example:
+    |
+    |   mp_reservations "" (no reservations)
+    |
+    |   mp_reservations "1,2,3" (reservations for the U.S.G.N. users 1,2 and
+    |     3)
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_RESPAWNDELAY 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >delay (0-255): delay in seconds
+    |
+    + Description:
+    |   This sets a delay for respawning. You have to wait this long before
+    |     you are allowed to respawn.
+    |
+    |   Of course this setting is only important for game modes whithout round
+    |     system.
+    |
+    |   It does not affect the normal mode.
+    |
+    |   Set it to 0 if you want to allow instant respawning.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_ROUNDLIMIT 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >rounds (0-1000000): rounds needed for mapchange
+    |
+    + Description:
+    |   With this setting your server changes the map automatically after
+    |     playing X rounds.
+    |
+    |   Set it to 0 if you don't want your server to change the map
+    |     automatically.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_ROUNDTIME 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >time (1-15): time for a round in minutes
+    |
+    + Description:
+    |   Control how long a round lasts (in minutes).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_STARTMONEY 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >money (0-16000): money in $
+    |
+    + Description:
+    |   Select how much money new players get after joining.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_SUPPLY_ITEMS 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >itemlist (text): comma separated list of items or "default"
+    |
+    + Description:
+    |   Defines a list of items which are available in the supply building.
+    |     you can specify up to 9 items either by entering their name or their
+    |     ID.
+    |
+    |   the items 1-6 will be available in the supply and the super supply.
+    |
+    |   the items 7-9 will only be available in the super supply
+    |
+    |   you can also use the value "default" to reset the itemlist to its
+    |     default value.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_TEAMKILLPENALTY 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >kills (0-1000000): allowed teamkills
+    |
+    + Description:
+    |   Kick player after X teamkills.
+    |
+    |   Set this value to 0 if you don't want to kick players for teamkills
+    |     automatically.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_TELEPORTRELOAD 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >reload time (0-300): seconds needed to reload
+    |
+    + Description:
+    |   Time in seconds a teleporter building needs to reload after each
+    |     teleport (default: 5 sec).
+    |
+    |   Use 0 to disable reloading (the teleporter can then be used without
+    |     delays)
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_TEMPBANTIME 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >time (1-1440): ban time in minutes
+    |
+    + Description:
+    |   Define how long temporary bans are active. For example when someone
+    |     has been vote-kicked.
+    |
+    |   The possible time for a temp ban ranges from 1 minute (1) to 1 day
+    |     (1440).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_TIMELIMIT 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >time (0-10000): time in minutes a map runs (0 = infinite)
+    |
+    + Description:
+    |   With this setting your server changes the map automatically every X
+    |     minutes.
+    |
+    |   Set it to 0 if you don't want your server to change the map
+    |     automatically.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_TKPUNISH 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >kill (0/1): kill teamkillers on next round (1) or not (0)?
+    |
+    + Description:
+    |   Select if you want to punish teamkillers by killing them on the next
+    |     round or not.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_TRACE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >"accuracy" (0-5): level of precision, 0=disabled
+    |
+    + Description:
+    |   The server to traces all player movements when mp_trace is enabled. It
+    |     will reset their positions when they move too fast.
+    |
+    |   Warning: mp_trace can lead to a bad gaming experience for players with
+    |     high pings when activated!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_TURRETDAMAGE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >damage (0-1000): damage of a turret hit
+    |
+    + Description:
+    |   Control the damage each turret hit inflicts.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_UNBUILDABLE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >buildings (text): list of buildings which are unbuildable, seperated
+    |   with ","
+    |
+    + Description:
+    |   Select which buildings are not available for building.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_UNBUYABLE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >unbuyable (text): a list of weaponnames which are unbuyable, seperated
+    |   with ","
+    |
+    + Description:
+    |   Control which weapons are not buyable on your server.
+    |
+    |   Example:
+    |
+    |   "" = everything buyable
+    |
+    |   "Tactical Shield" = Tactical Shield is unbuyable
+    |
+    |   "AWP, P90" = AWP and P90 are unbuyable
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_VULNERABLEHOSTAGES 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >vulnerable (0/1): are hostages vulnerable?
+    |
+    + Description:
+    |   Select if you want to have vulnerable (1) or invulnerable (0)
+    |     hostages.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_WINLIMIT 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >wins (0-1000000): wins needed for mapchange
+    |
+    + Description:
+    |   With this setting your server changes the map automatically after one
+    |     team won a certain number of rounds.
+    |
+    |   Set it to 0 if you don't want your server to change the map
+    |     automatically.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_WPNDMG 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >name (text): in-game name of a weapon
+    |  >damage (0-100000): damage for this weapon
+    |
+    + Description:
+    |   Change the damage of a weapon.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_WPNDMG_Z1 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >name (text): in-game name of a weapon
+    |  >damage (0-100000): zoom 1 damage for this weapon
+    |
+    + Description:
+    |   Change the damage of a weapon in zoom level 1 (or secondary attack for
+    |     melee weapons).
+    |
+    |   Only use this command for weapons with at least one zoom level or for
+    |     melee weapons with secondary attack!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_WPNDMG_Z2 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >name (text): in-game name of a weapon
+    |  >damage (0-100000): zoom 2 damage for this weapon
+    |
+    + Description:
+    |   Change the damage of a weapon in zoom level 2.
+    |
+    |   Only use this command for weapons with two zoom levels!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_ZOMBIEDMG 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >percentage of damage (0.0-1.0):   percentage of damage which zombies
+    |   take (0.0=no damage, 1.0=full damage)
+    |
+    + Description:
+    |   The damage zombies will take when they are hit.
+    |
+    |   1.0 means that they will suffer the normal original damage
+    |
+    |   0.0 that they will take minimum damage (1 HP per hit)
+    |
+    |   The default value is 0.5 which means that zombies take half damage.
+    |
+    |   Attention: This setting is not about the damage zombies deal! Use
+    |     mp_wpndmg/mp_wpndmg_z1 to change the damage of the claw.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_ZOMBIEKILLEQUIP 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >weapon (0-255): type id of a weapon (0 for nothing)
+    |
+    + Description:
+    |   Give zombies (in Zombies!-mode) a weapon or item if they kill someone?
+    |     Use 0 to give them nothing.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_ZOMBIEKILLSCORE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >kill score (1-10): score you get as zombie for killing/infecting a
+    |   survivor
+    |
+    + Description:
+    |   Score and frags you get as zombie for killing a survivor. The default
+    |     value is +3 score/frags.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_ZOMBIERECOVER 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >recover (0-100):  Health points recovered per second (default 3)
+    |
+    + Description:
+    |   Amount of health points recovered by zombies per second. The default
+    |     value is 3.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MP_ZOMBIESPEEDMOD 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >speedmod (-100,100):  Zombie speed modifier
+    |
+    + Description:
+    |   Make zombies faster (postive value) or slower (negative value).
+    |     Zombies have the regular speed by default (0).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + MSG 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >message (text): the message you want to send
+    |
+    + Description:
+    |   Send a message to everyone on your server.
+    |
+    |   Same as sv_msg!
+    |
+    |   Add an @C at the end of your text to display the message at the center
+    |     of the screen.
+    |
+    |   For example: "Centered text@C"
+    |
+    |   You can also use color-codes at the beginning of your text
+    |     (©RRRGGGBBB)! For example: "©255000000This is a red text"
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + RCON 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >commands (text): one ore more commands
+    |
+    + Description:
+    |   Execute commands on a server. You have to use rcon_pw first.
+    |
+    |   ALL commands can be used with rcon!
+    |
+    |   WARNING: EVERYTHING behind rcon in the same line will be sent to
+    |     server. no matter how many quotes or semicolons it contains.
+    |
+    |   for example:
+    |
+    |   rcon sv_fog 0; say "fog disabled"
+    |
+    |   this will send
+    |
+    |   sv_fog 0; say "fog disabled"
+    |
+    |   to the server and NOT just
+    |
+    |   sv_fog 0
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + RCON_PASSWORD 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >password (text): server rcon password
+    |
+    + Description:
+    |   Enter the password of the server you want to control with rcon.
+    |
+    |   Use this command one time BEFORE using rcon!
+    |
+    |   Same as rcon_pw!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + RCON_PW 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >password (text): server rcon password
+    |
+    + Description:
+    |   Enter the password of the server you want to control with rcon.
+    |
+    |   Use this command one time BEFORE using rcon!
+    |
+    |   Same as rcon_password!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + REMOVEITEM 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >item (0-X): id of an item on the map
+    |
+    + Description:
+    |   Remove an item/weapon from the map (as server only).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + REROUTE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other
+    |  >address (text): a server address
+    |
+    + Description:
+    |   Reroute a player to another server. The player will be removed from
+    |     the current server and then he can decide if he wants to accept the
+    |     forwarding.
+    |
+    |   The address can have following forms:
+    |
+    |   XXX.XXX.XXX.XXX (just an IP address, port 36963 will be used)
+    |
+    |   XXX.XXX.XXX.XXX:YYYYY (IP address with port)
+    |
+    |   www.myaddress.xyz (URL)
+    |
+    |   www.myaddress.xyz:YYYYY (URL with port)
+    |
+    |   (You could also enter a random text for the address but in that case
+    |     forwarding will fail)
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + RESTART 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >delay (0-10): restart delay in seconds
+    |
+    + Description:
+    |   Restart the round/game in X seconds.
+    |
+    |   Same as sv_restart, sv_restartround and restartround!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + RESTARTROUND 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >delay (0-10): restart delay in seconds
+    |
+    + Description:
+    |   Restart the round/game in X seconds.
+    |
+    |   Same as sv_restart, restart and sv_restartround!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SETARMOR 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other
+    |  >armor (0-255): armor
+    |
+    + Description:
+    |   Set the armor of a player (as server only).
+    |
+    |   Attention: Regular armor ranges from 0 to 200. The values 201 and
+    |     higher are used for special armor types.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SETDEATHS 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other
+    |  >deaths (0-X): deaths
+    |
+    + Description:
+    |   Set the number of deaths of a player (as server only).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SETHEALTH 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other
+    |  >health (0-250): health
+    |
+    + Description:
+    |   Set health of a player (as server only).
+    |
+    |   Attention: The maximum health is limited by setmaxhealth! The default
+    |     maxhealth is 100. The maximum maxhealth is 250. You have to use
+    |     setmaxhealth after each spawn because respawning will reset the
+    |     maxhealth to 100.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SETMAXHEALTH 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other
+    |  >maxhealth (1-250): maximum health
+    |
+    + Description:
+    |   Set the health and maximum health of a player (as server only).
+    |
+    |   Attention: The maximum health is limited by setmaxhealth! The default
+    |     maxhealth is 100. The maximum maxhealth is 250. You have to use
+    |     setmaxhealth after each spawn because respawning will reset the
+    |     maxhealth to 100.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SETMONEY 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other
+    |  >money (0-16000): money in $
+    |
+    + Description:
+    |   Set the money of a player to a certain value (as server only).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SETNAME 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other
+    |  >name (text): name for the other
+    |
+    + Description:
+    |   Set the name of a player (as server only)
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SETPOS 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other
+    |  >x (0-X): x position (in pixels)
+    |  >y (0-X): y position (in pixels)
+    |
+    + Description:
+    |   Set a player at a certain position (as server only).
+    |
+    |   Attention: You have to define a position. This position is defined in
+    |     pixels and not in tiles. Each tile has a size of 32x32 pixels!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SETSCORE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other
+    |  >score (0-X): score
+    |
+    + Description:
+    |   Set the score (value displayed in the scoreboard) of a player (as
+    |     server only).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SETWEAPON 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other
+    |  >weapon (1-255): type id of a weapon
+    |
+    + Description:
+    |   Set the weapon a certain player holds in his hand (as server only).
+    |
+    |   Hint: Use the editor and the Env_Item entity to see the IDs of
+    |     weapons.
+    |
+    |   Attention: The player has to own this weapon already! Use equip first
+    |     if the player does not have the weapon!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SHAKE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): other who will have a shaking screen
+    |  >power (0-X): Shake power
+    |
+    + Description:
+    |   Shake a player (as server only). The maximum power/intensity is 30.
+    |     However you can use higher values for a longer shake.
+    |
+    |   A power of 50 equals one second (100=2 sec, 150=3 sec, 200=4 sec,
+    |     etc.)
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SLAP 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (text): name or id of a other
+    |
+    + Description:
+    |   Slap a player (remove some health).
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SPAWNITEM 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >item (1-255): type id of item
+    |  >x (0-X): map x position (in tiles)
+    |  >y (0-X): map y position (in tiles)
+    |
+    + Description:
+    |   Spawn an item at a certain position of the map (as server only).
+    |
+    |   Hint: Use the editor and the Env_Item entity to see the IDs of
+    |     weapons.
+    |
+    |   Attention: The position is defined in tiles and not in pixels!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SPAWNNPC 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >type (1-X): npc type
+    |  >x (0-X): x pos in tiles
+    |  >y (0-X): y pos in tiles
+    |  >rot (0-360): rotation
+    |
+    + Description:
+    |   Create an NPC (as server only).
+    |
+    |   NPC types:
+    |
+    |   1 - zombie
+    |
+    |   2 - headcrab
+    |
+    |   3 - snark
+    |
+    |   4 - vortigaunt
+    |
+    |   5 - soldier
+    |
+    |   please note: NPCs are actually objects as well - with type 30. the
+    |     type of the NPC is saved in the player attribute of the object. So you
+    |     could also use spawnobject with proper parameters to create NPCs.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SPAWNOBJECT 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >type (1-X): object type
+    |  >x (0-X): x pos in pixels/tiles (depending on type)
+    |  >y (0-X): y pos in pixels/tiles (depending on type)
+    |  >rot (0-360): rotation
+    |  >mode (0-X): object mode
+    |  >team (0-X): object team (0=neutral, 1=T, 2=CT)
+    |  >other (0-X): other (creator)
+    |
+    + Description:
+    |   Create an object (as server only). Objects are buildings, mines,
+    |     portals etc.
+    |
+    |   Values depend on the type of the object.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SPAWNPLAYER 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other
+    |  >x (0-X): x position (in pixels)
+    |  >y (0-X): y position (in pixels)
+    |
+    + Description:
+    |   Spawn a player at a certain position (as server only).
+    |
+    |   Attention: You have to define a position. This position is defined in
+    |     pixels and not in tiles. Each tile has a size of 32x32 pixels!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SPEEDMOD 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other
+    |  >speedmod (-100-100): speed modifier
+    |
+    + Description:
+    |   Modify the speed of a player (as server only).
+    |
+    |   The speed modifier ranges from -100 to 100. -100 means no movement, 0
+    |     is regular speed and 100 is very fast movement.
+    |
+    |   Attention: You have to use speedmod after each spawn because spawning
+    |     resets the speedmod to 0!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + STRIP 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): id of a other
+    |  >weapon (1-255): type id of a weapon
+    |
+    + Description:
+    |   Remove a weapon from a player (as server only).
+    |
+    |   Hint: Use the editor and the Env_Item entity to see the IDs of
+    |     weapons.
+    |
+    |   Attention: You cannot remove all weapons! The player always has to
+    |     have at least one weapon. The game will automatically equip the knife
+    |     (50) if there is no weapon left!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_FOW 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >fow (0/1): fow enabled?
+    |
+    + Description:
+    |   Enable or disable the fog of war. Fog of war makes the game more
+    |     tactical and the gameplay is slower in most cases.
+    |
+    |   Disable it for a fast action gameplay.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_FRIENDLYFIRE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >FF (0/1): allow to hurt teammates?
+    |
+    + Description:
+    |   Select if you want players to be able to hurt and even kill their
+    |     teammates.
+    |
+    |   Do not set this setting to 1 on public servers!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_GAMEMODE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >mode (0-X): a number from 0 to X for a game mode (0 = normal cs2d)
+    |
+    + Description:
+    |   Select the mode you want to play on your server. E.g. normal cs2d,
+    |     deathmatch, team deathmatch or construction.
+    |
+    |   Same as sv_gm!
+    |
+    |   Available modes:
+    |
+    |   0 - Normal CS2D
+    |
+    |   1 - Deathmatch
+    |
+    |   2 - Team Deathmatch
+    |
+    |   3 - Construction
+    |
+    |   4 - Zombies!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_GM 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >mode (0-X): a number from 0 to X for a game mode (0 = normal cs2d)
+    |
+    + Description:
+    |   Select the mode you want to play on your server. E.g. normal cs2d,
+    |     deathmatch, team deathmatch or construction.
+    |
+    |   Same as sv_gamemode!
+    |
+    |   Available modes:
+    |
+    |   0 - Normal CS2D
+    |
+    |   1 - Deathmatch
+    |
+    |   2 - Team Deathmatch
+    |
+    |   3 - Construction
+    |
+    |   4 - Zombies!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_HOSTPORT 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >port (0-65535): port, 0 = auto detect
+    |
+    + Description:
+    |   Select the port you want to use for your server. 36963 is the default
+    |     port and highly recommended.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_LAN 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >lan (0/1): use lan mode?
+    |
+    + Description:
+    |   Set this setting to 1 if you want to play in a LAN only.
+    |
+    |   Your server will not be added to the U.S.G.N. serverlist if you set
+    |     sv_lan to 1. Other players on the internet will not see and join it if
+    |     they don't have your server ip.
+    |
+    |   Always set sv_lan to 0 if you want other players to join online!
+    |     Otherwise they will not even see your server in the serverlist!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_MAP 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >map (text): name of a map
+    |
+    + Description:
+    |   Change the map on a server.
+    |
+    |   Same as map, changemap and changelevel!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_MAPTRANSFER 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >transfer (0/1): allow the server to send maps?
+    |
+    + Description:
+    |   Allow or disallow your server to send maps to clients who don't have
+    |     these maps (map transfer). This can cause additional traffic and
+    |     higher pings while the server is sending maps.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_MAXPLAYERS 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >others (1-32): other limit
+    |
+    + Description:
+    |   Set the maximum of players allowed on your server. CS2D does not allow
+    |     more than 32 players.
+    |
+    |   Don't set this limit too high. Servers with many players need a very
+    |     good internet connection and they cause a lot of traffic!
+    |
+    |   Recommended limits:
+    |
+    |   Modem: 2
+    |
+    |   ISDN: 4
+    |
+    |   (A)DSL: 6-8
+    |
+    |   (V)DSL: 8-16
+    |
+    |   LAN (fast ethernet): 32
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_MSG 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >message (text): the message you want to send
+    |
+    + Description:
+    |   Send a message to everyone on your server.
+    |
+    |   Same as msg!
+    |
+    |   Add an @C at the end of your text to display the message at the center
+    |     of the screen.
+    |
+    |   For example: "Centered text@C"
+    |
+    |   You can also use color-codes at the beginning of your text
+    |     (©RRRGGGBBB)! For example: "©255000000This is a red text"
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_MSG2 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): ID of a other
+    |  >message (text): the message you want to send
+    |
+    + Description:
+    |   Send a message to a certain player on your server.
+    |
+    |   Add an @C at the end of your text to display the message at the center
+    |     of the screen.
+    |
+    |   For example: "Centered text@C"
+    |
+    |   You can also use color-codes at the beginning of your text
+    |     (©RRRGGGBBB)! For example: "©255000000This is a red text"
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_NAME 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >name (text): name for your server
+    |
+    + Description:
+    |   Set the name of your server.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_PASSWORD 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >password (text): server password
+    |
+    + Description:
+    |   Set a server password. Everyone who wants to join has to enter this
+    |     password.
+    |
+    |   Set an empty password to remove the password.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_RCON 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >rcon password (text): password for rcon access
+    |
+    + Description:
+    |   Set an rcon (remote control) password to allow remote control. People
+    |     who want to remote control your server have to enter this password.
+    |
+    |   Set an empty password to remove it.
+    |
+    |   Only servers which set an rcon password can be remotely controlled!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_RESTART 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >delay (0-10): restart delay in seconds
+    |
+    + Description:
+    |   Restart the round/game in X seconds.
+    |
+    |   Same as restart, sv_restartround and restartround!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_RESTARTROUND 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >delay (0-10): restart delay in seconds
+    |
+    + Description:
+    |   Restart the round/game in X seconds.
+    |
+    |   Same as sv_restart, restart and restartround!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_SOUND 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >soundfile (text): a path to a soundfile. relative to the sfx folder
+    |
+    + Description:
+    |   Play a sound. Everyone on the server who has the soundfile will hear
+    |     it.
+    |
+    |   Attention: CS2D will NOT send the soundfile to players who do not have
+    |     it!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_SOUND2 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >other (1-32): ID of a other
+    |  >soundfile (text): a path to a soundfile. relative to the sfx folder
+    |
+    + Description:
+    |   Play a sound for a certain player. Only this player will hear it and
+    |     only if he has the soundfile!
+    |
+    |   Attention: CS2D will NOT send the soundfile to players who do not have
+    |     it!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_SPECMODE 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >mode (0-2): spectate mode
+    |
+    + Description:
+    |   Control what people are able to spectate (everything, own team only,
+    |     nothing)
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_SPRAYTRANSFER 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >spray transfer (0/1): allow to send sprays?
+    |
+    + Description:
+    |   Select if you want your server to send and receive custom sprays.
+    |     People on your server will only see default sprays if you disable this
+    |     option.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + SV_USGNONLY 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >usgn only (0/1): only allow U.S.G.N. users?
+    |
+    + Description:
+    |   Select if you want to allow U.S.G.N. users only. People which are not
+    |     logged in will not be able to join your server if this setting is
+    |     enabled.
+    |
+    |   Never enable this setting if you are playing in a LAN! The U.S.G.N.
+    |     account system does not work properly in LANs because it needs a
+    |     working internet connection to verify the accounts.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + TRANSFER_SPEED 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >speed (1-500): upload speed in kb/s
+    |
+    + Description:
+    |   This is a server setting!
+    |
+    |   Control the upload speed (kilobytes per second) for the map- and file-
+    |     transfer.
+    |
+    |   The default value is 25 kilobytes per second. Make sure to keep this
+    |     setting lower than the upload speed of the server.
+    |
+    |   Attention: Too high values may lead to lags for people playing while
+    |     someone downloads files from the server. In worst case it can even
+    |     lead to a complete loss of the connection (disconnect/ping timeout).
+    |
+    |   Low values will make all transfers take longer but ensure that playing
+    |     can go on without lags.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + TRIGGER 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >trigger (text): names of entities you want to trigger
+    |
+    + Description:
+    |   Trigger entities (as server only).
+    |
+    |   Example:
+    |
+    |   trigger "test" (triggers all entities with the name test)
+    |
+    |   trigger "a,b,c" (triggers all entities with the names a, b and c)
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + UNBAN 
+    +-----------------------------------------------------------------------
+    + Parameters:
+    |  >banmask (text): USGN ID, IP or nickname
+    |
+    + Description:
+    |   Removes a particular ban with a certain banmask.
+    |
+    |   This mask can be:
+    |
+    |   - a USGN ID (just a single number). e.g.: 1 or 123
+    |
+    |   - an IP address (also with * wildcards). e.g.: 111.222.333.444 or
+    |     111.222.333.*
+    |
+    |   - a nick name. e.g.: Player
+    |
+    |   Attention: This command is case sensitive. If you banned "Player" and
+    |     use unban "player" it will not work!
+    |
+    |   Moreover CS2D doesn't perform IP wildcard matching when removing bans.
+    |
+    |   E.g.: You have the following bans
+    |
+    |   111.*.*.*
+    |
+    |   111.222.333.444
+    |
+    |   111.222.333.*
+    |
+    |   *.*.*.*
+    |
+    |   if you now use unban *.*.*.* only the last ban will be removed because
+    |     it is exactly the same string. All other bans will stay untouched even
+    |     though they actually would match a wildcard check!
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + UNBANALL 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Removes ALL bans.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + USGN_ADDSERVER 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Force a U.S.G.N. serverlist add request for the server.
+    |
+    |   Try this command if your server is not added to the list
+    |     automatically.
+    +-----------------------------------------------------------------------
+
+    +-----------------------------------------------------------------------
+    + USGN_INFO 
+    +-----------------------------------------------------------------------
+    + Description:
+    |   Show U.S.G.N. (Unreal Software Gaming Network) details.
+    |
+    |   Important for problems with the serverlist etc.
+    +-----------------------------------------------------------------------
+

@@ -590,11 +590,9 @@ int joinroutine_known(stream* packet, int id){
 			 13++ - Failed to join
 			 */
 
-			if (!EMPTY_STREAM(buf)){
-				printf("%d\n", player[id].port);
+			if (!EMPTY_STREAM(buf))
 				SendToPlayer(buf->mem, buf->size, id, 1);
-				//exit(0);
-			}
+
 
 			free(encryption1);
 			free(mhash);
@@ -801,16 +799,53 @@ int spray(stream* packet, int id){
 	// 28 0 xx yy c
 	//  0 1 23 45 6
 	CHECK_STREAM(packet, 6);
-	Stream.read(packet, 1);
+	byte type = Stream.read_byte(packet);
 
-	unsigned short x = Stream.read_short(packet), y = Stream.read_short(packet);
-	unsigned char c = Stream.read_byte(packet);
-	unsigned char i = (char) id;
+	switch (type){
+	case 0:{
+		unsigned short x = Stream.read_short(packet), y = Stream.read_short(packet);
+		unsigned char c = Stream.read_byte(packet);
+		unsigned char i = (char) id;
 
-	// Postprocessing if needed, then send back exact same data
-	// xx and yy are positions, not tiles.
+		// Postprocessing if needed, then send back exact same data
+		// xx and yy are positions, not tiles.
 
-	SendSprayMessage(i, x, y, c);
+		SendSprayMessage(i, x, y, c);
+		break;
+	}
+	case 2:{
+		// 28 02 ## ...
+		short size = Stream.read_short(packet);
+		unsigned long final = (unsigned long)Stream.read_int(packet);
+		byte* logo = Stream.read(packet, size-4);
+		if (debug)
+			printf("[SPRAY] Received spraylogo from %s (%d bytes)\n", player[id].name, size);
+
+#ifdef ZLIB_H
+		byte* payload = (byte*)malloc(final);
+		int err = uncompress(payload, &final, logo, size-4);
+
+		if(err){
+			printf("[SPRAY] Invalid spraylogo received from %s.\n", player[id].name);
+		}
+
+//		int i, j;
+//		for (i=0;i<32;i++){
+//			for (j=0;j<32;j++)
+//				eprintf("%2x ", payload[i+j*32]);
+//			puts("\n");
+//		}
+
+		player[id].spray_payload = payload;
+		player[id].spray_payload_size = final;
+#endif
+
+		player[id].spray_data = logo;
+		player[id].spray_data_size = size;
+		break;
+	}
+	}
+
 	return 1;
 }
 
@@ -886,6 +921,28 @@ int rcon_pw(stream* packet, int id){
 	return 1;
 }
 
+int rcon(stream* packet, int id){
+	CHECK_STREAM(packet, 4); // rcon must be ln 1, 1 word for len even if no message
+	const char* rcon_hash = "rconcm", *rcon_pw_hash = "mysecretremotecontrolp";
+	byte* pw = Stream.read_str(packet);
+	byte* msg = Stream.read_str2(packet);
+	int i,h=strlen(rcon_hash),ph=strlen(rcon_pw_hash);
+	for (i=0;i<strlen((char*)pw);i++)
+		pw[i] = (0xff+pw[i]-(byte)rcon_pw_hash[i%ph])%0xff;
+	for (i=0;i<strlen((char*)msg);i++)
+		msg[i] = (0xff+msg[i]-(byte)rcon_hash[i%h])%0xff;
+
+	if (player[id].rcon){
+		printf("[RCON:%s] %s\n", player[id].name, msg);
+		parse((char*)msg);
+	}else{
+		printf("[RCON] Bad attempt by %s: %s.\n", player[id].name, msg);
+		return 0;
+	}
+
+	return 1;
+}
+
 // optable
 void init_optable(){
 	known_table = (known_handler*)malloc(sizeof(known_handler)*0x100);
@@ -920,6 +977,7 @@ void init_optable(){
 	K(32, specpos);
 	K(39, respawnrequest);
 	K(236, rcon_pw);
+	K(0xf1, rcon);
 	K(240, chatmessage);
 	K(249, ping_ingame);
 	K(252, joinroutine_known);

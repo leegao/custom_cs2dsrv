@@ -39,7 +39,7 @@ void parse_opts(int argc, char *argv[]){
 			lua_file = optarg;
 			break;
 		case 'd':
-			lua_debug = 1;
+			debug = 1;
 			break;
 		case 's':
 			lua_strict = 1;
@@ -175,6 +175,9 @@ int main(int argc, char *argv[]){
 							known_handler h = known_table[pid];
 							if (!h){
 								printf("Unhandled packet originating from %s (id:%d)\n", player[id].name, id);
+								//stream *lolbuf = init_stream(NULL);
+								//Stream.write(lolbuf, buffer, size);
+								//unknown(lolbuf, pid);
 								unknown(packet, pid);
 							} else
 								h(packet, id);
