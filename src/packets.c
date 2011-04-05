@@ -814,12 +814,35 @@ int spray(stream* packet, int id){
 	}
 	case 2:{
 		// 28 02 ## ...
-		short size = *(short*)Stream.peek(packet);
-		byte* payload = Stream.read_str2(packet);
+		short size = Stream.read_short(packet);
+		unsigned long final = (unsigned long)Stream.read_int(packet);
+		byte* logo = Stream.read(packet, size-4);
 		if (debug)
 			printf("[SPRAY] Received spraylogo from %s (%d bytes)\n", player[id].name, size);
+
+
+#ifdef ZLIB_H
+		byte* payload = (byte*)malloc(final);
+		int err = uncompress(payload, &final, logo, size-4);
+
+		if(err){
+			printf("[SPRAY] Invalid spraylogo received from %s.\n", player[id].name);
+		}
+
+//		int i, j;
+//		for (i=0;i<32;i++){
+//			for (j=0;j<32;j++)
+//				eprintf("%2x ", payload[i+j*32]);
+//			puts("\n");
+//		}
+
 		player[id].spray_payload = payload;
-		player[id].spray_payload_size = size;
+		player[id].spray_payload_size = final;
+#endif
+
+		player[id].spray_data = logo;
+		player[id].spray_data_size = size;
+
 	}
 	}
 
