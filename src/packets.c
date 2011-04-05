@@ -811,6 +811,7 @@ int spray(stream* packet, int id){
 		// xx and yy are positions, not tiles.
 
 		SendSprayMessage(i, x, y, c);
+		break;
 	}
 	case 2:{
 		// 28 02 ## ...
@@ -819,7 +820,6 @@ int spray(stream* packet, int id){
 		byte* logo = Stream.read(packet, size-4);
 		if (debug)
 			printf("[SPRAY] Received spraylogo from %s (%d bytes)\n", player[id].name, size);
-
 
 #ifdef ZLIB_H
 		byte* payload = (byte*)malloc(final);
@@ -842,7 +842,7 @@ int spray(stream* packet, int id){
 
 		player[id].spray_data = logo;
 		player[id].spray_data_size = size;
-
+		break;
 	}
 	}
 

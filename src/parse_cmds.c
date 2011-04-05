@@ -281,7 +281,7 @@ int maket_cmd(char* player){
 int map_cmd(char* map){
 	printf("[Parse] Error: map(char* map) is unimplemented.\n");
 
-	sv_map = map;
+	sv_map = (byte*)map;
 
 	return 0;
 }
